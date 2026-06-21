@@ -1268,6 +1268,15 @@ function renderTable() {
       bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (norma !== null ? norma + 'h' : '—') + '</td></tr>';
     });
   });
+  bhtml += '<tr class="legend-row"><td colspan="' + colspan + '" style="padding:6px 10px;border-top:2px solid var(--border)">'
+    + '<span style="font-size:11px;font-weight:700;color:var(--text-muted);margin-right:8px">Legendă:</span>'
+    + '<span class="shift-pill pill-t1" style="padding:2px 8px;font-size:11px">T1 / T1A &nbsp;06:00–14:00</span> '
+    + '<span class="shift-pill pill-t2" style="padding:2px 8px;font-size:11px">T2 / T2A &nbsp;14:00–22:00</span> '
+    + '<span class="shift-pill pill-c8" style="padding:2px 8px;font-size:11px">8h &nbsp;08:00–16:00</span> '
+    + '<span class="shift-pill pill-co" style="padding:2px 8px;font-size:11px">CO — Concediu Odihnă</span> '
+    + '<span class="shift-pill pill-cm" style="padding:2px 8px;font-size:11px">CM — Concediu Medical</span> '
+    + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>'
+    + '</td></tr>';
   tbody.innerHTML = bhtml;
 }
 
