@@ -594,6 +594,7 @@ function migrateState(s) {
   if (s.genYear === undefined) s.genYear = 0;
   if (s.genMonth === undefined) s.genMonth = 0;
   if (s.genDim === undefined) s.genDim = 0;
+  if (!s.org) s.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
 }
 
 async function initStateFromDB() {
@@ -601,6 +602,8 @@ async function initStateFromDB() {
     const saved = await dbGet('main');
     if (saved && saved.employees && Array.isArray(saved.employees)) {
       migrateState(saved);
+      // Preserve org from localStorage if IndexedDB has stale data
+      if (!saved.org && state.org) saved.org = state.org;
       state = saved;
       genDay = state.genDay || 0;
       genStats = state.genStats || null;
