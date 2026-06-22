@@ -800,12 +800,27 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day) {
     r = assignShift(remaining, t2c, 2, 't2', false); remaining = r.remaining;
   }
   if (!weekend) {
-    r = assignShift(remaining, t1ac, 3, 't1a', true); remaining = r.remaining;
-    // Fallback: if T1A couldn't fill all slots, try with T1 shift (same time period 06-14)
-    if (r.deficit > 0) { r = assignShift(remaining, r.deficit, 1, 't1', true); remaining = r.remaining; }
+    // Filter crews: if any member already has 5+ worked days this week (40h reached),
+    // the whole crew is excluded from T1A/T2A/8 (they get L instead)
+    const parts = dk.split('-');
+    const yr = parseInt(parts[0]), mo = parseInt(parts[1]);
+    const dt2 = new Date(yr, mo - 1, day);
+    const dow = dt2.getDay();
+    const monOff = dow === 0 ? -6 : 1 - dow;
+    const mon = day + monOff;
+    const eligible = crew => crew.every(e => {
+      let wc = 0;
+      for (let dd = mon; dd < day; dd++) {
+        if (dd < 1) continue;
+        const cdk = dateKey(yr, mo, dd);
+        const v = state.schedule[cdk]?.[String(e.id)];
+        if (v >= 1 && v <= 4 || v === 7) wc++;
+      }
+      return wc < 5;
+    });
+    remaining = remaining.filter(eligible);
+    r = assignShift(remaining, t1ac, 3, 't1a', false); remaining = r.remaining;
     r = assignShift(remaining, t2ac, 4, 't2a', false); remaining = r.remaining;
-    // Fallback: if T2A couldn't fill all slots, try with T2 shift (same time period 14-22)
-    if (r.deficit > 0) { r = assignShift(remaining, r.deficit, 2, 't2', false); remaining = r.remaining; }
     r = assignShift(remaining, c8c, 7, 'c8', false); remaining = r.remaining;
   }
 }
