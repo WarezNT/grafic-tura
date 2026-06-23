@@ -588,8 +588,8 @@ async function initStateFromDB() {
     const saved = await dbGet('main');
     if (saved && saved.employees && Array.isArray(saved.employees)) {
       migrateState(saved);
-      // Preserve org from localStorage if IndexedDB has stale data
-      if (!saved.org && state.org) saved.org = state.org;
+      // Preserve org from localStorage if IndexedDB has stale/empty data
+      if (state.org && state.org.sefFOL && (!saved.org || !saved.org.sefFOL)) saved.org = state.org;
       state = saved;
       genDay = state.genDay || 0;
       genStats = state.genStats || null;
