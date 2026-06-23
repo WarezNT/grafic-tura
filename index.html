@@ -292,6 +292,12 @@ td.emp-name-cell:hover{text-decoration:underline}
         <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">8h<input type="number" id="cfg-rural-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
       </span>
       <span style="flex:1"></span>
+      <label class="ctrl-label" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;white-space:nowrap">Mod
+        <select id="gen-mode" onchange="state.genMode=this.value;saveState()" style="font-size:11px;padding:3px 5px">
+          <option value="full">T1/T2 + T1A/T2A</option>
+          <option value="t12">Doar T1/T2</option>
+        </select>
+      </label>
       <button class="btn btn-primary btn-sm" onclick="startGeneration()">▶ Generare</button>
       <button class="btn btn-outline btn-sm" id="btn-prev-day" onclick="prevDay()" style="display:none">←</button>
       <button class="btn btn-outline btn-sm" id="btn-next-day" onclick="generateNextDay()" style="display:none">Ziua →</button>
@@ -517,7 +523,8 @@ function defaultState() {
     genDay: 0, genStats: null, genYear: 0, genMonth: 0, genDim: 0,
     currentMonth: now.getMonth() + 1,
     currentYear: now.getFullYear(),
-    org: { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' }
+    org: { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' },
+    genMode: 'full'
   };
 }
 
@@ -581,6 +588,7 @@ function migrateState(s) {
   if (s.genMonth === undefined) s.genMonth = 0;
   if (s.genDim === undefined) s.genDim = 0;
   if (!s.org) s.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
+  if (!s.genMode) s.genMode = 'full';
 }
 
 async function initStateFromDB() {
@@ -706,7 +714,7 @@ function getEmployeeStats(empId) {
   return { t1, t2, t1a, t2a, co, cm, c8, total: worked + co, hours: worked * 8 };
 }
 
-function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day) {
+function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, skipTA) {
   const t1c = cfg.t1 || 0, t1ac = cfg.t1a || 0, t2c = cfg.t2 || 0, t2ac = cfg.t2a || 0, c8c = cfg.c8 || 0;
   if (catEmps.length === 0 || (t1c + t1ac + t2c + t2ac + c8c === 0)) return;
 
@@ -779,7 +787,7 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day) {
     r = assignShift(remaining, t1c, 1, 't1', true); remaining = r.remaining;
     r = assignShift(remaining, t2c, 2, 't2', false); remaining = r.remaining;
   }
-  if (!weekend) {
+  if (!weekend && !skipTA) {
     // Filter crews: if any member already has 5+ worked days this week (40h reached),
     // the whole crew is excluded from T1A/T2A/8 (they get L instead)
     const parts = dk.split('-');
@@ -1028,7 +1036,7 @@ function generateDay(day) {
   const groups = GROUPS;
   const cfgs = {};
   groups.forEach(g => { cfgs[g] = readConfig(g); });
-  groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day));
+  groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day, state.genMode !== 'full'));
   if (!weekend) {
     // Forced 8h employees ALWAYS get shift 8 (value 7), never T1/T2/T1A/T2A
     emps.filter(e => e.forced8 && !hasCOCM.includes(String(e.id)) && !(state.schedule[dk][String(e.id)] > 0)).forEach(e => {
@@ -1636,6 +1644,7 @@ function applyJSON(text) {
     genCOCM = data.preservedCOCM || {};
     genDay = data.genDay || 0; genStats = data.genStats || null; genYear = data.genYear || 0; genMonth = data.genMonth || 0; genDim = data.genDim || 0;
     migrateState(state);
+    document.getElementById('gen-mode').value = state.genMode || 'full';
     saveState();
     document.getElementById('sel-month').value = state.currentMonth || 1;
     document.getElementById('sel-year').value = state.currentYear || new Date().getFullYear();
@@ -1856,6 +1865,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('sel-month').value = state.currentMonth;
     }
     if (!state.org) state.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
+    if (!state.genMode) state.genMode = 'full';
+    document.getElementById('gen-mode').value = state.genMode;
     applyOrgToDOM();
     render();
     updateButtons();
