@@ -572,7 +572,7 @@ function migrateState(s) {
   if (s.config.tura1Count !== undefined) {
     s.config = { urban: { t1: s.config.tura1Count || 2, t1a: 0, t2: s.config.tura2Count || 2, t2a: 0, c8: 0 }, rural: { t1: s.config.tura1Count || 2, t1a: 0, t2: s.config.tura2Count || 2, t2a: 0, c8: 0 } };
   }
-  ['urban','rural'].forEach(g => { const c = s.config[g] || {}; if (c.t1a === undefined) c.t1a = 0; if (c.t2a === undefined) c.t2a = 0; if (c.c8 === undefined) c.c8 = 0; });
+  GROUPS.forEach(g => { const c = s.config[g] || {}; if (c.t1a === undefined) c.t1a = 0; if (c.t2a === undefined) c.t2a = 0; if (c.c8 === undefined) c.c8 = 0; });
   if (!s.schedule) s.schedule = {};
   if (!s.preservedCOCM) s.preservedCOCM = {};
   if (s.genDay === undefined) s.genDay = 0;
@@ -1639,7 +1639,7 @@ function applyJSON(text) {
     saveState();
     document.getElementById('sel-month').value = state.currentMonth || 1;
     document.getElementById('sel-year').value = state.currentYear || new Date().getFullYear();
-    ['urban','rural'].forEach(g => {
+    GROUPS.forEach(g => {
       const c = state.config[g] || {};
       document.getElementById('cfg-' + g + '-t1').value = c.t1 || 0;
       document.getElementById('cfg-' + g + '-t1a').value = c.t1a || 0;
@@ -1721,7 +1721,7 @@ function exportExcel() {
     setHdr(HDR, colLucrate+1, 'Lucrate'); setHdr(HDR, colCOCM+1, 'CO/CM'); setHdr(HDR, colNorma+1, 'Normă');
     // Rows
     let R = HDR + 1;
-    ['urban','rural'].forEach(g => {
+    GROUPS.forEach(g => {
       const gEmps = emps.filter(e => (e.category||'urban') === g);
       if (!gEmps.length) return;
       const gc = g==='urban' ? {bg:'D6EAF8',fg:'1A5276'} : {bg:'FDEBD0',fg:'935116'};
