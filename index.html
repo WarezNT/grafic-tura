@@ -23,12 +23,12 @@ h1 small{font-size:13px;font-weight:400;color:var(--text-muted);margin-left:auto
 .btn-success{background:#27ae60;color:#fff}.btn-success:hover{background:#219a52}
 .btn-danger{background:#e74c3c;color:#fff}.btn-danger:hover{background:#c0392b}
 .btn-warning{background:#f39c12;color:#fff}.btn-warning:hover{background:#d68910}
-.btn-outline{background:transparent;color:#555;border:1px solid #d0d5dd}.btn-outline:hover{background:#f0f0f0}
-[data-theme="dark"] .btn-outline{color:#bbb;border-color:#3a4a7b}[data-theme="dark"] .btn-outline:hover{background:#1a2744}
+.btn-outline{background:var(--ctrl-bg);color:#555;border:1px solid var(--border)}.btn-outline:hover{background:#e8e8e8}
+[data-theme="dark"] .btn-outline{background:var(--ctrl-bg);color:#bbb;border-color:#3a4a7b}[data-theme="dark"] .btn-outline:hover{background:#1a2744}
 .btn-sm{padding:5px 14px;font-size:12px}
 .emp-section{margin-bottom:16px;padding:16px;background:var(--ctrl-bg);border-radius:8px}
 .emp-header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
-.emp-header input{flex:1;min-width:160px;font-size:13px;padding:6px 10px;border:1px solid #d0d5dd;border-radius:6px;outline:none}
+.emp-header input{flex:1;min-width:160px;font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;outline:none}
 .emp-header input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,152,219,.15)}
 .cat-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;line-height:1.4}
 .print-shift{display:none}
@@ -142,8 +142,29 @@ td.hours.ok{background:var(--hours-ok-bg);color:var(--hours-ok-text)}
 .modal-content input,.modal-content select{font-size:14px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;outline:none;background:var(--input-bg);color:var(--text)}
 .modal-content input:focus,.modal-content select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,152,219,.15)}
 .modal-buttons{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
-.modal-buttons .btn{padding:8px 18px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:background .15s}
+.modal-buttons .btn{padding:8px 18px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:background .15s}.modal-buttons .btn-outline{border:1px solid var(--border)}
 .modal-buttons .btn:active{transform:scale(.97)}
+.cl-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.cl-list li{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--ctrl-bg);border-radius:8px;font-size:13px;color:var(--text);line-height:1.5}
+.cl-list li .cl-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.version-badge{font-size:10px;font-weight:700;color:var(--text-muted);background:var(--ctrl-bg);border:1px solid var(--border);border-radius:5px;padding:2px 7px;cursor:pointer;transition:all .15s;letter-spacing:.03em;user-select:none}
+.version-badge:hover{color:var(--accent);border-color:var(--accent)}
+.help-tabs{display:flex;gap:3px;border-bottom:2px solid var(--border);margin-bottom:14px;flex-wrap:wrap}
+.help-tab{background:none;border:none;border-bottom:3px solid transparent;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:-2px;border-radius:6px 6px 0 0;transition:all .15s;white-space:nowrap}
+.help-tab:hover{background:var(--hover-bg);color:var(--text)}
+.help-tab.active{border-bottom-color:var(--accent);color:var(--accent);background:var(--ctrl-bg)}
+.help-section{margin-bottom:18px;padding:14px;background:var(--ctrl-bg);border-radius:8px;border-left:3px solid var(--accent)}
+.help-section-title{font-size:13px;font-weight:700;color:var(--heading);margin-bottom:8px}
+.help-section p{margin-bottom:6px;color:var(--text)}
+.help-section p:last-child{margin-bottom:0}
+.help-list{margin:6px 0 6px 18px;color:var(--text)}
+.help-list li{margin-bottom:3px}
+[data-tooltip]{position:relative}
+[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 8px);left:0;transform:none;background:#1a1a2e;color:#fff;font-size:11px;font-weight:400;padding:7px 11px;border-radius:7px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999;max-width:260px;white-space:normal;line-height:1.5;box-shadow:0 3px 12px rgba(0,0,0,.25);width:max-content}
+[data-tooltip]::before{content:'';position:absolute;bottom:calc(100% + 3px);left:16px;border:5px solid transparent;border-top-color:#1a1a2e;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999}
+[data-tooltip]:hover::after,[data-tooltip]:hover::before{opacity:1}
+[data-theme="dark"] [data-tooltip]::after{background:#f0f2f5;color:#1a1a2e;box-shadow:0 3px 12px rgba(0,0,0,.5)}
+[data-theme="dark"] [data-tooltip]::before{border-top-color:#f0f2f5}
 td.emp-name-cell{cursor:pointer;font-weight:600}
 td.emp-name-cell:hover{text-decoration:underline}
 .signatures{display:none;justify-content:space-around;gap:40px;margin-top:32px;page-break-inside:avoid}
@@ -311,11 +332,17 @@ td.emp-name-cell:hover{text-decoration:underline}
   <div id="add-emp-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeAddEmployeeModal()">
     <div class="modal-content">
       <h3>Adaugă electrician</h3>
-      <label>Nume<input type="text" id="new-emp" placeholder="Nume electrician" onkeydown="if(event.key==='Enter')addEmployee()"></label>
-      <label>Categorie<select id="new-emp-cat"><option value="urban">Urban</option><option value="rural">Rural</option></select></label>
-      <label>Funcția<select id="new-emp-fn"><option value="emitent">Emitent</option><option value="admitent">Admitent</option><option value="electrician">Electrician</option><option value="seftura">Șef tură</option></select></label>
-      <label>Echipă<select id="new-emp-crew"><option value="">-</option><optgroup label="Urban"><option value="U1">U1</option><option value="U2">U2</option><option value="U3">U3</option><option value="U4">U4</option><option value="U5">U5</option></optgroup><optgroup label="Rural"><option value="R1">R1</option><option value="R2">R2</option><option value="R3">R3</option><option value="R4">R4</option><option value="R5">R5</option></optgroup></select></label>
-      <label style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="new-emp-forced"> Forțat 8h</label>
+      <label data-tooltip="Numele complet al electricianului — apare în tabel, carduri și exporturi.">Nume<input type="text" id="new-emp" placeholder="Nume electrician" onkeydown="if(event.key==='Enter')addEmployee()"></label>
+      <label data-tooltip="Grupul de ture: Urban sau Rural. Electricienii din fiecare grup sunt alocați separat conform configurației.">Categorie<select id="new-emp-cat"><option value="urban">Urban</option><option value="rural">Rural</option></select></label>
+      <label data-tooltip="Funcția în cadrul formației — apare în tabel și statistici.">Funcția<select id="new-emp-fn"><option value="emitent">Emitent</option><option value="admitent">Admitent</option><option value="electrician">Electrician</option><option value="seftura">Șef tură</option></select></label>
+      <label data-tooltip="Membrii aceluiași echipaj primesc aceeași tură în aceeași zi. Poți adăuga un echipaj custom din câmpul alăturat.">Echipă
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="new-emp-crew" style="font-size:13px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none;flex:1"></select>
+          <input type="text" id="new-emp-crew-custom" placeholder="Echipaj nou…" style="font-size:13px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none;width:110px">
+          <button class="btn btn-outline" onclick="addCustomCrewFromAdd()" style="font-size:12px;padding:5px 10px;white-space:nowrap">+ Adaugă</button>
+        </div>
+      </label>
+      <label data-tooltip="Angajatul primește mereu tura 8h (08:00–16:00) în zilele lucrătoare, indiferent de configurația turelor. În weekend primește liber (L)." style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="new-emp-forced"> Forțat 8h</label>
       <div class="modal-buttons">
         <button class="btn btn-outline" onclick="closeAddEmployeeModal()">Anulează</button>
         <button class="btn btn-success" onclick="addEmployee()">Adaugă</button>
@@ -370,6 +397,7 @@ td.emp-name-cell:hover{text-decoration:underline}
     <button class="btn btn-outline btn-sm" onclick="exportExcel()">📊 Excel</button>
     <button class="btn btn-primary btn-sm" onclick="printSchedule()">🖨️ Print</button>
     <button class="btn btn-outline btn-sm" onclick="openHelp()">📖 Manual</button>
+    <span class="version-badge no-print" id="app-version-badge" onclick="showChangelog()" title="Ce e nou în această versiune"></span>
   </div>
 
   <div id="summary" class="summary"></div>
@@ -388,84 +416,182 @@ td.emp-name-cell:hover{text-decoration:underline}
   </div>
 </div>
 
+<!-- Modal changelog / ce e nou -->
+<div id="changelog-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeChangelog()">
+  <div class="modal-content" style="max-width:500px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <span style="font-size:28px;line-height:1">🆕</span>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.05em;text-transform:uppercase" id="cl-version"></div>
+        <h3 style="margin:0;font-size:17px" id="cl-title"></h3>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Iată ce s-a schimbat față de versiunea anterioară:</p>
+    <ul id="cl-items" class="cl-list"></ul>
+    <div class="modal-buttons" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="closeChangelog()">Am înțeles</button>
+    </div>
+  </div>
+</div>
+
 <!-- bulk-toolbar removed (not implemented) -->
 
 <div id="help-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeHelp()">
-  <div class="modal-content" style="max-width:660px;max-height:82vh;overflow-y:auto">
-    <h3>📖 Manual de utilizare — Grafic de Tură</h3>
-    <div style="font-size:13px;line-height:1.7;color:var(--text)">
-
-      <p><strong>⚙️ Setări organizație</strong><br>
-      La prima utilizare apare automat un dialog unde completezi: Formația/Unitatea, Șef FOL EM, Responsabil Tehnic, Județ și Aprobat Șef CORE. Aceste date apar în antetul graficului, semnături și exportul Excel.<br>
-      Poți reveni oricând la setări apăsând butonul <em>⚙️</em> din colțul dreapta-sus al antetului.</p>
-
-      <p><strong>👤 Adăugare electricieni</strong><br>
-      Apasă <em>+ Electrician</em> → completează Nume, Mediu (Urban/Rural), Funcția (Emitent / Admitent / Electrician / Șef tură), Echipaj (ex. U1, R2 — opțional) și bifează <em>Forțat 8h</em> dacă lucrează exclusiv program normal.<br>
-      Click pe numele unui electrician din tabel → editare sau ștergere.</p>
-
-      <p><strong>🔧 Configurare ture</strong><br>
-      În bara de sus setează câți electricieni merg pe fiecare tură, separat pentru Urban și Rural.<br>
-      T1A și T2A se generează doar în zilele lucrătoare (Luni–Vineri).<br>
-      Electricienii cu <em>Forțat 8h</em> primesc întotdeauna tura 8h, indiferent de configurație.</p>
-
-      <p><strong>▶ Generare grafic</strong><br>
-      Selectează luna și anul → apasă <em>▶ Generare</em> → apoi <em>Ziua →</em> zi cu zi, sau <em>Generare totală →</em> pentru tot graficul dintr-o dată.<br>
-      Algoritmul respectă: rotație echitabilă T1↔T2 (ieri T1 → azi T2; ieri T2 → azi altceva), pauză de 8h (T2 ieri → nu T1 azi), maxim 4 zile consecutive de muncă, și gruparea echipajelor.</p>
-
-      <p><strong>🔀 Mod generare</strong><br>
-      Dropdown-ul <em>Mod</em> din bara de sus schimbă strategia de asignare:<br>
-      <strong>T1/T2 + T1A/T2A</strong> — varianta completă: T1, T2, T1A, T2A se alocă automat.<br>
-      <strong>Doar T1/T2</strong> — doar T1 și T2 se alocă automat; T1A și T2A rămân pentru asignare manuală (din dropdown-ul celulei).<br>
-      Modul poate fi schimbat oricând, inclusiv în timpul generării pas cu pas. Următoarea zi generată va folosi noul mod.</p>
-
-      <p><strong>👥 Echipaj</strong><br>
-      Membrii aceluiași echipaj (ex. U1) primesc aceeași tură în aceeași zi. La generare sunt tratați ca un bloc — dacă blocul nu mai încape pe o tură, întregul echipaj trece la următoarea.</p>
-
-      <p><strong>🏖️ CO / CM</strong><br>
-      Se marchează manual din dropdown-ul fiecărei celule.<br>
-      La regenerare, zilele cu CO/CM sunt <strong>păstrate automat</strong> — nu se șterg.<br>
-      <em>Important:</em> CO și CM se contorizează doar în zile lucrătoare (L–V). Sâmbăta și duminica cu CO/CM apar vizual dar <strong>nu consumă</strong> din norma de concediu.</p>
-
-      <p><strong>✏️ Editare manuală</strong><br>
-      Click pe orice celulă din tabel → dropdown cu toate turele disponibile (L, T1, T2, T1A, T2A, CO, CM, 8h).<br>
-      Statisticile și cardurile se actualizează în timp real la fiecare modificare.</p>
-
-      <p><strong>💾 Salvare automată</strong><br>
-      Orice modificare este salvată automat în <strong>IndexedDB</strong> (stocare locală browser). La redeschiderea aplicației în același browser, datele sunt restaurate automat.<br>
-      <em>Atenție:</em> datele se pierd dacă ștergi cache-ul browserului sau folosești un alt browser/calculator — folosește exportul JSON ca backup.</p>
-
-      <p><strong>📁 Salvare / Încărcare fișier</strong><br>
-      <em>💾 Salvează</em> → exportă graficul ca fișier JSON pe disc (backup portabil).<br>
-      <em>📂 Deschide</em> → încarcă un fișier JSON salvat anterior.<br>
-      <em>👥 Import electricieni</em> → adaugă electricieni dintr-un alt fișier JSON, fără a suprascrie graficul existent.</p>
-
-      <p><strong>📊 Export Excel</strong><br>
-      <em>📊 Excel</em> → generează un fișier .xlsx stilizat cu logo, antet, ture colorate, totaluri de ore și semnături — oglindă a variantei printate.<br>
-      <em>Necesită conexiune la internet</em> (biblioteca ExcelJS se încarcă din CDN). Dacă ești offline, apare un avertisment automat.</p>
-
-      <p><strong>🖨️ Printare / PDF</strong><br>
-      <em>🖨️ Print</em> → deschide dialogul de printare. <strong>Setări recomandate: A3, Peisaj (Landscape).</strong><br>
-      Documentul printat conține antetul cu logo, tabelul graficului, semnăturile configurate și statisticile. Numerele de pagină apar automat jos.</p>
-
-      <p><strong>📈 Statistici</strong><br>
-      Sub tabel sunt două secțiuni colapsabile: <em>Carduri</em> (vizualizare rapidă per electrician) și <em>Statistici ture</em> (tabel detaliat cu toate turele, ore lucrate și comparație cu norma lunară). Ambele se actualizează în timp real.</p>
-
-      <p><strong>🌙 Mod întunecat</strong><br>
-      Butonul 🌙 / ☀️ din colțul dreapta comută între tema clară și cea întunecată.</p>
-
-      <p><strong>Legendă ture</strong></p>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
-        <span class="shift-pill pill-t1" style="padding:3px 10px;font-size:12px">T1 — 06:00–14:00</span>
-        <span class="shift-pill pill-t2" style="padding:3px 10px;font-size:12px">T2 — 14:00–22:00</span>
-        <span class="shift-pill pill-t1a" style="padding:3px 10px;font-size:12px">T1A — 06:00–14:00 (L–V)</span>
-        <span class="shift-pill pill-t2a" style="padding:3px 10px;font-size:12px">T2A — 14:00–22:00 (L–V)</span>
-        <span class="shift-pill pill-co" style="padding:3px 10px;font-size:12px">CO — Concediu Odihnă</span>
-        <span class="shift-pill pill-cm" style="padding:3px 10px;font-size:12px">CM — Concediu Medical</span>
-        <span class="shift-pill pill-c8" style="padding:3px 10px;font-size:12px">8h — Program normal</span>
-        <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>
-      </div>
+  <div class="modal-content" style="max-width:680px;max-height:88vh;display:flex;flex-direction:column;padding-bottom:12px">
+    <h3 style="margin-bottom:12px">📖 Manual de utilizare — Grafic de Tură</h3>
+    <div class="help-tabs">
+      <button class="help-tab active" onclick="showHelpTab('config',this)">⚙️ Configurare</button>
+      <button class="help-tab" onclick="showHelpTab('gen',this)">▶ Generare</button>
+      <button class="help-tab" onclick="showHelpTab('edit',this)">✏️ Editare</button>
+      <button class="help-tab" onclick="showHelpTab('export',this)">💾 Export</button>
     </div>
-    <div class="modal-buttons" style="margin-top:16px">
+    <div style="overflow-y:auto;flex:1;font-size:13px;line-height:1.7;color:var(--text);padding-right:4px">
+
+      <!-- TAB: Configurare -->
+      <div id="help-tab-config" class="help-tab-panel">
+        <div class="help-section">
+          <div class="help-section-title">⚙️ Setări organizație</div>
+          <p>La prima utilizare apare automat un dialog unde completezi: <strong>Formația/Unitatea</strong>, <strong>Șef FOL EM</strong>, <strong>Responsabil Tehnic</strong>, <strong>Județ</strong> și <strong>Aprobat Șef CORE</strong>. Aceste date apar în antetul graficului, semnături și exportul Excel.</p>
+          <p>Poți reveni oricând la setări apăsând butonul <em>⚙️</em> din colțul dreapta-sus.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">👤 Electricieni</div>
+          <p>Apasă <em>+ Electrician</em> → completează câmpurile:</p>
+          <ul class="help-list">
+            <li><strong>Nume</strong> — apare în tabel și exporturi</li>
+            <li><strong>Mediu</strong> — Urban sau Rural; determină grupul de ture</li>
+            <li><strong>Funcția</strong> — Emitent, Admitent, Electrician, Șef tură</li>
+            <li><strong>Echipaj</strong> — opțional; membrii aceluiași echipaj primesc aceeași tură (ex. U1, R2)</li>
+            <li><strong>Forțat 8h</strong> — dacă e bifat, angajatul primește mereu tura 8h în zilele lucrătoare</li>
+          </ul>
+          <p>Click pe numele unui electrician din tabel → editare sau ștergere.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">👥 Echipaje</div>
+          <p>Membrii aceluiași echipaj primesc aceeași tură în aceeași zi — sunt tratați ca un bloc la generare. Dacă blocul nu încape pe o tură, tot echipajul trece la următoarea.</p>
+          <p><strong>Echipaje predefinite:</strong> U1–U5 (Urban), R1–R5 (Rural). Poți adăuga orice denumire custom din câmpul de lângă select.</p>
+          <p><strong>Schimbare echipaj pe dată</strong> — în modalul de editare, secțiunea <em>„Schimbări echipaj pe dată"</em> permite mutarea angajatului în alt echipaj de la o dată specificată. Poți adăuga oricâte schimbări; cea mai recentă dată ≤ ziua curentă este activă.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🔧 Configurare ture</div>
+          <p>În bara de sus setează câți electricieni merg pe fiecare tură, separat pentru <strong>Urban</strong> și <strong>Rural</strong>:</p>
+          <ul class="help-list">
+            <li><strong>T1 / T2</strong> — ture principale, se generează în orice zi</li>
+            <li><strong>T1A / T2A</strong> — ture alternative, doar zile lucrătoare (L–V)</li>
+            <li><strong>8h</strong> — program normal, doar zile lucrătoare</li>
+          </ul>
+          <p>Electricienii cu <em>Forțat 8h</em> sunt excluși din rotația T1/T2 și primesc tura 8h automat.</p>
+        </div>
+      </div>
+
+      <!-- TAB: Generare -->
+      <div id="help-tab-gen" class="help-tab-panel" style="display:none">
+        <div class="help-section">
+          <div class="help-section-title">▶ Generare grafic</div>
+          <p>Selectează <strong>luna</strong> și <strong>anul</strong> → apasă <em>▶ Generare</em>. Apar două opțiuni:</p>
+          <ul class="help-list">
+            <li><em>Ziua →</em> — generează ziua curentă și avansează; permite verificare pas cu pas</li>
+            <li><em>Generare totală →</em> — generează toate zilele rămase dintr-o dată</li>
+          </ul>
+          <p>Dacă graficul are deja zile generate, generarea continuă de la prima zi goală — zilele existente se păstrează.</p>
+          <p>Butonul <em>← Ziua X</em> permite regenerarea ultimei zile dacă rezultatul nu e satisfăcător.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🔀 Mod generare</div>
+          <p>Dropdown-ul <em>Mod</em> din bara de sus schimbă strategia:</p>
+          <ul class="help-list">
+            <li><strong>T1/T2 + T1A/T2A</strong> — varianta completă: toate turele se alocă automat</li>
+            <li><strong>Doar T1/T2</strong> — doar T1 și T2 automat; T1A și T2A rămân pentru asignare manuală</li>
+          </ul>
+          <p>Modul poate fi schimbat oricând, inclusiv în timpul generării pas cu pas.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🧠 Regulile algoritmului</div>
+          <ul class="help-list">
+            <li>Rotație echitabilă T1↔T2 — ieri T1 → azi T2 prioritar; ieri T2 → nu T2 din nou</li>
+            <li>Pauză de 8h — ieri T2 (14–22) → azi nu T1 (06–14)</li>
+            <li>Maxim 4 zile consecutive de muncă — a 5-a zi forțat Liber</li>
+            <li>Maxim 5 zile lucrate pe săptămână — T1A/T2A/8h excluse după 5 zile</li>
+            <li>Grupare echipaje — membrii aceluiași echipaj rămân pe aceeași tură</li>
+            <li>Echipaj pe dată — dacă angajatul are override activ, e tratat în noul echipaj</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🏷️ Legendă ture</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+            <span class="shift-pill pill-t1" style="padding:3px 10px;font-size:12px">T1 — 06:00–14:00</span>
+            <span class="shift-pill pill-t2" style="padding:3px 10px;font-size:12px">T2 — 14:00–22:00</span>
+            <span class="shift-pill pill-t1a" style="padding:3px 10px;font-size:12px">T1A — 06:00–14:00 (L–V)</span>
+            <span class="shift-pill pill-t2a" style="padding:3px 10px;font-size:12px">T2A — 14:00–22:00 (L–V)</span>
+            <span class="shift-pill pill-co" style="padding:3px 10px;font-size:12px">CO — Concediu Odihnă</span>
+            <span class="shift-pill pill-cm" style="padding:3px 10px;font-size:12px">CM — Concediu Medical</span>
+            <span class="shift-pill pill-c8" style="padding:3px 10px;font-size:12px">8h — Program normal</span>
+            <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Editare -->
+      <div id="help-tab-edit" class="help-tab-panel" style="display:none">
+        <div class="help-section">
+          <div class="help-section-title">✏️ Editare manuală</div>
+          <p>Click pe orice celulă din tabel → apare un dropdown cu toate turele disponibile: <strong>L, T1, T2, T1A, T2A, CO, CM, 8h</strong>.</p>
+          <p>În zilele de weekend (S/D) opțiunile T1A, T2A și 8h sunt ascunse automat.</p>
+          <p>Statisticile și cardurile se actualizează în timp real la fiecare modificare.</p>
+          <p>Dacă o celulă are deja o tură setată și schimbi în alta, apare o confirmare.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🏖️ CO / CM</div>
+          <p>Se marchează manual din dropdown-ul celulei. La regenerare, zilele cu CO/CM sunt <strong>păstrate automat</strong>.</p>
+          <p><strong>Important:</strong> CO și CM se contorizează doar în zile lucrătoare (L–V). Sâmbăta și duminica cu CO/CM apar vizual dar <strong>nu consumă</strong> din norma de concediu.</p>
+          <p>CO marcat vineri → sâmbăta și duminica adiacente primesc automat același marcaj vizual la regenerare.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">📈 Statistici</div>
+          <p>Sub tabel sunt două secțiuni colapsabile:</p>
+          <ul class="help-list">
+            <li><strong>Carduri electricieni</strong> — vizualizare rapidă cu ore lucrate, procent din normă și distribuție ture</li>
+            <li><strong>Statistici ture</strong> — tabel detaliat cu T1/T2/T1A/T2A/8h/CO/CM, ore lucrate și diferența față de norma lunară</li>
+          </ul>
+          <p>Norma lunară se calculează din zilele lucrătoare ale lunii (include sărbători legale pentru 2025–2028).</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🌙 Mod întunecat</div>
+          <p>Butonul 🌙 / ☀️ din colțul dreapta-sus comută între tema clară și cea întunecată. Preferința nu se salvează între sesiuni.</p>
+        </div>
+      </div>
+
+      <!-- TAB: Export -->
+      <div id="help-tab-export" class="help-tab-panel" style="display:none">
+        <div class="help-section">
+          <div class="help-section-title">💾 Salvare automată</div>
+          <p>Orice modificare e salvată automat în <strong>IndexedDB</strong> (stocare locală browser). La redeschidere în același browser, datele sunt restaurate automat.</p>
+          <p><strong>Atenție:</strong> datele se pierd dacă ștergi cache-ul browserului sau folosești alt browser/calculator. Folosește exportul JSON ca backup portabil.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">📁 Fișiere JSON</div>
+          <ul class="help-list">
+            <li><em>💾 Salvează luna</em> — exportă graficul lunii curente ca JSON (backup portabil)</li>
+            <li><em>💿 Salvează tot</em> — exportă întreaga bază de date (toate lunile + electricieni)</li>
+            <li><em>📂 Încarcă lună</em> — încarcă un JSON de lună salvat anterior; celelalte luni rămân intacte</li>
+            <li><em>👥 Import electricieni</em> — adaugă electricieni dintr-un alt JSON, fără a suprascrie graficul</li>
+          </ul>
+          <p>Fișierele JSON sunt compatibile între versiuni — câmpurile noi sunt adăugate automat la import.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">📊 Export Excel</div>
+          <p><em>📊 Excel</em> → generează un fișier <strong>.xlsx</strong> stilizat cu logo, antet, ture colorate, totaluri de ore și semnături — oglindă a variantei printate.</p>
+          <p><em>Necesită conexiune la internet</em> — biblioteca ExcelJS se încarcă din CDN. Dacă ești offline, apare un avertisment automat la deschiderea aplicației.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🖨️ Printare / PDF</div>
+          <p><em>🖨️ Print</em> → deschide dialogul de printare. <strong>Setări recomandate: A3, Peisaj (Landscape).</strong></p>
+          <p>Documentul conține: antetul cu logo și organizație, tabelul graficului cu ture colorate, semnăturile configurate și statisticile. Numerele de pagină apar automat jos.</p>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-buttons" style="margin-top:12px">
       <button class="btn btn-primary" onclick="closeHelp()">Închide</button>
     </div>
   </div>
@@ -474,14 +600,14 @@ td.emp-name-cell:hover{text-decoration:underline}
 <div id="emp-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="modal-content">
     <h3>Editează electrician</h3>
-    <label>Nume: <input type="text" id="modal-emp-name"></label>
-    <label>Mediu:
+    <label data-tooltip="Numele complet al electricianului — apare în tabel, carduri și exporturi.">Nume: <input type="text" id="modal-emp-name"></label>
+    <label data-tooltip="Grupul de ture: Urban sau Rural. Electricienii din fiecare grup sunt alocați separat conform configurației.">Mediu:
       <select id="modal-emp-cat">
         <option value="urban">Urban</option>
         <option value="rural">Rural</option>
       </select>
     </label>
-    <label>Funcția:
+    <label data-tooltip="Funcția în cadrul formației — apare în tabel și statistici (Emitent, Admitent, Electrician, Șef tură).">Funcția:
       <select id="modal-emp-fn">
         <option value="emitent">Emitent</option>
         <option value="admitent">Admitent</option>
@@ -489,16 +615,26 @@ td.emp-name-cell:hover{text-decoration:underline}
         <option value="seftura">Șef tură</option>
       </select>
     </label>
-    <label>Echipaj:
-      <select id="modal-emp-crew" style="font-size:13px;padding:6px 10px;border:1px solid #d0d5dd;border-radius:6px;outline:none">
-        <option value="">-</option>
-        <optgroup label="Urban"><option value="U1">U1</option><option value="U2">U2</option><option value="U3">U3</option><option value="U4">U4</option><option value="U5">U5</option></optgroup>
-        <optgroup label="Rural"><option value="R1">R1</option><option value="R2">R2</option><option value="R3">R3</option><option value="R4">R4</option><option value="R5">R5</option></optgroup>
-      </select>
+    <label data-tooltip="Echipajul implicit al angajatului. Membrii aceluiași echipaj primesc mereu aceeași tură în aceeași zi — sunt tratați ca un bloc la generare. Poți adăuga un echipaj nou tastând în câmpul alăturat.">Echipaj (implicit):
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="modal-emp-crew" style="font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;outline:none;flex:1"></select>
+        <input type="text" id="modal-emp-crew-custom" placeholder="Echipaj nou…" style="font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;outline:none;width:110px">
+        <button class="btn btn-outline" onclick="addCustomCrewToList()" style="font-size:12px;padding:5px 10px;white-space:nowrap">+ Adaugă</button>
+      </div>
     </label>
-    <label style="font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:12px"><input type="checkbox" id="modal-emp-forced"> Forțat 8 ore</label>
+    <div id="crew-overrides-section" style="margin-bottom:12px">
+      <div data-tooltip="De la data specificată, angajatul este mutat în noul echipaj. Echipajul implicit se aplică înainte de prima schimbare. Poți adăuga oricâte schimbări." style="font-size:13px;font-weight:600;margin-bottom:6px;color:#374151;cursor:help;display:inline-block">Schimbări echipaj pe dată: ℹ️</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+        <input type="date" id="override-date" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none">
+        <input type="text" id="override-crew" list="crew-datalist-override" placeholder="Echipaj nou" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none;width:100px">
+        <datalist id="crew-datalist-override"></datalist>
+        <button class="btn btn-outline" onclick="addCrewOverride()" style="font-size:12px;padding:5px 10px">+ Adaugă</button>
+      </div>
+      <div id="crew-overrides-list"></div>
+    </div>
+    <label data-tooltip="Angajatul primește mereu tura 8h (08:00–16:00) în zilele lucrătoare, indiferent de configurația turelor. În weekend primește liber (L)." style="font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:12px"><input type="checkbox" id="modal-emp-forced"> Forțat 8 ore</label>
     <div class="modal-buttons">
-      <button class="btn btn-danger" id="modal-btn-delete" onclick="deleteModalEmployee()">Șterge</button>
+      <button class="btn btn-danger" id="modal-btn-delete" onclick="deleteConfirmStep()">🗑 Șterge</button>
       <button class="btn btn-outline" onclick="closeModal()">Anulează</button>
       <button class="btn btn-primary" onclick="saveModalEmployee()">Salvează</button>
     </div>
@@ -507,8 +643,24 @@ td.emp-name-cell:hover{text-decoration:underline}
 
 <script>
 const STORAGE_KEY = 'graficTura';
+const VERSION_KEY = 'graficTura_version';
+const APP_VERSION = 'V2026.06.1';
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
+
+const CHANGELOG = {
+  'V2026.06.16': {
+    title: 'Actualizare iunie 2026',
+    items: [
+      { icon: '👥', text: 'Echipaje flexibile — poți muta un electrician în alt echipaj de la o dată specifică, cu oricâte schimbări pe lună' },
+      { icon: '✏️', text: 'Echipaje custom — pe lângă U1–U5 și R1–R5, poți crea echipaje cu orice denumire' },
+      { icon: '💬', text: 'Explicații la hover — câmpurile din ferestre afișează acum o descriere când ții mouse-ul deasupra' },
+      { icon: '📖', text: 'Manual reorganizat pe secțiuni (tab-uri): Configurare, Generare, Editare, Export' },
+      { icon: '🛡️', text: 'Ștergerea unui electrician necesită acum confirmare în doi pași — nu mai poți șterge accidental' },
+      { icon: '🌙', text: 'Corecții vizuale în modul întunecat pentru butoane și liste' }
+    ]
+  }
+};
 const DB_STORE = 'state';
 let db = null;
 let state = loadState();
@@ -518,12 +670,14 @@ let genDay = state.genDay || 0, genStats = state.genStats || null, genCOCM = sta
 const GROUPS = ['urban', 'rural'];
 const SHIFT_NAMES = ['L', 'T1', 'T2', 'T1A', 'T2A', 'CO', 'CM', '8'];
 const FUNC_NAMES = { emitent: 'Emitent', admitent: 'Admitent', electrician: 'Electrician', seftura: 'Șef tură' };
+const PREDEFINED_CREWS = ['U1','U2','U3','U4','U5','R1','R2','R3','R4','R5'];
 
 function defaultState() {
   const now = new Date();
   return {
-    employees: [{ id: 1, name: 'Electrician 1', category: 'urban', functia: 'emitent', crew: '', forced8: false }],
+    employees: [{ id: 1, name: 'Electrician 1', category: 'urban', functia: 'emitent', crew: '', forced8: false, crewOverrides: {} }],
     config: { urban: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 }, rural: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 } },
+    customCrews: [],
     schedule: {},
     preservedCOCM: {},
     genDay: 0, genStats: null, genYear: 0, genMonth: 0, genDim: 0,
@@ -579,8 +733,89 @@ function loadState() {
   return defaultState();
 }
 
+function getCrewForDay(emp, dk) {
+  if (!emp.crewOverrides || Object.keys(emp.crewOverrides).length === 0) return emp.crew || '';
+  const dates = Object.keys(emp.crewOverrides).filter(d => d <= dk).sort();
+  if (dates.length === 0) return emp.crew || '';
+  return emp.crewOverrides[dates[dates.length - 1]] || emp.crew || '';
+}
+
+function addCrewToCustom(crew) {
+  if (!crew || PREDEFINED_CREWS.includes(crew)) return;
+  if (!state.customCrews) state.customCrews = [];
+  if (!state.customCrews.includes(crew)) state.customCrews.push(crew);
+}
+
+function populateCrewSelect(selectId, currentVal) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const all = ['', ...PREDEFINED_CREWS, ...(state.customCrews || [])];
+  sel.innerHTML = all.map(c => '<option value="' + esc(c) + '"' + (c === (currentVal||'') ? ' selected' : '') + '>' + (c || '—') + '</option>').join('');
+}
+
+function populateCrewDatalist(datalistId) {
+  const dl = document.getElementById(datalistId);
+  if (!dl) return;
+  const all = [...PREDEFINED_CREWS, ...(state.customCrews || [])];
+  dl.innerHTML = all.map(c => '<option value="' + esc(c) + '">').join('');
+}
+
+function addCustomCrewToList() {
+  const inp = document.getElementById('modal-emp-crew-custom');
+  const crew = inp.value.trim();
+  if (!crew) return;
+  addCrewToCustom(crew);
+  const currentVal = document.getElementById('modal-emp-crew').value;
+  populateCrewSelect('modal-emp-crew', currentVal);
+  document.getElementById('modal-emp-crew').value = crew;
+  populateCrewDatalist('crew-datalist-override');
+  populateCrewSelect('new-emp-crew', '');
+  inp.value = '';
+  saveState();
+}
+
+let pendingOverrides = {};
+
+function renderOverridesList() {
+  const container = document.getElementById('crew-overrides-list');
+  if (!container) return;
+  const sorted = Object.keys(pendingOverrides).sort();
+  if (sorted.length === 0) {
+    container.innerHTML = '<span style="font-size:12px;color:#888">Nicio schimbare setată.</span>';
+    return;
+  }
+  container.innerHTML = sorted.map(d =>
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:13px">'
+    + '<span style="color:var(--text-muted);min-width:90px">' + d + '</span>'
+    + '<span style="font-weight:700;color:var(--text)">→ ' + esc(pendingOverrides[d]) + '</span>'
+    + '<button onclick="removeCrewOverride(\'' + d + '\')" style="background:none;border:none;color:#e53e3e;cursor:pointer;font-size:16px;line-height:1;padding:0 4px">✕</button>'
+    + '</div>'
+  ).join('');
+}
+
+function addCrewOverride() {
+  const date = document.getElementById('override-date').value;
+  const crew = document.getElementById('override-crew').value.trim();
+  if (!date || !crew) { setStatus('Completează data și echipajul.', 'warn'); return; }
+  pendingOverrides[date] = crew;
+  addCrewToCustom(crew);
+  document.getElementById('override-date').value = '';
+  document.getElementById('override-crew').value = '';
+  const currentCrewVal = document.getElementById('modal-emp-crew') ? document.getElementById('modal-emp-crew').value : '';
+  populateCrewSelect('modal-emp-crew', currentCrewVal);
+  populateCrewDatalist('crew-datalist-override');
+  populateCrewSelect('new-emp-crew', '');
+  renderOverridesList();
+}
+
+function removeCrewOverride(date) {
+  delete pendingOverrides[date];
+  renderOverridesList();
+}
+
 function migrateState(s) {
-  s.employees.forEach(e => { if (!e.category || e.category === '8ore') e.category = 'urban'; if (!e.functia) e.functia = 'emitent'; if (!e.crew) e.crew = ''; if (!('forced8' in e)) e.forced8 = false; });
+  s.employees.forEach(e => { if (!e.category || e.category === '8ore') e.category = 'urban'; if (!e.functia) e.functia = 'emitent'; if (!e.crew) e.crew = ''; if (!('forced8' in e)) e.forced8 = false; if (!e.crewOverrides) e.crewOverrides = {}; });
+  if (!s.customCrews) s.customCrews = [];
   if (!s.config) s.config = { urban: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 }, rural: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 } };
   if (s.config.tura1Count !== undefined) {
     s.config = { urban: { t1: s.config.tura1Count || 2, t1a: 0, t2: s.config.tura2Count || 2, t2a: 0, c8: 0 }, rural: { t1: s.config.tura1Count || 2, t1a: 0, t2: s.config.tura2Count || 2, t2a: 0, c8: 0 } };
@@ -645,7 +880,8 @@ function addEmployee() {
   const crew = document.getElementById('new-emp-crew').value.trim();
   const forced8 = document.getElementById('new-emp-forced').checked;
   const maxId = state.employees.reduce((m, e) => Math.max(m, e.id), 0);
-  state.employees.push({ id: maxId + 1, name, category: cat, functia: fn, crew: crew || '', forced8 });
+  addCrewToCustom(crew);
+  state.employees.push({ id: maxId + 1, name, category: cat, functia: fn, crew: crew || '', forced8, crewOverrides: {} });
   inp.value = '';
   document.getElementById('new-emp-forced').checked = false;
   inp.focus();
@@ -658,9 +894,23 @@ function addEmployee() {
 
 function openAddEmployeeModal() {
   document.getElementById('new-emp').value = '';
+  document.getElementById('new-emp-crew-custom').value = '';
   document.getElementById('new-emp-forced').checked = false;
+  populateCrewSelect('new-emp-crew', '');
   document.getElementById('add-emp-modal').style.display = 'flex';
   setTimeout(() => document.getElementById('new-emp').focus(), 50);
+}
+
+function addCustomCrewFromAdd() {
+  const inp = document.getElementById('new-emp-crew-custom');
+  const crew = inp.value.trim();
+  if (!crew) return;
+  addCrewToCustom(crew);
+  populateCrewSelect('new-emp-crew', crew);
+  populateCrewSelect('modal-emp-crew', document.getElementById('modal-emp-crew') ? document.getElementById('modal-emp-crew').value : '');
+  populateCrewDatalist('crew-datalist-override');
+  inp.value = '';
+  saveState();
 }
 
 function closeAddEmployeeModal() {
@@ -731,7 +981,7 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
   // group available employees by crew (non-crew each get solo group)
   const groups = {};
   available.forEach(e => {
-    const key = e.crew || '__' + e.id;
+    const key = getCrewForDay(e, dk) || '__' + e.id;
     if (!groups[key]) groups[key] = [];
     groups[key].push(e);
   });
@@ -1172,8 +1422,11 @@ function openEditModal(id) {
   document.getElementById('modal-emp-name').value = emp.name;
   document.getElementById('modal-emp-cat').value = emp.category || 'urban';
   document.getElementById('modal-emp-fn').value = emp.functia || 'emitent';
-  document.getElementById('modal-emp-crew').value = emp.crew || '';
   document.getElementById('modal-emp-forced').checked = emp.forced8 || false;
+  pendingOverrides = Object.assign({}, emp.crewOverrides || {});
+  populateCrewSelect('modal-emp-crew', emp.crew || '');
+  populateCrewDatalist('crew-datalist-override');
+  renderOverridesList();
   document.getElementById('emp-modal').style.display = 'flex';
 }
 
@@ -1185,16 +1438,39 @@ function saveModalEmployee() {
   const crew = document.getElementById('modal-emp-crew').value.trim();
   const forced8 = document.getElementById('modal-emp-forced').checked;
   const emp = state.employees.find(e => e.id === modalEmpId);
-  if (emp) { emp.name = name; emp.category = cat; emp.functia = fn; emp.crew = crew || ''; emp.forced8 = forced8; saveState(); }
+  if (emp) { emp.name = name; emp.category = cat; emp.functia = fn; emp.crew = crew || ''; emp.forced8 = forced8; emp.crewOverrides = Object.assign({}, pendingOverrides); addCrewToCustom(crew); saveState(); }
   closeModal();
   render();
   setStatus('Electrician actualizat.', 'success');
 }
 
+let _deleteConfirmTimer = null;
+function deleteConfirmStep() {
+  const btn = document.getElementById('modal-btn-delete');
+  if (btn.dataset.confirm !== '1') {
+    btn.dataset.confirm = '1';
+    btn.textContent = '⚠ Confirmă ștergerea';
+    btn.style.background = '#b91c1c';
+    btn.style.outline = '2px solid #fca5a5';
+    clearTimeout(_deleteConfirmTimer);
+    _deleteConfirmTimer = setTimeout(resetDeleteBtn, 3000);
+  } else {
+    clearTimeout(_deleteConfirmTimer);
+    resetDeleteBtn();
+    deleteModalEmployee();
+  }
+}
+function resetDeleteBtn() {
+  const btn = document.getElementById('modal-btn-delete');
+  if (!btn) return;
+  btn.dataset.confirm = '0';
+  btn.textContent = '🗑 Șterge';
+  btn.style.background = '';
+  btn.style.outline = '';
+}
 function deleteModalEmployee() {
   const emp = state.employees.find(e => e.id === modalEmpId);
   if (!emp) return;
-  if (!confirm('Ștergeți pe „' + emp.name + '"?')) return;
   state.employees = state.employees.filter(e => e.id !== modalEmpId);
   for (const dateKey in state.schedule) {
     delete state.schedule[dateKey][modalEmpId];
@@ -1208,12 +1484,21 @@ function deleteModalEmployee() {
 function closeModal() {
   document.getElementById('emp-modal').style.display = 'none';
   modalEmpId = null;
+  clearTimeout(_deleteConfirmTimer);
+  resetDeleteBtn();
 }
 function openHelp() {
   document.getElementById('help-modal').style.display = 'flex';
+  showHelpTab('config', document.querySelector('.help-tab'));
 }
 function closeHelp() {
   document.getElementById('help-modal').style.display = 'none';
+}
+function showHelpTab(name, btn) {
+  document.querySelectorAll('.help-tab-panel').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.help-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('help-tab-' + name).style.display = '';
+  btn.classList.add('active');
 }
 
 function renderTable() {
@@ -1590,7 +1875,8 @@ function importEmployeesJSON(event) {
           category: emp.category || 'urban',
           functia: emp.functia || 'emitent',
           crew: emp.crew || '',
-          forced8: emp.forced8 || false
+          forced8: emp.forced8 || false,
+          crewOverrides: emp.crewOverrides || {}
         });
         existingNames.add(emp.name.toLowerCase());
         added++;
@@ -1844,6 +2130,26 @@ function saveOrgSettings() {
   setStatus('Setări organizație salvate.', 'success');
 }
 
+function showChangelog() {
+  const log = CHANGELOG[APP_VERSION];
+  if (!log) return;
+  document.getElementById('cl-version').textContent = APP_VERSION;
+  document.getElementById('cl-title').textContent = log.title;
+  document.getElementById('cl-items').innerHTML = log.items.map(it =>
+    '<li><span class="cl-icon">' + it.icon + '</span><span>' + it.text + '</span></li>'
+  ).join('');
+  document.getElementById('changelog-modal').style.display = 'flex';
+}
+function closeChangelog() {
+  document.getElementById('changelog-modal').style.display = 'none';
+}
+function checkVersion() {
+  const lastSeen = localStorage.getItem(VERSION_KEY);
+  if (lastSeen !== APP_VERSION) {
+    localStorage.setItem(VERSION_KEY, APP_VERSION);
+    setTimeout(showChangelog, 600);
+  }
+}
 function toggleDarkMode() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
@@ -1854,6 +2160,8 @@ function toggleDarkMode() {
 document.addEventListener('DOMContentLoaded', () => {
   const logoEl = document.getElementById('header-logo');
   if (logoEl) logoEl.src = 'data:image/png;base64,' + LOGO_B64;
+  const vBadge = document.getElementById('app-version-badge');
+  if (vBadge) vBadge.textContent = APP_VERSION;
   if (typeof ExcelJS === 'undefined') {
     const banner = document.createElement('div');
     banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:8px;padding:12px 20px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:480px;text-align:center;line-height:1.5';
@@ -1877,6 +2185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
     updateButtons();
     if (dbEl) dbEl.textContent = loaded ? '💾 IndexedDB: date încărcate' : '💾 IndexedDB: date noi';
+    checkVersion();
     const org = getOrg();
     if (!org.sefFOL && !org.responsabilTehnic && !org.aprobat) openOrgModal();
   }).catch(e => {
