@@ -156,17 +156,8 @@ td.emp-name-cell:hover{text-decoration:underline}
 .status-msg.err{background:#fde8e8;color:#c0392b}
 .status-msg.success{background:#d5f5e3;color:#1a7a3a}
 .empty-msg{padding:40px;text-align:center;color:var(--empty);font-size:15px}
-#print-toggle{display:none}
 .dark-toggle{cursor:pointer;font-size:16px;padding:4px 8px;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--text);transition:all .2s;user-select:none;line-height:1}
 .dark-toggle:hover{background:var(--hover-bg)}
-.cell-selected{outline:2px solid var(--accent)!important;outline-offset:-2px}
-.cell-drag-over{outline:2px dashed var(--accent)!important;outline-offset:-2px;background:var(--hover-bg)!important}
-.cell-dragging{opacity:.5}
-.kb-focus{outline:2px solid var(--accent)!important;outline-offset:-2px;box-shadow:0 0 0 4px rgba(52,152,219,.2)}
-.bulk-toolbar{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:10px 20px;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:999;gap:8px;align-items:center}
-.bulk-toolbar.active{display:flex}
-.bulk-toolbar span{font-size:13px;font-weight:600;color:var(--text)}
-.undo-indicator{position:fixed;top:10px;right:10px;background:var(--card-bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;z-index:998;display:none;box-shadow:0 2px 10px rgba(0,0,0,.15)}
 .stats-chart{margin-top:16px;padding:16px;background:var(--ctrl-bg);border-radius:8px}
 .stats-chart h3{font-size:14px;font-weight:700;color:var(--heading);margin-bottom:12px}
 .chart-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
@@ -203,7 +194,7 @@ td.emp-name-cell:hover{text-decoration:underline}
   body{background:#fff;padding:0;margin:0;font-size:11px}
   #app{box-shadow:none;border-radius:0;padding:0;max-width:100%}
   .no-print,.no-print-hide,.controls,.emp-section,.actions,.summary .btn,.stats-chart{display:none!important}
-  .bulk-toolbar,.undo-indicator,.dark-toggle{display:none!important}
+  .dark-toggle{display:none!important}
   .table-wrap{border:none;overflow:visible;border-radius:0;margin-bottom:0;width:100%}
   table{table-layout:fixed;width:100%;min-width:0;font-size:9pt;border-collapse:separate;border-spacing:1px}
   th{padding:3px 2px;font-size:8pt;background:#2c3e50!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -391,18 +382,7 @@ td.emp-name-cell:hover{text-decoration:underline}
   </div>
 </div>
 
-<div class="bulk-toolbar" id="bulk-toolbar">
-  <span id="bulk-count">0 celule selectate</span>
-  <select id="bulk-shift" style="font-size:13px;padding:4px 8px;border:1px solid var(--border);border-radius:4px">
-    <option value="0">L</option><option value="1">T1</option><option value="2">T2</option>
-    <option value="3">T1A</option><option value="4">T2A</option><option value="5">CO</option>
-    <option value="6">CM</option><option value="7">8</option>
-  </select>
-  <button class="btn btn-primary btn-sm" onclick="bulkApply()">Aplică</button>
-  <button class="btn btn-outline btn-sm" onclick="bulkClear()">Anulează</button>
-</div>
-
-<div class="undo-indicator" id="undo-indicator"></div>
+<!-- bulk-toolbar removed (not implemented) -->
 
 <div id="help-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeHelp()">
   <div class="modal-content" style="max-width:660px;max-height:82vh;overflow-y:auto">
@@ -503,7 +483,8 @@ td.emp-name-cell:hover{text-decoration:underline}
         <optgroup label="Urban"><option value="U1">U1</option><option value="U2">U2</option><option value="U3">U3</option><option value="U4">U4</option><option value="U5">U5</option></optgroup>
         <optgroup label="Rural"><option value="R1">R1</option><option value="R2">R2</option><option value="R3">R3</option><option value="R4">R4</option><option value="R5">R5</option></optgroup>
       </select>
-      <label style="font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:12px"><input type="checkbox" id="modal-emp-forced"> Forțat 8 ore</label>
+    </label>
+    <label style="font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:12px"><input type="checkbox" id="modal-emp-forced"> Forțat 8 ore</label>
     <div class="modal-buttons">
       <button class="btn btn-danger" id="modal-btn-delete" onclick="deleteModalEmployee()">Șterge</button>
       <button class="btn btn-outline" onclick="closeModal()">Anulează</button>
@@ -637,20 +618,6 @@ async function saveState() {
   }
 }
 
-function defaultState() {
-  const now = new Date();
-  return {
-    employees: [{ id: 1, name: 'Electrician 1', category: 'urban', functia: 'emitent', crew: '', forced8: false }],
-    config: { urban: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 }, rural: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 } },
-    schedule: {},
-    preservedCOCM: {},
-    genDay: 0, genStats: null, genYear: 0, genMonth: 0, genDim: 0,
-    currentMonth: now.getMonth() + 1,
-    currentYear: now.getFullYear(),
-    org: { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' }
-  };
-}
-
 function addEmployee() {
   const inp = document.getElementById('new-emp');
   const name = inp.value.trim();
@@ -711,9 +678,10 @@ function getShift(dateKey, empId) {
 
 function getEmployeeStats(empId) {
   let t1 = 0, t2 = 0, t1a = 0, t2a = 0, co = 0, cm = 0, c8 = 0;
+  const prefix = state.currentYear + '-' + pad(state.currentMonth);
   for (const dk in state.schedule) {
+    if (!dk.startsWith(prefix)) continue;
     const v = state.schedule[dk][String(empId)];
-    // CO/CM se contorizează doar în zile lucrătoare (L-V)
     const parts = dk.split('-');
     const dow = new Date(+parts[0], +parts[1]-1, +parts[2]).getDay();
     const isWeekend = dow === 0 || dow === 6;
@@ -1918,5 +1886,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
 </html>
