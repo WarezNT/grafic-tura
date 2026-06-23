@@ -149,6 +149,16 @@ td.hours.ok{background:var(--hours-ok-bg);color:var(--hours-ok-text)}
 .cl-list li .cl-icon{font-size:18px;flex-shrink:0;margin-top:1px}
 .version-badge{font-size:10px;font-weight:700;color:var(--text-muted);background:var(--ctrl-bg);border:1px solid var(--border);border-radius:5px;padding:2px 7px;cursor:pointer;transition:all .15s;letter-spacing:.03em;user-select:none}
 .version-badge:hover{color:var(--accent);border-color:var(--accent)}
+.toolbar{display:flex;align-items:center;gap:4px;flex-wrap:wrap;background:var(--ctrl-bg);border:1px solid var(--border);border-radius:10px;padding:7px 12px;margin-top:10px}
+.tb-sep{width:1px;height:22px;background:var(--border);margin:0 6px;flex-shrink:0}
+.tb-group{display:flex;align-items:center;gap:3px;position:relative}
+.tb-dd-wrap{position:relative}
+.tb-dd{position:absolute;bottom:calc(100% + 8px);left:0;min-width:230px;background:var(--bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.18);padding:5px;z-index:600;display:none;flex-direction:column;gap:1px}
+.tb-dd.open{display:flex}
+.tb-dd button{text-align:left;background:none;border:none;padding:9px 12px;border-radius:7px;cursor:pointer;font-size:12.5px;color:var(--text);white-space:nowrap;width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tb-dd button:hover{background:var(--hover-bg)}
+.tb-dd-sep{border:none;border-top:1px solid var(--border);margin:4px 2px}
+.tb-dd-hint{font-size:10px;color:var(--text-muted);background:var(--ctrl-bg);border:1px solid var(--border);padding:1px 5px;border-radius:4px;font-weight:600;flex-shrink:0}
 .help-tabs{display:flex;gap:3px;border-bottom:2px solid var(--border);margin-bottom:14px;flex-wrap:wrap}
 .help-tab{background:none;border:none;border-bottom:3px solid transparent;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:-2px;border-radius:6px 6px 0 0;transition:all .15s;white-space:nowrap}
 .help-tab:hover{background:var(--hover-bg);color:var(--text)}
@@ -281,7 +291,7 @@ td.emp-name-cell:hover{text-decoration:underline}
   </h1>
 
   <div class="controls no-print" style="padding:10px 14px">
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%">
       <button class="btn btn-outline btn-sm" onclick="prevMonth()" title="Luna anterioară" style="padding:4px 8px;font-size:14px">‹</button>
       <label class="ctrl-label" style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600">Luna
         <select id="sel-month" onchange="render()" style="font-size:12px;padding:4px 6px">
@@ -312,13 +322,13 @@ td.emp-name-cell:hover{text-decoration:underline}
         <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">T2A<input type="number" id="cfg-rural-t2a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
         <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">8h<input type="number" id="cfg-rural-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
       </span>
-      <span style="flex:1"></span>
       <label class="ctrl-label" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;white-space:nowrap">Mod
         <select id="gen-mode" onchange="state.genMode=this.value;saveState()" style="font-size:11px;padding:3px 5px">
           <option value="full">T1/T2 + T1A/T2A</option>
           <option value="t12">Doar T1/T2</option>
         </select>
       </label>
+      <span style="flex:1"></span>
       <button class="btn btn-primary btn-sm" onclick="startGeneration()">▶ Generare</button>
       <button class="btn btn-outline btn-sm" id="btn-prev-day" onclick="prevDay()" style="display:none">←</button>
       <button class="btn btn-outline btn-sm" id="btn-next-day" onclick="generateNextDay()" style="display:none">Ziua →</button>
@@ -387,17 +397,32 @@ td.emp-name-cell:hover{text-decoration:underline}
   </div>
   <div id="db-status" style="font-size:11px;color:#999;margin:4px 0 8px;text-align:right" class="no-print">💾 IndexedDB: inițializare...</div>
 
-  <div class="actions no-print" style="justify-content:flex-end;margin-top:10px">
-    <button class="btn btn-outline btn-sm" onclick="exportMonthJSON()">💾 Salvează luna</button>
-    <button class="btn btn-outline btn-sm" onclick="exportFullJSON()">💿 Salvează tot</button>
-    <button class="btn btn-outline btn-sm" onclick="loadJSON()">📂 Încarcă lună</button>
-    <button class="btn btn-outline btn-sm" onclick="importEmployees()">👥 Import electricieni</button>
-    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
-    <input type="file" id="import-employees-file" accept=".json" style="display:none" onchange="importEmployeesJSON(event)">
-    <button class="btn btn-outline btn-sm" onclick="exportExcel()">📊 Excel</button>
-    <button class="btn btn-primary btn-sm" onclick="printSchedule()">🖨️ Print</button>
-    <button class="btn btn-outline btn-sm" onclick="openHelp()">📖 Manual</button>
-    <span class="version-badge no-print" id="app-version-badge" onclick="showChangelog()" title="Ce e nou în această versiune"></span>
+  <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
+  <input type="file" id="import-employees-file" accept=".json" style="display:none" onchange="importEmployeesJSON(event)">
+  <div class="toolbar no-print">
+    <!-- Fișiere dropdown -->
+    <div class="tb-group tb-dd-wrap">
+      <button class="btn btn-outline btn-sm" onclick="toggleTbDropdown('dd-fisiere')" data-tooltip="Salvează sau încarcă grafice și date">💾 Fișiere ▾</button>
+      <div class="tb-dd" id="dd-fisiere">
+        <button onclick="closeTbDropdowns();exportMonthJSON()">💾 Salvează luna curentă <span class="tb-dd-hint">JSON</span></button>
+        <button onclick="closeTbDropdowns();exportFullJSON()">💿 Backup complet <span class="tb-dd-hint">JSON</span></button>
+        <div class="tb-dd-sep"></div>
+        <button onclick="closeTbDropdowns();loadJSON()">📂 Încarcă lună din fișier</button>
+        <button onclick="closeTbDropdowns();importEmployees()">👥 Import electricieni</button>
+      </div>
+    </div>
+    <div class="tb-sep"></div>
+    <!-- Export -->
+    <div class="tb-group">
+      <button class="btn btn-outline btn-sm" onclick="exportExcel()" data-tooltip="Exportă graficul în format Excel (.xlsx) cu stiluri și logo">📊 Excel</button>
+      <button class="btn btn-primary btn-sm" onclick="printSchedule()" data-tooltip="Printează graficul sau salvează ca PDF (Ctrl+P)">🖨️ Print / PDF</button>
+    </div>
+    <div class="tb-sep"></div>
+    <!-- Ajutor + versiune -->
+    <div class="tb-group">
+      <button class="btn btn-outline btn-sm" onclick="openHelp()" data-tooltip="Deschide manualul de utilizare cu instrucțiuni detaliate">📖 Manual</button>
+      <span class="version-badge no-print" id="app-version-badge" onclick="showChangelog()" data-tooltip="Ce e nou în această versiune — click pentru detalii"></span>
+    </div>
   </div>
 
   <div id="summary" class="summary"></div>
@@ -644,12 +669,25 @@ td.emp-name-cell:hover{text-decoration:underline}
 <script>
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
-const APP_VERSION = 'V2026.06.1';
+const ORG_KEY = 'graficTura_org';
+const APP_VERSION = 'V2026.06.2';
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
-  'V2026.06.16': {
+  'V2026.06.2': {
+    title: 'Actualizare iunie 2026 (2)',
+    items: [
+      { icon: '🏢', text: 'Date organizație persistente — setările (formație, șef FOL, responsabil tehnic) nu se mai pierd la actualizări sau import de grafic' },
+      { icon: '👥', text: 'Echipaje flexibile — poți muta un electrician în alt echipaj de la o dată specifică, cu oricâte schimbări pe lună' },
+      { icon: '✏️', text: 'Echipaje custom — pe lângă U1–U5 și R1–R5, poți crea echipaje cu orice denumire' },
+      { icon: '💬', text: 'Explicații la hover — câmpurile din ferestre afișează acum o descriere când ții mouse-ul deasupra' },
+      { icon: '📖', text: 'Manual reorganizat pe secțiuni (tab-uri): Configurare, Generare, Editare, Export' },
+      { icon: '🛡️', text: 'Ștergerea unui electrician necesită acum confirmare în doi pași — nu mai poți șterge accidental' },
+      { icon: '🌙', text: 'Corecții vizuale în modul întunecat pentru butoane și liste' }
+    ]
+  },
+  'V2026.06.1': {
     title: 'Actualizare iunie 2026',
     items: [
       { icon: '👥', text: 'Echipaje flexibile — poți muta un electrician în alt echipaj de la o dată specifică, cu oricâte schimbări pe lună' },
@@ -684,7 +722,7 @@ function defaultState() {
     currentMonth: now.getMonth() + 1,
     currentYear: now.getFullYear(),
     org: { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' },
-    genMode: 'full'
+    genMode: 't12'
   };
 }
 
@@ -829,7 +867,7 @@ function migrateState(s) {
   if (s.genMonth === undefined) s.genMonth = 0;
   if (s.genDim === undefined) s.genDim = 0;
   if (!s.org) s.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
-  if (!s.genMode) s.genMode = 'full';
+  if (!s.genMode) s.genMode = 't12';
 }
 
 async function initStateFromDB() {
@@ -837,8 +875,6 @@ async function initStateFromDB() {
     const saved = await dbGet('main');
     if (saved && saved.employees && Array.isArray(saved.employees)) {
       migrateState(saved);
-      // Preserve org from localStorage if IndexedDB has stale/empty data
-      if (state.org && state.org.sefFOL && (!saved.org || !saved.org.sefFOL)) saved.org = state.org;
       state = saved;
       genDay = state.genDay || 0;
       genStats = state.genStats || null;
@@ -1914,7 +1950,8 @@ function applyJSON(text) {
       }
       state.employees = data.employees;
       state.config = data.config;
-      state.org = data.org || { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
+      // org lives in ORG_KEY — only migrate from file if ORG_KEY is empty
+      if (data.org && data.org.sefFOL && !loadOrg()) saveOrg(data.org);
       state.currentMonth = data.month;
       state.currentYear = data.year;
       document.getElementById('sel-month').value = data.month;
@@ -1936,6 +1973,8 @@ function applyJSON(text) {
     genCOCM = data.preservedCOCM || {};
     genDay = data.genDay || 0; genStats = data.genStats || null; genYear = data.genYear || 0; genMonth = data.genMonth || 0; genDim = data.genDim || 0;
     migrateState(state);
+    // org lives in ORG_KEY — only migrate from file if ORG_KEY is empty
+    if (data.org && data.org.sefFOL && !loadOrg()) saveOrg(data.org);
     document.getElementById('gen-mode').value = state.genMode || 'full';
     saveState();
     document.getElementById('sel-month').value = state.currentMonth || 1;
@@ -2084,7 +2123,19 @@ function printSchedule() {
   window.print();
 }
 
+function loadOrg() {
+  try {
+    const raw = localStorage.getItem(ORG_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+function saveOrg(org) {
+  localStorage.setItem(ORG_KEY, JSON.stringify(org));
+}
 function getOrg() {
+  const stored = loadOrg();
+  if (stored) return Object.assign({ formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' }, stored);
   return Object.assign({ formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' }, state.org || {});
 }
 
@@ -2117,13 +2168,15 @@ function closeOrgModal() {
 }
 
 function saveOrgSettings() {
-  state.org = {
+  const org = {
     formatia: document.getElementById('org-formatia').value.trim(),
     sefFOL: document.getElementById('org-sef').value.trim(),
     responsabilTehnic: document.getElementById('org-resp').value.trim(),
     judet: document.getElementById('org-judet').value.trim(),
     aprobat: document.getElementById('org-aprobat').value.trim()
   };
+  saveOrg(org);
+  state.org = org;
   saveState();
   applyOrgToDOM();
   closeOrgModal();
@@ -2150,6 +2203,15 @@ function checkVersion() {
     setTimeout(showChangelog, 600);
   }
 }
+function toggleTbDropdown(id) {
+  const el = document.getElementById(id);
+  const wasOpen = el.classList.contains('open');
+  closeTbDropdowns();
+  if (!wasOpen) el.classList.add('open');
+}
+function closeTbDropdowns() {
+  document.querySelectorAll('.tb-dd').forEach(d => d.classList.remove('open'));
+}
 function toggleDarkMode() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
@@ -2157,6 +2219,9 @@ function toggleDarkMode() {
   if (btn) btn.textContent = isDark ? '🌙' : '☀️';
 }
 
+document.addEventListener('click', e => {
+  if (!e.target.closest('.tb-dd-wrap')) closeTbDropdowns();
+});
 document.addEventListener('DOMContentLoaded', () => {
   const logoEl = document.getElementById('header-logo');
   if (logoEl) logoEl.src = 'data:image/png;base64,' + LOGO_B64;
@@ -2178,8 +2243,9 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('sel-year').value = state.currentYear;
       document.getElementById('sel-month').value = state.currentMonth;
     }
-    if (!state.org) state.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
     if (!state.genMode) state.genMode = 'full';
+    // migrate org from state to dedicated ORG_KEY if not yet migrated
+    if (!loadOrg() && state.org && state.org.sefFOL) saveOrg(state.org);
     document.getElementById('gen-mode').value = state.genMode;
     applyOrgToDOM();
     render();
