@@ -410,7 +410,13 @@ td.emp-name-cell:hover{text-decoration:underline}
 
       <p><strong>▶ Generare grafic</strong><br>
       Selectează luna și anul → apasă <em>▶ Generare</em> → apoi <em>Ziua →</em> zi cu zi, sau <em>Generare totală →</em> pentru tot graficul dintr-o dată.<br>
-      Algoritmul respectă: rotație echitabilă T1→T1A→T2→T2A→L, pauza de 8h între ture (T2/T2A ieri → nu T1/T1A azi), maxim 4 zile consecutive de muncă, și gruparea echipajelor.</p>
+      Algoritmul respectă: rotație echitabilă T1→T2→T1A→T2A→L, pauză de 8h (T2 ieri → nu T1/T1A azi, T2A nu blochează), maxim 4 zile consecutive de muncă, și gruparea echipajelor.</p>
+
+      <p><strong>🔀 Mod generare</strong><br>
+      Dropdown-ul <em>Mod</em> din bara de sus schimbă strategia de asignare:<br>
+      <strong>T1/T2 + T1A/T2A</strong> — varianta completă: T1, T2, T1A, T2A se alocă automat.<br>
+      <strong>Doar T1/T2</strong> — doar T1 și T2 se alocă automat; T1A și T2A rămân pentru asignare manuală (din dropdown-ul celulei).<br>
+      Modul poate fi schimbat oricând, inclusiv în timpul generării pas cu pas. Următoarea zi generată va folosi noul mod.</p>
 
       <p><strong>👥 Echipaj</strong><br>
       Membrii aceluiași echipaj (ex. U1) primesc aceeași tură în aceeași zi. La generare sunt tratați ca un bloc — dacă blocul nu mai încape pe o tură, întregul echipaj trece la următoarea.</p>
