@@ -364,8 +364,9 @@ td.emp-name-cell:hover{text-decoration:underline}
   <div id="db-status" style="font-size:11px;color:#999;margin:4px 0 8px;text-align:right" class="no-print">💾 IndexedDB: inițializare...</div>
 
   <div class="actions no-print" style="justify-content:flex-end;margin-top:10px">
-    <button class="btn btn-outline btn-sm" onclick="exportJSON()">💾 Salvează</button>
-    <button class="btn btn-outline btn-sm" onclick="loadJSON()">📂 Deschide</button>
+    <button class="btn btn-outline btn-sm" onclick="exportMonthJSON()">💾 Salvează luna</button>
+    <button class="btn btn-outline btn-sm" onclick="exportFullJSON()">💿 Salvează tot</button>
+    <button class="btn btn-outline btn-sm" onclick="loadJSON()">📂 Încarcă lună</button>
     <button class="btn btn-outline btn-sm" onclick="importEmployees()">👥 Import electricieni</button>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
     <input type="file" id="import-employees-file" accept=".json" style="display:none" onchange="importEmployeesJSON(event)">
@@ -985,6 +986,30 @@ function startGeneration() {
       }
     }
   }
+  // Seed yesterday/consec from previous month's last day for month transition
+  let prevMonth = month - 1, prevYear = year;
+  if (prevMonth === 0) { prevMonth = 12; prevYear = year - 1; }
+  const prevDim = daysInMonth(prevYear, prevMonth);
+  const prevDk = dateKey(prevYear, prevMonth, prevDim);
+  if (state.schedule[prevDk]) {
+    emps.forEach(e => {
+      const s = genStats[e.id];
+      if (!s) return;
+      const prevV = state.schedule[prevDk][String(e.id)];
+      if (prevV !== undefined && prevV !== null) {
+        if (s.yesterday === null) s.yesterday = prevV;
+        if (s.consec === 0 && (prevV >= 1 && prevV <= 4 || prevV === 7)) {
+          let c = 1;
+          for (let d = prevDim - 1; d >= 1; d--) {
+            const pd = dateKey(prevYear, prevMonth, d);
+            const pv = state.schedule[pd]?.[String(e.id)];
+            if (pv >= 1 && pv <= 4 || pv === 7) c++; else break;
+          }
+          s.consec = c;
+        }
+      }
+    });
+  }
   genDay = firstEmpty;
   genYear = year;
   genMonth = month;
@@ -1471,29 +1496,28 @@ function esc(s) {
   return d.innerHTML;
 }
 
-async function exportJSON() {
-  const data = JSON.stringify(state, null, 2);
-  const suggestedName = 'grafic_ture_' + state.currentYear + '_' + pad(state.currentMonth) + '.json';
+function syncState() {
+  state.preservedCOCM = genCOCM;
+  state.genDay = genDay;
+  state.genStats = genStats;
+  state.genYear = genYear;
+  state.genMonth = genMonth;
+  state.genDim = genDim;
+}
+
+async function saveFileWithPicker(data, suggestedName) {
   try {
-    if (savedFileHandle) {
-      const writable = await savedFileHandle.createWritable();
-      await writable.write(data);
-      await writable.close();
-      setStatus('Grafic salvat în dosar (' + savedFileHandle.name + ').', 'success');
-      return;
-    }
     if ('showSaveFilePicker' in window) {
-      savedFileHandle = await showSaveFilePicker({ suggestedName, types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }] });
-      const writable = await savedFileHandle.createWritable();
+      const handle = await showSaveFilePicker({ suggestedName, types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }] });
+      const writable = await handle.createWritable();
       await writable.write(data);
       await writable.close();
-      setStatus('Grafic salvat în dosar.', 'success');
-    } else {
-      throw new Error('fallback');
+      setStatus('Fișier salvat: ' + suggestedName, 'success');
+      return handle;
     }
+    throw new Error('fallback');
   } catch (e) {
-    if (e.name === 'AbortError') return;
-    // fallback: old download method
+    if (e.name === 'AbortError') return null;
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1501,8 +1525,47 @@ async function exportJSON() {
     document.body.appendChild(a); a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    setStatus('Fișier JSON descărcat.', 'success');
+    setStatus('Fișier descărcat: ' + suggestedName, 'success');
+    return null;
   }
+}
+
+async function exportFullJSON() {
+  syncState();
+  const data = JSON.stringify({ type: 'full', version: 1, ...state }, null, 2);
+  const suggestedName = 'grafic_ture_backup_full.json';
+  if (savedFileHandle) {
+    try {
+      const writable = await savedFileHandle.createWritable();
+      await writable.write(data);
+      await writable.close();
+      setStatus('Backup salvat în ' + savedFileHandle.name, 'success');
+      return;
+    } catch (e) { savedFileHandle = null; }
+  }
+  const handle = await saveFileWithPicker(data, suggestedName);
+  if (handle) savedFileHandle = handle;
+}
+
+async function exportMonthJSON() {
+  const year = parseInt(document.getElementById('sel-year').value);
+  const month = parseInt(document.getElementById('sel-month').value);
+  const prefix = year + '-' + pad(month);
+  const monthSchedule = {};
+  const monthCOCM = {};
+  for (const dk in state.schedule) {
+    if (dk.startsWith(prefix)) monthSchedule[dk] = state.schedule[dk];
+  }
+  for (const dk in genCOCM) {
+    if (dk.startsWith(prefix)) monthCOCM[dk] = genCOCM[dk];
+  }
+  const data = JSON.stringify({
+    type: 'month', version: 1, year, month,
+    employees: state.employees, config: state.config, org: state.org || {},
+    schedule: monthSchedule, preservedCOCM: monthCOCM
+  }, null, 2);
+  const suggestedName = 'grafic_ture_' + year + '_' + pad(month) + '.json';
+  await saveFileWithPicker(data, suggestedName);
 }
 
 async function loadJSON() {
@@ -1581,6 +1644,35 @@ function importEmployeesJSON(event) {
 function applyJSON(text) {
   try {
     const data = JSON.parse(text);
+    if (data.type === 'month') {
+      // Month-save: overwrite only schedule for the specified year+month
+      const prefix = data.year + '-' + pad(data.month);
+      for (const dk in state.schedule) {
+        if (dk.startsWith(prefix)) delete state.schedule[dk];
+      }
+      for (const dk in data.schedule) {
+        state.schedule[dk] = data.schedule[dk];
+      }
+      // Merge COCM for this month
+      for (const dk in data.preservedCOCM) {
+        if (dk.startsWith(prefix)) genCOCM[dk] = data.preservedCOCM[dk];
+      }
+      state.employees = data.employees;
+      state.config = data.config;
+      state.org = data.org || { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
+      state.currentMonth = data.month;
+      state.currentYear = data.year;
+      document.getElementById('sel-month').value = data.month;
+      document.getElementById('sel-year').value = data.year;
+      genDay = 0; genStats = null; genYear = 0; genMonth = 0; genDim = 0;
+      migrateState(state);
+      saveState();
+      render();
+      updateButtons();
+      setStatus('Luna ' + getMonthName(data.month) + ' ' + data.year + ' încărcată din fișier.', 'success');
+      return;
+    }
+    // Full backup or old format (no type field)
     if (!data.employees || !Array.isArray(data.employees)) {
       setStatus('Fișier JSON invalid.', 'err');
       return;
@@ -1588,7 +1680,7 @@ function applyJSON(text) {
     state = data;
     genCOCM = data.preservedCOCM || {};
     genDay = data.genDay || 0; genStats = data.genStats || null; genYear = data.genYear || 0; genMonth = data.genMonth || 0; genDim = data.genDim || 0;
-    state.employees.forEach(e => { if (!e.category || e.category === '8ore') e.category = 'urban'; if (!e.functia) e.functia = 'emitent'; if (!e.crew) e.crew = ''; if (!('forced8' in e)) e.forced8 = false; });
+    migrateState(state);
     saveState();
     document.getElementById('sel-month').value = state.currentMonth || 1;
     document.getElementById('sel-year').value = state.currentYear || new Date().getFullYear();
@@ -1601,7 +1693,8 @@ function applyJSON(text) {
       document.getElementById('cfg-' + g + '-c8').value = c.c8 || 0;
     });
     render();
-    setStatus('Grafic încărcat din fișier.', 'success');
+    updateButtons();
+    setStatus('Baza de date restaurată din fișier.', 'success');
   } catch (err) {
     setStatus('Eroare la citirea fișierului.', 'err');
   }
