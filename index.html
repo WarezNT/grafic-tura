@@ -655,6 +655,11 @@ function daysInMonth(year, month) {
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
+function readConfig(g) {
+  const el = id => document.getElementById('cfg-' + g + '-' + id);
+  return { t1: Math.max(0, parseInt(el('t1').value) || 0), t1a: Math.max(0, parseInt(el('t1a').value) || 0), t2: Math.max(0, parseInt(el('t2').value) || 0), t2a: Math.max(0, parseInt(el('t2a').value) || 0), c8: Math.max(0, parseInt(el('c8').value) || 0) };
+}
+
 function dateKey(year, month, day) {
   return year + '-' + pad(month) + '-' + pad(day);
 }
@@ -703,7 +708,6 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day) {
 
   // Rule: max 4 consecutive working days — employees with consec >= 4 MUST get a free day (L)
   const MAX_CONSEC = 4;
-  const mustRest = catEmps.filter(e => stats[e.id] && stats[e.id].consec >= MAX_CONSEC);
   const available = catEmps.filter(e => !stats[e.id] || stats[e.id].consec < MAX_CONSEC);
 
   // group available employees by crew (non-crew each get solo group)
@@ -867,10 +871,7 @@ function startGeneration() {
   const month = parseInt(document.getElementById('sel-month').value);
   const groups = ['urban','rural'];
   const cfgs = {};
-  groups.forEach(g => {
-    const el = id => document.getElementById('cfg-' + g + '-' + id);
-    cfgs[g] = { t1: Math.max(0, parseInt(el('t1').value) || 0), t1a: Math.max(0, parseInt(el('t1a').value) || 0), t2: Math.max(0, parseInt(el('t2').value) || 0), t2a: Math.max(0, parseInt(el('t2a').value) || 0), c8: Math.max(0, parseInt(el('c8').value) || 0) };
-  });
+  groups.forEach(g => { cfgs[g] = readConfig(g); });
   const emps = state.employees;
   if (emps.length === 0) { setStatus('Adaugă cel puțin un electrician.', 'warn'); return; }
   for (let gi = 0; gi < groups.length; gi++) {
@@ -1022,10 +1023,7 @@ function generateDay(day) {
   const emps = state.employees;
   const groups = ['urban','rural'];
   const cfgs = {};
-  groups.forEach(g => {
-    const el = id => document.getElementById('cfg-' + g + '-' + id);
-    cfgs[g] = { t1: Math.max(0, parseInt(el('t1').value) || 0), t1a: Math.max(0, parseInt(el('t1a').value) || 0), t2: Math.max(0, parseInt(el('t2').value) || 0), t2a: Math.max(0, parseInt(el('t2a').value) || 0), c8: Math.max(0, parseInt(el('c8').value) || 0) };
-  });
+  groups.forEach(g => { cfgs[g] = readConfig(g); });
   groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day));
   if (!weekend) {
     // Forced 8h employees ALWAYS get shift 8 (value 7), never T1/T2/T1A/T2A
@@ -1055,23 +1053,24 @@ function generateDay(day) {
   saveState();
 }
 
+function subtractDayStats(dk) {
+  if (!state.schedule[dk]) return;
+  for (const eid in state.schedule[dk]) {
+    const v = state.schedule[dk][eid];
+    const s = genStats[parseInt(eid)];
+    if (!s) continue;
+    if (v === 1) { s.t1--; s.total--; }
+    else if (v === 2) { s.t2--; s.total--; }
+    else if (v === 3) { s.t1a--; s.total--; }
+    else if (v === 4) { s.t2a--; s.total--; }
+    else if (v === 7) { s.c8--; s.total--; }
+  }
+}
+
 function generateNextDay() {
   if (genDay < 1 || genDay > genDim) return;
   const day = genDay;
-  // subtract old stats for this day if regenerating (e.g. after prevDay)
-  const dk = dateKey(genYear, genMonth, day);
-  if (state.schedule[dk]) {
-    for (const eid in state.schedule[dk]) {
-      const v = state.schedule[dk][eid];
-      const s = genStats[parseInt(eid)];
-      if (!s) continue;
-      if (v === 1) { s.t1--; s.total--; }
-      else if (v === 2) { s.t2--; s.total--; }
-      else if (v === 3) { s.t1a--; s.total--; }
-      else if (v === 4) { s.t2a--; s.total--; }
-      else if (v === 7) { s.c8--; s.total--; }
-    }
-  }
+  subtractDayStats(dateKey(genYear, genMonth, day));
   generateDay(genDay);
   genDay++;
   if (genDay > genDim) {
@@ -1091,19 +1090,7 @@ function generateAll() {
   document.getElementById('btn-next-day').style.display = 'none';
   document.getElementById('btn-generate-all').style.display = 'none';
   for (let d = from; d <= genDim; d++) {
-    const dk = dateKey(genYear, genMonth, d);
-    if (state.schedule[dk]) {
-      for (const eid in state.schedule[dk]) {
-        const v = state.schedule[dk][eid];
-        const s = genStats[parseInt(eid)];
-        if (!s) continue;
-        if (v === 1) { s.t1--; s.total--; }
-        else if (v === 2) { s.t2--; s.total--; }
-        else if (v === 3) { s.t1a--; s.total--; }
-        else if (v === 4) { s.t2a--; s.total--; }
-        else if (v === 7) { s.c8--; s.total--; }
-      }
-    }
+    subtractDayStats(dateKey(genYear, genMonth, d));
     generateDay(d);
     genDay = d + 1;
   }
@@ -1464,15 +1451,6 @@ function esc(s) {
   return d.innerHTML;
 }
 
-function syncState() {
-  state.preservedCOCM = genCOCM;
-  state.genDay = genDay;
-  state.genStats = genStats;
-  state.genYear = genYear;
-  state.genMonth = genMonth;
-  state.genDim = genDim;
-}
-
 async function saveFileWithPicker(data, suggestedName) {
   try {
     if ('showSaveFilePicker' in window) {
@@ -1499,7 +1477,12 @@ async function saveFileWithPicker(data, suggestedName) {
 }
 
 async function exportFullJSON() {
-  syncState();
+  state.preservedCOCM = genCOCM;
+  state.genDay = genDay;
+  state.genStats = genStats;
+  state.genYear = genYear;
+  state.genMonth = genMonth;
+  state.genDim = genDim;
   const data = JSON.stringify({ type: 'full', version: 1, ...state }, null, 2);
   const suggestedName = 'grafic_ture_backup_full.json';
   if (savedFileHandle) {
