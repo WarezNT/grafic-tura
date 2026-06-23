@@ -503,6 +503,10 @@ let state = loadState();
 let savedFileHandle = null;
 let genDay = state.genDay || 0, genStats = state.genStats || null, genCOCM = state.preservedCOCM || {}, genYear = state.genYear || 0, genMonth = state.genMonth || 0, genDim = state.genDim || 0;
 
+const GROUPS = ['urban', 'rural'];
+const SHIFT_NAMES = ['L', 'T1', 'T2', 'T1A', 'T2A', 'CO', 'CM', '8'];
+const FUNC_NAMES = { emitent: 'Emitent', admitent: 'Admitent', electrician: 'Electrician', seftura: 'Șef tură' };
+
 function defaultState() {
   const now = new Date();
   return {
@@ -869,7 +873,7 @@ function updateButtons() {
 function startGeneration() {
   const year = parseInt(document.getElementById('sel-year').value);
   const month = parseInt(document.getElementById('sel-month').value);
-  const groups = ['urban','rural'];
+  const groups = GROUPS;
   const cfgs = {};
   groups.forEach(g => { cfgs[g] = readConfig(g); });
   const emps = state.employees;
@@ -1021,7 +1025,7 @@ function generateDay(day) {
   const hasCOCM = Object.keys(preserved);
   const assigned = hasCOCM.map(Number);
   const emps = state.employees;
-  const groups = ['urban','rural'];
+  const groups = GROUPS;
   const cfgs = {};
   groups.forEach(g => { cfgs[g] = readConfig(g); });
   groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day));
@@ -1206,8 +1210,8 @@ function renderTable() {
   const y = state.currentYear;
   const dim = daysInMonth(y, m);
   const emps = state.employees;
-  const labels = ['L', 'T1', 'T2', 'T1A', 'T2A', 'CO', 'CM', '8'];
-  const groups = ['urban','rural'];
+  const labels = SHIFT_NAMES;
+  const groups = GROUPS;
   const colspan = dim + 5;
 
   let hhtml = '<tr><th>Nume Prenume</th><th style="text-align:left;padding-left:4px;width:62px;min-width:62px;max-width:62px;overflow:hidden">Funcția</th>';
@@ -1240,7 +1244,7 @@ function renderTable() {
       let cls = 'hours ok';
       if (st.hours < 150) cls = 'hours under';
       else if (st.hours > 184) cls = 'hours over';
-      const fnLabel = { emitent: 'Emitent', admitent: 'Admitent', electrician: 'Electrician', seftura: 'Șef tură' }[emp.functia || 'emitent'];
+      const fnLabel = FUNC_NAMES[emp.functia || 'emitent'];
       const fnCls = 'fn-' + (emp.functia || 'emitent');
       let crewLabel = '';
       if (emp.crew) crewLabel = '<span style="font-size:9px;font-weight:700;color:#555;display:block;text-align:center">' + esc(emp.crew) + '</span>';
@@ -1282,7 +1286,7 @@ function onShiftChange(dk, empId, sel) {
   const v = parseInt(sel.value);
   const existing = getShift(dk, empId);
   if (existing !== null && existing !== v && existing !== 0 && v !== 0) {
-    if (!confirm('Angajatul are deja tura ' + ['L','T1','T2','T1A','T2A','CO','CM','8'][existing] + ' în această zi. Schimbi în ' + ['L','T1','T2','T1A','T2A','CO','CM','8'][v] + '?')) {
+    if (!confirm('Angajatul are deja tura ' + SHIFT_NAMES[existing] + ' în această zi. Schimbi în ' + SHIFT_NAMES[v] + '?')) {
       sel.value = existing;
       sel.parentElement.className = sel.parentElement.className.replace(/\bshift-\d\b/, 'shift-' + existing);
       return;
@@ -1292,7 +1296,7 @@ function onShiftChange(dk, empId, sel) {
   const td = sel.parentElement;
   td.className = td.className.replace(/\bshift-\d\b/, 'shift-' + v);
   const span = sel.parentElement.querySelector('.print-shift');
-  if (span) { span.className = 'print-shift shift-' + v; span.textContent = ['L','T1','T2','T1A','T2A','CO','CM','8'][v]; }
+  if (span) { span.className = 'print-shift shift-' + v; span.textContent = SHIFT_NAMES[v]; }
   const st = getEmployeeStats(empId);
   const row = sel.closest('tr');
   const cells = row.cells;
@@ -1376,8 +1380,8 @@ function renderSummary() {
   html += '</div></div>'; // închide summary-grid + sum-cards
 
   // Tabel statistici detaliate
-  const fnLabel = e => ({ emitent:'Emitent', admitent:'Admitent', electrician:'Electrician', seftura:'Șef tură' }[e.functia||'emitent']);
-  const groups = ['urban','rural'];
+  const fnLabel = e => FUNC_NAMES[e.functia||'emitent'];
+  const groups = GROUPS;
   const tableOpen = summaryTableOpen;
   html += '<div style="' + sectionStyle + '" onclick="toggleSummarySection(\'sum-table\')">'
     + '<button id="sum-table-btn" style="' + btnStyle + '">' + (tableOpen ? '▼' : '▶') + '</button>'
@@ -1663,8 +1667,6 @@ function exportExcel() {
   const wd = workingDays(y, m);
   const expected = wd !== null ? wd * 8 : 184;
   const DAY_NAMES = ['D','L','M','M','J','V','S'];
-  const FN_LABEL = { emitent:'Emitent', admitent:'Admitent', electrician:'Electrician', seftura:'Șef tură' };
-  const SHIFT_LABEL = ['L','T1','T2','T1A','T2A','CO','CM','8'];
   const shiftFill = {
     0:{bg:'F0F0F0',fg:'666666'}, 1:{bg:'D6EAF8',fg:'1A5276'}, 2:{bg:'FDEBD0',fg:'935116'},
     3:{bg:'AED6F1',fg:'154360'}, 4:{bg:'FAD7A0',fg:'7E4D0E'}, 5:{bg:'E8D5F5',fg:'6C3483'},
@@ -1739,14 +1741,14 @@ function exportExcel() {
         const hFg = diff===0?'1A7A3A':diff>0?'C0392B':diff>=-16?'B7770D':'C0392B';
         ws.getRow(R).height = 15;
         const c1=ws.getCell(R,1); c1.value=emp.name; c1.font=fnt('1A1A2E',true,9); c1.fill=fill('FFFFFF'); c1.alignment=aln('left','middle');
-        const c2=ws.getCell(R,2); c2.value=FN_LABEL[emp.functia||'emitent']; c2.font=fnt('444444',false,8); c2.fill=fill('F8F9FB'); c2.alignment=aln('center','middle');
+        const c2=ws.getCell(R,2); c2.value=FUNC_NAMES[emp.functia||'emitent']; c2.font=fnt('444444',false,8); c2.fill=fill('F8F9FB'); c2.alignment=aln('center','middle');
         const c3=ws.getCell(R,3); c3.value=emp.crew||'—'; c3.font=fnt('888888',false,8); c3.fill=fill('F8F9FB'); c3.alignment=aln('center','middle');
         for (let d = 1; d <= dim; d++) {
           const dow = new Date(y,m-1,d).getDay(), isW = dow===0||dow===6;
           const v = getShift(dateKey(y,m,d), emp.id), sv = v!==null?v:0;
           const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
           const dc = ws.getCell(R, firstDay+d);
-          dc.value=SHIFT_LABEL[sv]; dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
+          dc.value=SHIFT_NAMES[sv]; dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
         }
         const lc=ws.getCell(R,colLucrate+1); lc.value=st.hours; lc.font=fnt(hFg,true,9); lc.fill=fill(hBg); lc.alignment=aln('center','middle');
         const cc=ws.getCell(R,colCOCM+1); cc.value=(st.co+st.cm)*8; cc.font=fnt('6C3483',false,9); cc.fill=fill('F5EEF8'); cc.alignment=aln('center','middle');
