@@ -1591,13 +1591,15 @@ function renderTable() {
         let v = getShift(dk, emp.id);
         if (v === null || v === undefined) v = 0;
         const weekend = (dow === 0 || dow === 6);
-        const tdCls = ['shift-' + v, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
+        const displayV = (weekend && (v === 5 || v === 6)) ? 0 : v;
+        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si <= 7; si++) {
           if (weekend && (si === 3 || si === 4 || si === 7)) continue;
-          bhtml += '<option value="' + si + '"' + (si === v ? ' selected' : '') + '>' + labels[si] + '</option>';
+          if (weekend && (si === 5 || si === 6)) continue;
+          bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
         }
-        bhtml += '</select><span class="print-shift shift-' + v + '">' + labels[v] + '</span></td>';
+        bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span></td>';
       }
       const norma = wdInfo !== null ? wdInfo * 8 : null;
       bhtml += '<td class="' + cls + ' hours-cell">' + st.hours + 'h</td>';
