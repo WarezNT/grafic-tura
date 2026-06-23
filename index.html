@@ -410,7 +410,7 @@ td.emp-name-cell:hover{text-decoration:underline}
 
       <p><strong>▶ Generare grafic</strong><br>
       Selectează luna și anul → apasă <em>▶ Generare</em> → apoi <em>Ziua →</em> zi cu zi, sau <em>Generare totală →</em> pentru tot graficul dintr-o dată.<br>
-      Algoritmul respectă: rotație echitabilă T1→T2→T1A→T2A→L, pauză de 8h (T2 ieri → nu T1/T1A azi, T2A nu blochează), maxim 4 zile consecutive de muncă, și gruparea echipajelor.</p>
+      Algoritmul respectă: rotație echitabilă T1↔T2 (ieri T1 → azi T2; ieri T2 → azi altceva), pauză de 8h (T2 ieri → nu T1 azi), maxim 4 zile consecutive de muncă, și gruparea echipajelor.</p>
 
       <p><strong>🔀 Mod generare</strong><br>
       Dropdown-ul <em>Mod</em> din bara de sus schimbă strategia de asignare:<br>
@@ -741,10 +741,10 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
     return c.reduce((s, e) => s + stats[e.id][field], 0) / c.length;
   }
 
-  function assignShift(crewsArr, count, shiftVal, sortField, checkYesterday) {
+  function assignShift(crewsArr, count, shiftVal, sortField, blockValues) {
     let pool = [...crewsArr];
-    if (checkYesterday) {
-      pool = crewsArr.filter(c => c.every(e => stats[e.id].yesterday === null || stats[e.id].yesterday !== 2));
+    if (blockValues && blockValues.length) {
+      pool = crewsArr.filter(c => c.every(e => stats[e.id].yesterday === null || !blockValues.includes(stats[e.id].yesterday)));
       if (pool.length === 0) pool = [...crewsArr];
     }
     pool.sort((a, b) => {
@@ -763,17 +763,17 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
     if (placed < count) {
       const indiv = [];
       crewsArr.filter(c => !result.includes(c)).forEach(c => c.forEach(e => indiv.push(e)));
-      if (checkYesterday) indiv.sort((a, b) => {
-        const aOK = stats[a.id].yesterday === null || stats[a.id].yesterday !== 2;
-        const bOK = stats[b.id].yesterday === null || stats[b.id].yesterday !== 2;
+      if (blockValues && blockValues.length) indiv.sort((a, b) => {
+        const aOK = stats[a.id].yesterday === null || !blockValues.includes(stats[a.id].yesterday);
+        const bOK = stats[b.id].yesterday === null || !blockValues.includes(stats[b.id].yesterday);
         return aOK === bOK ? 0 : aOK ? -1 : 1;
       });
       indiv.sort((a, b) => stats[a.id].total - stats[b.id].total);
       for (const e of indiv) {
         if (placed >= count) break;
-        if (checkYesterday) {
+        if (blockValues && blockValues.length) {
           const y = stats[e.id].yesterday;
-          if (y !== null && y === 2) continue;
+          if (y !== null && blockValues.includes(y)) continue;
         }
         state.schedule[dk][String(e.id)] = shiftVal;
         assigned.push(e.id);
@@ -787,11 +787,11 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
   let remaining = [...crews];
   let r;
   if (day % 2 === 0) {
-    r = assignShift(remaining, t2c, 2, 't2', false); remaining = r.remaining;
-    r = assignShift(remaining, t1c, 1, 't1', true); remaining = r.remaining;
+    r = assignShift(remaining, t2c, 2, 't2', [2]); remaining = r.remaining;
+    r = assignShift(remaining, t1c, 1, 't1', [1,2]); remaining = r.remaining;
   } else {
-    r = assignShift(remaining, t1c, 1, 't1', true); remaining = r.remaining;
-    r = assignShift(remaining, t2c, 2, 't2', false); remaining = r.remaining;
+    r = assignShift(remaining, t1c, 1, 't1', [1,2]); remaining = r.remaining;
+    r = assignShift(remaining, t2c, 2, 't2', [2]); remaining = r.remaining;
   }
   if (!weekend && !skipTA) {
     // Filter crews: if any member already has 5+ worked days this week (40h reached),
