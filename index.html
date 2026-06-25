@@ -1140,6 +1140,8 @@ function clearSchedule() {
   const mn = ['','Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'][m];
   if (!confirm('Ștergeți graficul pentru ' + mn + ' ' + y + '?')) return;
   keysToDelete.forEach(k => delete state.schedule[k]);
+  const prefix = y + '-' + pad(m);
+  Object.keys(genCOCM).filter(k => k.startsWith(prefix)).forEach(k => delete genCOCM[k]);
   state.genDay = 0; state.genStats = null; state.genYear = 0; state.genMonth = 0; state.genDim = 0;
   updateButtons();
   saveState();
