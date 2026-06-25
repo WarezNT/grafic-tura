@@ -1592,9 +1592,11 @@ function renderTable() {
   if (emps.length === 0) {
     tbody.innerHTML = '';
     emptyEl.innerHTML = 'Adaugă electricieni și generează graficul.';
+    renderLegend();
     return;
   }
   emptyEl.innerHTML = '';
+  renderLegend();
 
   const wdInfo = workingDays(y, m);
   let bhtml = '';
@@ -1675,8 +1677,14 @@ function renderTable() {
       bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (norma !== null ? norma + 'h' : '—') + '</td></tr>';
     });
   }
+  renderLegend();
+  tbody.innerHTML = bhtml;
+}
+
+function renderLegend() {
   const legendEl = document.getElementById('table-legend');
-  if (legendEl) legendEl.innerHTML = '<span style="font-weight:700;color:var(--text-muted);margin-right:4px">Legendă:</span>'
+  if (!legendEl) return;
+  legendEl.innerHTML = '<span style="font-weight:700;color:var(--text-muted);margin-right:4px">Legendă:</span>'
     + '<span class="shift-pill pill-t1" style="padding:2px 8px;font-size:11px">T1 / T1A &nbsp;06:00–14:00</span> '
     + '<span class="shift-pill pill-t2" style="padding:2px 8px;font-size:11px">T2 / T2A &nbsp;14:00–22:00</span> '
     + '<span class="shift-pill pill-c8" style="padding:2px 8px;font-size:11px">8h &nbsp;08:00–16:00</span> '
@@ -1684,7 +1692,6 @@ function renderTable() {
     + '<span class="shift-pill pill-co" style="padding:2px 8px;font-size:11px">CO — Concediu Odihnă</span> '
     + '<span class="shift-pill pill-cm" style="padding:2px 8px;font-size:11px">CM — Concediu Medical</span> '
     + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>';
-  tbody.innerHTML = bhtml;
 }
 
 function onShiftChange(dk, empId, sel) {
@@ -2249,6 +2256,11 @@ function exportExcel() {
       const r2=ws.getCell(R+1,c); r2.value=sig[1]; r2.font=fnt('555555',false,9); r2.alignment=aln('center','middle');
       ws.mergeCells(R+1,c,R+1,c+step-1);
     });
+    R += 3;
+    ws.getRow(R).height = 16;
+    ws.getCell(R,1).value='Legendă:'; ws.getCell(R,1).font=fnt('2C3E50',true,9);
+    var li=[['T1 / T1A  06-14','D6EAF8','1A5276'],['T2 / T2A  14-22','FDEBD0','935116'],['8h  08-16','F0F4F8','2C3E50'],['INST  Instruire','D5F5E3','1A7A3A'],['CO  Concediu','E8D5F5','6C3483'],['CM  Medical','E8E8E8','555555'],['L  Liber','F0F0F0','666666']];
+    li.forEach((it,i)=>{var c=ws.getCell(R,i+2);c.value=it[0];c.font=fnt(it[2],true,7);c.fill=fill(it[1]);c.alignment=aln('center','middle');});
     const buffer = await wb.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = URL.createObjectURL(blob);
