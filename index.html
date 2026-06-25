@@ -2247,8 +2247,9 @@ function exportExcel() {
     R++;
     ws.getRow(R).height = 22;
     var lc=ws.getCell(R,1); lc.value='Legendă:'; lc.font=fnt('2C3E50',true,10);
+    ws.mergeCells(R,1,R,2);
     var li=[['T1 / T1A  06-14','D6EAF8','1A5276'],['T2 / T2A  14-22','FDEBD0','935116'],['8h  08-16','F0F4F8','2C3E50'],['INST  Instruire','D5F5E3','1A7A3A'],['CO  Concediu','E8D5F5','6C3483'],['CM  Medical','E8E8E8','555555'],['L  Liber','F0F0F0','666666']];
-    for(var i=0,ci=2;i<li.length;i++,ci+=2){ws.mergeCells(R,ci,R,ci+1);var cw=ws.getCell(R,ci);cw.value=li[i][0];cw.font=fnt(li[i][2],true,9);cw.fill=fill(li[i][1]);cw.alignment=aln('center','middle');}
+    for(var i=0,ci=3;i<li.length;i++,ci+=3){ws.mergeCells(R,ci,R,ci+2);var cw=ws.getCell(R,ci);cw.value=li[i][0];cw.font=fnt(li[i][2],true,9);cw.fill=fill(li[i][1]);cw.alignment=aln('center','middle');}
     R += 2;
     const org2 = getOrg();
     const sefCoreXls = 'Aprobat Șef CORE' + (org2.judet ? ' ' + org2.judet : '');
