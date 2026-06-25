@@ -878,11 +878,12 @@ function migrateState(s) {
   if (!s.preservedCOCM) s.preservedCOCM = {};
   if (s.genDay === undefined) s.genDay = 0;
   if (s.genStats === undefined) s.genStats = null;
+  if (s.genStats) Object.values(s.genStats).forEach(st => { if (st.inst === undefined) st.inst = 0; });
   if (s.genYear === undefined) s.genYear = 0;
   if (s.genMonth === undefined) s.genMonth = 0;
   if (s.genDim === undefined) s.genDim = 0;
   if (!s.org) s.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
-  if (!s.genMode) s.genMode = 't12';
+  if (!s.genMode) s.genMode = 'full';
 }
 
 async function initStateFromDB() {
