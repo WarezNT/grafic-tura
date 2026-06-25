@@ -404,7 +404,7 @@ td.emp-name-cell:hover{text-decoration:underline}
       <thead id="table-head"></thead>
       <tbody id="table-body"></tbody>
     </table>
-    <div id="table-legend" style="padding:6px 0 2px;font-size:11px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
+    <div id="table-legend" style="padding:16px 0 4px;font-size:11px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
     <div id="empty-msg" class="empty-msg"></div>
   </div>
   <div id="db-status" style="font-size:11px;color:#999;margin:4px 0 8px;text-align:right" class="no-print">💾 IndexedDB: inițializare...</div>
@@ -2244,6 +2244,11 @@ function exportExcel() {
         R++;
       });
     }
+    R++;
+    ws.getRow(R).height = 16;
+    ws.getCell(R,1).value='Legendă:'; ws.getCell(R,1).font=fnt('2C3E50',true,9);
+    var li=[['T1 / T1A  06-14','D6EAF8','1A5276'],['T2 / T2A  14-22','FDEBD0','935116'],['8h  08-16','F0F4F8','2C3E50'],['INST  Instruire','D5F5E3','1A7A3A'],['CO  Concediu','E8D5F5','6C3483'],['CM  Medical','E8E8E8','555555'],['L  Liber','F0F0F0','666666']];
+    li.forEach((it,i)=>{var c=ws.getCell(R,i+2);c.value=it[0];c.font=fnt(it[2],true,7);c.fill=fill(it[1]);c.alignment=aln('center','middle');});
     R += 2;
     const org2 = getOrg();
     const sefCoreXls = 'Aprobat Șef CORE' + (org2.judet ? ' ' + org2.judet : '');
@@ -2256,11 +2261,6 @@ function exportExcel() {
       const r2=ws.getCell(R+1,c); r2.value=sig[1]; r2.font=fnt('555555',false,9); r2.alignment=aln('center','middle');
       ws.mergeCells(R+1,c,R+1,c+step-1);
     });
-    R += 3;
-    ws.getRow(R).height = 16;
-    ws.getCell(R,1).value='Legendă:'; ws.getCell(R,1).font=fnt('2C3E50',true,9);
-    var li=[['T1 / T1A  06-14','D6EAF8','1A5276'],['T2 / T2A  14-22','FDEBD0','935116'],['8h  08-16','F0F4F8','2C3E50'],['INST  Instruire','D5F5E3','1A7A3A'],['CO  Concediu','E8D5F5','6C3483'],['CM  Medical','E8E8E8','555555'],['L  Liber','F0F0F0','666666']];
-    li.forEach((it,i)=>{var c=ws.getCell(R,i+2);c.value=it[0];c.font=fnt(it[2],true,7);c.fill=fill(it[1]);c.alignment=aln('center','middle');});
     const buffer = await wb.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = URL.createObjectURL(blob);
