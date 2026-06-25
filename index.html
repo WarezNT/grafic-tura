@@ -181,7 +181,7 @@ td.hours.ok{background:var(--hours-ok-bg);color:var(--hours-ok-text)}
 [data-tooltip]:hover::after,[data-tooltip]:hover::before{opacity:1}
 [data-theme="dark"] [data-tooltip]::after{background:#f0f2f5;color:#1a1a2e;box-shadow:0 3px 12px rgba(0,0,0,.5)}
 [data-theme="dark"] [data-tooltip]::before{border-top-color:#f0f2f5}
-td.emp-name-cell{cursor:pointer;font-weight:600}
+td.emp-name-cell{cursor:pointer;font-weight:600;padding:4px 10px;white-space:nowrap}
 td.emp-name-cell:hover{text-decoration:underline}
 .signatures{display:none;justify-content:space-around;gap:40px;margin-top:32px;page-break-inside:avoid}
 @media print{.no-print-hide{display:none!important}}
@@ -235,13 +235,13 @@ td.emp-name-cell:hover{text-decoration:underline}
   .table-wrap{border:none;overflow:visible;border-radius:0;margin-bottom:0;width:100%}
   table{table-layout:fixed;width:100%;min-width:0;font-size:9pt;border-collapse:separate;border-spacing:1px}
   th{padding:3px 2px;font-size:8pt;background:#2c3e50!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  th:first-child{width:100px;min-width:0;text-align:left;padding-left:4px;font-size:8pt}
+  th:first-child{width:180px;min-width:0;text-align:left;padding-left:6px;font-size:8pt}
   th:nth-child(2){width:65px;min-width:0;text-align:left;padding-left:4px;font-size:8pt}
   th:last-child,th:nth-last-child(2),th:nth-last-child(3){width:42px;min-width:0;font-size:8pt}
   th.day-col{width:auto;min-width:0;padding:2px 1px;font-size:8pt}
   th small{font-size:7pt}
   td{padding:0;font-size:8pt;border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  td:first-child{padding:1px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;font-size:8pt;background:#fff!important}
+  td:first-child{padding:2px 6px;overflow:hidden;white-space:nowrap;font-weight:600;font-size:8pt;background:#fff!important}
   tr:nth-child(even) td:first-child{background:#f8f9fb!important}
   td select{display:none!important}
   td .print-shift{display:block;font-size:8pt;font-weight:700;text-align:center;padding:2px 0;background:transparent!important}
@@ -1573,7 +1573,7 @@ function renderTable() {
   const groups = GROUPS;
   const colspan = dim + 5;
 
-  let hhtml = '<tr><th>Nume Prenume</th><th style="text-align:left;padding-left:4px;width:62px;min-width:62px;max-width:62px;overflow:hidden">Funcția</th>';
+  let hhtml = '<tr><th style="min-width:180px;white-space:nowrap">Nume Prenume</th><th style="text-align:left;padding-left:4px;width:62px;min-width:62px;max-width:62px;overflow:hidden">Funcția</th>';
   for (let d = 1; d <= dim; d++) {
     const dt = new Date(y, m - 1, d);
     const dow = dt.getDay();
@@ -1606,7 +1606,7 @@ function renderTable() {
       const fnLabel = FUNC_NAMES[emp.functia || 'emitent'];
       const fnCls = 'fn-' + (emp.functia || 'emitent');
       let crewLabel = '';
-      if (emp.crew) crewLabel = '<span style="font-size:9px;font-weight:700;color:#555;display:block;text-align:center">' + esc(emp.crew) + '</span>';
+      if (emp.crew) crewLabel = '<span style="font-size:11px;font-weight:700;color:#555;display:block;text-align:center">' + esc(emp.crew) + '</span>';
       bhtml += '<tr><td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + (emp.forced8 ? ' <span class="forced-badge">F</span>' : '') + '</td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + crewLabel + '</td>';
       for (let d = 1; d <= dim; d++) {
         const dt = new Date(y, m - 1, d);
