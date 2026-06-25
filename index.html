@@ -6,8 +6,8 @@
 <title>Grafic de tură - Formația Exploatare Măsură Piatra Neamț/Bicaz - Delgaz Grid S.A</title>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <style>
-:root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--shadow:0 2px 12px rgba(0,0,0,.08)}
-[data-theme="dark"]{--bg:#18191c;--card-bg:#222428;--text:#dde1e7;--text-muted:#8b929e;--heading:#f0f2f5;--ctrl-bg:#2a2d32;--border:#3a3d45;--border-light:#32353d;--accent:#4d9de0;--accent-dark:#3a8fd4;--header-bg:#1a1c20;--row-even:#262830;--hover-bg:#2e3440;--hover-first:#2a3548;--input-bg:#2a2d32;--sum-bg:#222428;--status-bg:#1e3048;--status-text:#7db8e8;--warn-bg:#2e2400;--warn-border:#c49a00;--bad-bg:#2e1515;--bad-border:#c0392b;--empty:#555;--group-urban-bg:#1e3048;--group-urban-text:#7db8e8;--group-rural-bg:#2e2010;--group-rural-text:#d4956a;--shift0-bg:#2a2d32;--shift0-text:#6b7280;--shift1-bg:#1a3550;--shift1-text:#7ec8f0;--shift2-bg:#2e200e;--shift2-text:#e8a855;--weekend-bg:#2e1a1a;--weekend-td:#2a1e1e;--hours-ok-bg:#0e2e1a;--hours-ok-text:#4ccc80;--hours-bad-bg:#2e1212;--hours-bad-text:#f07070;--shadow:0 2px 16px rgba(0,0,0,.5)}
+:root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--alt-row-bg:#f4f6f9;--shadow:0 2px 12px rgba(0,0,0,.08)}
+[data-theme="dark"]{--bg:#18191c;--card-bg:#222428;--text:#dde1e7;--text-muted:#8b929e;--heading:#f0f2f5;--ctrl-bg:#2a2d32;--border:#3a3d45;--border-light:#32353d;--accent:#4d9de0;--accent-dark:#3a8fd4;--header-bg:#1a1c20;--row-even:#262830;--hover-bg:#2e3440;--hover-first:#2a3548;--input-bg:#2a2d32;--sum-bg:#222428;--status-bg:#1e3048;--status-text:#7db8e8;--warn-bg:#2e2400;--warn-border:#c49a00;--bad-bg:#2e1515;--bad-border:#c0392b;--empty:#555;--group-urban-bg:#1e3048;--group-urban-text:#7db8e8;--group-rural-bg:#2e2010;--group-rural-text:#d4956a;--shift0-bg:#2a2d32;--shift0-text:#6b7280;--shift1-bg:#1a3550;--shift1-text:#7ec8f0;--shift2-bg:#2e200e;--shift2-text:#e8a855;--weekend-bg:#2e1a1a;--weekend-td:#2a1e1e;--hours-ok-bg:#0e2e1a;--hours-ok-text:#4ccc80;--hours-bad-bg:#2e1212;--hours-bad-text:#f07070;--alt-row-bg:#202226;--shadow:0 2px 16px rgba(0,0,0,.5)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;padding:20px;transition:background .3s,color .3s;overflow-y:scroll}
 #app{max-width:1800px;margin:0 auto;background:var(--card-bg);border-radius:12px;box-shadow:var(--shadow);padding:24px 20px;overflow:hidden;transition:background .3s}
@@ -68,12 +68,14 @@ td.shift-4{background:#fad7a0;color:#7e4d0e}
 td.shift-5{background:#e8d5f5;color:#6c3483}
 td.shift-6{background:#e8e8e8;color:#555}
 td.shift-7{background:#f0f4f8;color:#2c3e50}
+td.shift-8{background:#d5f5e3;color:#1a7a3a}
 [data-theme="dark"] td.shift-0{background:#252830;color:#7a8090}
 [data-theme="dark"] td.shift-3{background:#1a3d52;color:#7ad4f8}
 [data-theme="dark"] td.shift-4{background:#352610;color:#f0c060}
 [data-theme="dark"] td.shift-5{background:#2e1a48;color:#d090ff}
 [data-theme="dark"] td.shift-6{background:#2a2c38;color:#a0a8c0}
 [data-theme="dark"] td.shift-7{background:#1e2838;color:#a0bcd8}
+[data-theme="dark"] td.shift-8{background:#1a3a28;color:#6cdb9a}
 [data-theme="dark"] td.td-weekend{background:#2a2020!important}
 [data-theme="dark"] .fn-emitent{background:#2d1f4a;color:#c088f0}
 [data-theme="dark"] .fn-admitent{background:#3a1520;color:#f07090}
@@ -94,6 +96,8 @@ td.shift-7{background:#f0f4f8;color:#2c3e50}
 [data-theme="dark"] .ctrl-urban-wrap{background:#1a3050}
 [data-theme="dark"] .ctrl-rural-wrap{background:#2e200a}
 td.hours{font-weight:700;font-size:14px}
+tbody tr:nth-child(even){background:var(--alt-row-bg)}
+tbody tr td:first-child{font-weight:700}
 td.hours.under{background:var(--hours-bad-bg);color:var(--hours-bad-text)}
 td.hours.over{background:var(--hours-bad-bg);color:var(--hours-bad-text)}
 td.hours.ok{background:var(--hours-ok-bg);color:var(--hours-ok-text)}
@@ -248,6 +252,7 @@ td.emp-name-cell:hover{text-decoration:underline}
   td.shift-5{background:#e8d5f5!important;color:#6c3483!important}
   td.shift-6{background:#e8e8e8!important;color:#555!important}
   td.shift-7{background:#f0f4f8!important;color:#2c3e50!important}
+td.shift-8{background:#d5f5e3!important;color:#1a7a3a!important}
   td.td-weekend{background:#fce4e4!important}
   td.hours,td.hours-cell{font-weight:700;font-size:8pt;text-align:center;padding:2px}
   td.hours.under,td.hours-cell.under{background:#fde8e8!important;color:#c0392b!important}
@@ -550,7 +555,8 @@ td.emp-name-cell:hover{text-decoration:underline}
             <span class="shift-pill pill-t2a" style="padding:3px 10px;font-size:12px">T2A — 14:00–22:00 (L–V)</span>
             <span class="shift-pill pill-co" style="padding:3px 10px;font-size:12px">CO — Concediu Odihnă</span>
             <span class="shift-pill pill-cm" style="padding:3px 10px;font-size:12px">CM — Concediu Medical</span>
-            <span class="shift-pill pill-c8" style="padding:3px 10px;font-size:12px">8h — Program normal</span>
+            <span class="shift-pill pill-c8" style="padding:3px 10px;font-size:12px">8h — Program normal (08:00–16:00)</span>
+            <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:#d5f5e3;color:#1a7a3a;font-weight:600">INST — Instruire</span>
             <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>
           </div>
         </div>
@@ -670,11 +676,20 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.06.2';
+const APP_VERSION = 'V2026.06.3';
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.06.3': {
+    title: 'Instruire (INST) + reorganizare',
+    items: [
+      { icon: '🟢', text: 'Tură nouă INST (Instruire) — culoare verde, disponibilă în toate zilele, se contorizează în orele lucrate' },
+      { icon: '📋', text: 'Electricienii cu program forțat 8h sunt grupați separat, sub „Program 8 ore", după Rural' },
+      { icon: '🎨', text: 'Contrast îmbunătățit pe numele electricienilor — rânduri alternative și text bold' },
+      { icon: '📖', text: 'Legendă actualizată cu INST și 8h — atât în manual cât și în subsolul tabelului' }
+    ]
+  },
   'V2026.06.2': {
     title: 'Actualizare iunie 2026 (2)',
     items: [
@@ -706,7 +721,7 @@ let savedFileHandle = null;
 let genDay = state.genDay || 0, genStats = state.genStats || null, genCOCM = state.preservedCOCM || {}, genYear = state.genYear || 0, genMonth = state.genMonth || 0, genDim = state.genDim || 0;
 
 const GROUPS = ['urban', 'rural'];
-const SHIFT_NAMES = ['L', 'T1', 'T2', 'T1A', 'T2A', 'CO', 'CM', '8'];
+const SHIFT_NAMES = ['L', 'T1', 'T2', 'T1A', 'T2A', 'CO', 'CM', '8', 'INST'];
 const FUNC_NAMES = { emitent: 'Emitent', admitent: 'Admitent', electrician: 'Electrician', seftura: 'Șef tură' };
 const PREDEFINED_CREWS = ['U1','U2','U3','U4','U5','R1','R2','R3','R4','R5'];
 
@@ -986,7 +1001,7 @@ function getShift(dateKey, empId) {
 }
 
 function getEmployeeStats(empId) {
-  let t1 = 0, t2 = 0, t1a = 0, t2a = 0, co = 0, cm = 0, c8 = 0;
+  let t1 = 0, t2 = 0, t1a = 0, t2a = 0, co = 0, cm = 0, c8 = 0, inst = 0;
   const prefix = state.currentYear + '-' + pad(state.currentMonth);
   for (const dk in state.schedule) {
     if (!dk.startsWith(prefix)) continue;
@@ -1001,9 +1016,10 @@ function getEmployeeStats(empId) {
     else if (v === 5 && !isWeekend) co++;
     else if (v === 6 && !isWeekend) cm++;
     else if (v === 7) c8++;
+    else if (v === 8) inst++;
   }
-  const worked = t1 + t2 + t1a + t2a + c8;
-  return { t1, t2, t1a, t2a, co, cm, c8, total: worked + co, hours: worked * 8 };
+  const worked = t1 + t2 + t1a + t2a + c8 + inst;
+  return { t1, t2, t1a, t2a, co, cm, c8, inst, total: worked + co, hours: worked * 8 };
 }
 
 function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, skipTA) {
@@ -1094,7 +1110,7 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
         if (dd < 1) continue;
         const cdk = dateKey(yr, mo, dd);
         const v = state.schedule[cdk]?.[String(e.id)];
-        if (v >= 1 && v <= 4 || v === 7) wc++;
+        if (v >= 1 && v <= 4 || v === 7 || v === 8) wc++;
       }
       return wc < 5;
     });
@@ -1240,7 +1256,7 @@ function startGeneration() {
   genDim = dim;
   // rebuild genStats from existing data
   genStats = {};
-  emps.forEach(e => { genStats[e.id] = { total: 0, t1: 0, t2: 0, t1a: 0, t2a: 0, c8: 0, yesterday: null, consec: 0 }; });
+  emps.forEach(e => { genStats[e.id] = { total: 0, t1: 0, t2: 0, t1a: 0, t2a: 0, c8: 0, inst: 0, yesterday: null, consec: 0 }; });
   for (let d = 1; d < firstEmpty; d++) {
     const dk = dateKey(year, month, d);
     if (state.schedule[dk]) {
@@ -1253,9 +1269,10 @@ function startGeneration() {
         else if (v === 3) { s.t1a++; s.total++; }
         else if (v === 4) { s.t2a++; s.total++; }
         else if (v === 7) { s.c8++; s.total++; }
+        else if (v === 8) { s.inst++; s.total++; }
         if (v > 0) s.yesterday = v;
-        // Track consecutive working days (T1=1, T2=2, T1A=3, T2A=4, 8h=7)
-        if (v >= 1 && v <= 4 || v === 7) { s.consec++; } else { s.consec = 0; }
+        // Track consecutive working days (T1=1, T2=2, T1A=3, T2A=4, 8h=7, INST=8)
+        if (v >= 1 && v <= 4 || v === 7 || v === 8) { s.consec++; } else { s.consec = 0; }
       }
     }
   }
@@ -1271,12 +1288,12 @@ function startGeneration() {
       const prevV = state.schedule[prevDk][String(e.id)];
       if (prevV !== undefined && prevV !== null) {
         if (s.yesterday === null) s.yesterday = prevV;
-        if (s.consec === 0 && (prevV >= 1 && prevV <= 4 || prevV === 7)) {
+        if (s.consec === 0 && (prevV >= 1 && prevV <= 4 || prevV === 7 || prevV === 8)) {
           let c = 1;
           for (let d = prevDim - 1; d >= 1; d--) {
             const pd = dateKey(prevYear, prevMonth, d);
             const pv = state.schedule[pd]?.[String(e.id)];
-            if (pv >= 1 && pv <= 4 || pv === 7) c++; else break;
+            if (pv >= 1 && pv <= 4 || pv === 7 || pv === 8) c++; else break;
           }
           s.consec = c;
         }
@@ -1351,8 +1368,9 @@ function generateDay(day) {
     else if (v === 3) { genStats[e.id].t1a++; genStats[e.id].total++; }
     else if (v === 4) { genStats[e.id].t2a++; genStats[e.id].total++; }
     else if (v === 7) { genStats[e.id].c8++; genStats[e.id].total++; }
+    else if (v === 8) { genStats[e.id].inst++; genStats[e.id].total++; }
     // Update consecutive working days count
-    if (v >= 1 && v <= 4 || v === 7) { genStats[e.id].consec++; } else { genStats[e.id].consec = 0; }
+    if (v >= 1 && v <= 4 || v === 7 || v === 8) { genStats[e.id].consec++; } else { genStats[e.id].consec = 0; }
   });
   saveState();
 }
@@ -1368,6 +1386,7 @@ function subtractDayStats(dk) {
     else if (v === 3) { s.t1a--; s.total--; }
     else if (v === 4) { s.t2a--; s.total--; }
     else if (v === 7) { s.c8--; s.total--; }
+    else if (v === 8) { s.inst--; s.total--; }
   }
 }
 
@@ -1409,7 +1428,7 @@ function prevDay() {
   genDay--;
   // rebuild stats from scratch for days 1..genDay-1 (everything before current day)
   genStats = {};
-  state.employees.forEach(e => { genStats[e.id] = { total: 0, t1: 0, t2: 0, t1a: 0, t2a: 0, c8: 0, yesterday: null, consec: 0 }; });
+  state.employees.forEach(e => { genStats[e.id] = { total: 0, t1: 0, t2: 0, t1a: 0, t2a: 0, c8: 0, inst: 0, yesterday: null, consec: 0 }; });
   for (let d = 1; d < genDay; d++) {
     const dk = dateKey(genYear, genMonth, d);
     if (state.schedule[dk]) {
@@ -1422,8 +1441,9 @@ function prevDay() {
         else if (v === 3) { s.t1a++; s.total++; }
         else if (v === 4) { s.t2a++; s.total++; }
         else if (v === 7) { s.c8++; s.total++; }
+        else if (v === 8) { s.inst++; s.total++; }
         s.yesterday = v;
-        if (v >= 1 && v <= 4 || v === 7) { s.consec++; } else { s.consec = 0; }
+        if (v >= 1 && v <= 4 || v === 7 || v === 8) { s.consec++; } else { s.consec = 0; }
       }
     }
   }
@@ -1570,7 +1590,7 @@ function renderTable() {
   const wdInfo = workingDays(y, m);
   let bhtml = '';
   groups.forEach(g => {
-    const gEmps = emps.filter(e => (e.category || 'urban') === g);
+    const gEmps = emps.filter(e => (e.category || 'urban') === g && !e.forced8);
     if (gEmps.length === 0) return;
     bhtml += '<tr class="group-header group-' + g + '"><td colspan="' + colspan + '">' + catLabel(g) + ' — ' + gEmps.length + ' electricieni</td></tr>';
     gEmps.sort((a,b) => (a.crew||'').localeCompare(b.crew||''));
@@ -1594,7 +1614,7 @@ function renderTable() {
         const displayV = (weekend && (v === 5 || v === 6)) ? 0 : v;
         const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
-        for (let si = 0; si <= 7; si++) {
+        for (let si = 0; si <= 8; si++) {
           if (weekend && (si === 3 || si === 4 || si === 7)) continue;
           if (weekend && (si === 5 || si === 6)) continue;
           bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
@@ -1607,11 +1627,46 @@ function renderTable() {
       bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (norma !== null ? norma + 'h' : '—') + '</td></tr>';
     });
   });
+  const f8Emps = emps.filter(e => e.forced8);
+  if (f8Emps.length) {
+    bhtml += '<tr class="group-header" style="background:var(--ctrl-bg)"><td colspan="' + colspan + '">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
+    f8Emps.forEach(emp => {
+      const st = getEmployeeStats(emp.id);
+      let cls = 'hours ok';
+      if (st.hours < 150) cls = 'hours under';
+      else if (st.hours > 184) cls = 'hours over';
+      const fnLabel = FUNC_NAMES[emp.functia || 'emitent'];
+      const fnCls = 'fn-' + (emp.functia || 'emitent');
+      bhtml += '<tr><td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + ' <span class="forced-badge">F</span></td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + '</td>';
+      for (let d = 1; d <= dim; d++) {
+        const dt = new Date(y, m - 1, d);
+        const dow = dt.getDay();
+        const dk = dateKey(y, m, d);
+        let v = getShift(dk, emp.id);
+        if (v === null || v === undefined) v = 0;
+        const weekend = (dow === 0 || dow === 6);
+        const displayV = (weekend && (v === 5 || v === 6)) ? 0 : v;
+        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
+        bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
+        for (let si = 0; si <= 8; si++) {
+          if (weekend && (si === 3 || si === 4 || si === 7)) continue;
+          if (weekend && (si === 5 || si === 6)) continue;
+          bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
+        }
+        bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span></td>';
+      }
+      const norma = wdInfo !== null ? wdInfo * 8 : null;
+      bhtml += '<td class="' + cls + ' hours-cell">' + st.hours + 'h</td>';
+      bhtml += '<td class="hours" style="font-size:12px">' + ((st.co + st.cm) * 8) + 'h</td>';
+      bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (norma !== null ? norma + 'h' : '—') + '</td></tr>';
+    });
+  }
   bhtml += '<tr class="legend-row"><td colspan="' + colspan + '" style="padding:6px 10px;border-top:2px solid var(--border)">'
     + '<span style="font-size:11px;font-weight:700;color:var(--text-muted);margin-right:8px">Legendă:</span>'
     + '<span class="shift-pill pill-t1" style="padding:2px 8px;font-size:11px">T1 / T1A &nbsp;06:00–14:00</span> '
     + '<span class="shift-pill pill-t2" style="padding:2px 8px;font-size:11px">T2 / T2A &nbsp;14:00–22:00</span> '
     + '<span class="shift-pill pill-c8" style="padding:2px 8px;font-size:11px">8h &nbsp;08:00–16:00</span> '
+    + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:#d5f5e3;color:#1a7a3a">INST — Instruire</span> '
     + '<span class="shift-pill pill-co" style="padding:2px 8px;font-size:11px">CO — Concediu Odihnă</span> '
     + '<span class="shift-pill pill-cm" style="padding:2px 8px;font-size:11px">CM — Concediu Medical</span> '
     + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>'
@@ -1706,6 +1761,7 @@ function renderSummary() {
     if (st.t1a) pills.push('<span class="shift-pill pill-t1a">T1A ×' + st.t1a + '</span>');
     if (st.t2a) pills.push('<span class="shift-pill pill-t2a">T2A ×' + st.t2a + '</span>');
     if (st.c8)  pills.push('<span class="shift-pill pill-c8">8h ×' + st.c8 + '</span>');
+    if (st.inst) pills.push('<span class="shift-pill" style="padding:2px 6px;font-size:10px;border-radius:4px;background:#d5f5e3;color:#1a7a3a;font-weight:600">INST ×' + st.inst + '</span>');
     if (st.co)  pills.push('<span class="shift-pill pill-co">CO ×' + st.co + '</span>');
     if (st.cm)  pills.push('<span class="shift-pill pill-cm">CM ×' + st.cm + '</span>');
     html += '<div class="' + cardCls + '">'
@@ -1731,6 +1787,7 @@ function renderSummary() {
     + '<th title="Tura 1">T1</th><th title="Tura 2">T2</th>'
     + '<th title="Tura 1 Alternativă">T1A</th><th title="Tura 2 Alternativă">T2A</th>'
     + '<th title="8 ore">8h</th>'
+    + '<th title="Instruire">INST</th>'
     + '<th title="Concediu Odihnă (zile lucrătoare)">CO</th>'
     + '<th title="Concediu Medical (zile lucrătoare)">CM</th>'
     + '<th title="Ore lucrate efectiv">Lucrate</th>'
@@ -1739,9 +1796,9 @@ function renderSummary() {
     + '<th title="Diferență față de normă">±</th>'
     + '</tr></thead><tbody>';
   groups.forEach(g => {
-    const gEmps = state.employees.filter(e => (e.category||'urban') === g);
+    const gEmps = state.employees.filter(e => (e.category||'urban') === g && !e.forced8);
     if (!gEmps.length) return;
-    html += '<tr class="stat-group-header"><td colspan="14">' + (g==='urban'?'Urban':'Rural') + ' — ' + gEmps.length + ' electricieni</td></tr>';
+    html += '<tr class="stat-group-header"><td colspan="15">' + (g==='urban'?'Urban':'Rural') + ' — ' + gEmps.length + ' electricieni</td></tr>';
     gEmps.forEach(emp => {
       const st = getEmployeeStats(emp.id);
       const diff = st.hours - expected;
@@ -1753,7 +1810,7 @@ function renderSummary() {
       else if (diff < 0) { rowCls = 'stat-row-warn'; hoursCls = 'stat-hours-warn'; }
       const cocmH = (st.co + st.cm) * 8;
       html += '<tr class="' + rowCls + '">'
-        + '<td>' + esc(emp.name) + (emp.forced8 ? ' <span class="forced-badge">F</span>' : '') + '</td>'
+        + '<td>' + esc(emp.name) + '</td>'
         + '<td><span class="fn-' + (emp.functia||'emitent') + '" style="font-size:11px;padding:1px 6px;border-radius:4px;font-weight:600">' + fnLabel(emp) + '</span></td>'
         + '<td style="font-size:11px;color:var(--text-muted)">' + (emp.crew || '—') + '</td>'
         + '<td>' + (st.t1||'—') + '</td>'
@@ -1761,6 +1818,7 @@ function renderSummary() {
         + '<td>' + (st.t1a||'—') + '</td>'
         + '<td>' + (st.t2a||'—') + '</td>'
         + '<td>' + (st.c8||'—') + '</td>'
+        + '<td>' + (st.inst||'—') + '</td>'
         + '<td>' + (st.co||'—') + '</td>'
         + '<td>' + (st.cm||'—') + '</td>'
         + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
@@ -1770,6 +1828,38 @@ function renderSummary() {
         + '</tr>';
     });
   });
+  const f8Emps = state.employees.filter(e => e.forced8);
+  if (f8Emps.length) {
+    html += '<tr class="stat-group-header"><td colspan="15">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
+    f8Emps.forEach(emp => {
+      const st = getEmployeeStats(emp.id);
+      const diff = st.hours - expected;
+      const diffStr = diff === 0 ? '=' : (diff > 0 ? '+'+diff+'h' : diff+'h');
+      let rowCls = 'stat-row-ok';
+      let hoursCls = 'stat-hours-ok';
+      if (diff > 0) { rowCls = 'stat-row-bad'; hoursCls = 'stat-hours-bad'; }
+      else if (diff < -16) { rowCls = 'stat-row-bad'; hoursCls = 'stat-hours-bad'; }
+      else if (diff < 0) { rowCls = 'stat-row-warn'; hoursCls = 'stat-hours-warn'; }
+      const cocmH = (st.co + st.cm) * 8;
+      html += '<tr class="' + rowCls + '">'
+        + '<td>' + esc(emp.name) + '</td>'
+        + '<td><span class="fn-' + (emp.functia||'emitent') + '" style="font-size:11px;padding:1px 6px;border-radius:4px;font-weight:600">' + fnLabel(emp) + '</span></td>'
+        + '<td style="font-size:11px;color:var(--text-muted)">—</td>'
+        + '<td>' + (st.t1||'—') + '</td>'
+        + '<td>' + (st.t2||'—') + '</td>'
+        + '<td>' + (st.t1a||'—') + '</td>'
+        + '<td>' + (st.t2a||'—') + '</td>'
+        + '<td>' + (st.c8||'—') + '</td>'
+        + '<td>' + (st.inst||'—') + '</td>'
+        + '<td>' + (st.co||'—') + '</td>'
+        + '<td>' + (st.cm||'—') + '</td>'
+        + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
+        + '<td style="color:var(--text-muted)">' + cocmH + 'h</td>'
+        + '<td style="color:var(--text-muted)">' + expected + 'h</td>'
+        + '<td class="' + hoursCls + '">' + diffStr + '</td>'
+        + '</tr>';
+    });
+  }
   html += '</tbody></table></div>'; // închide sum-table
 
   container.innerHTML = html;
@@ -2012,7 +2102,7 @@ function exportExcel() {
   const shiftFill = {
     0:{bg:'F0F0F0',fg:'666666'}, 1:{bg:'D6EAF8',fg:'1A5276'}, 2:{bg:'FDEBD0',fg:'935116'},
     3:{bg:'AED6F1',fg:'154360'}, 4:{bg:'FAD7A0',fg:'7E4D0E'}, 5:{bg:'E8D5F5',fg:'6C3483'},
-    6:{bg:'E8E8E8',fg:'555555'}, 7:{bg:'F0F4F8',fg:'2C3E50'}
+    6:{bg:'E8E8E8',fg:'555555'}, 7:{bg:'F0F4F8',fg:'2C3E50'}, 8:{bg:'D5F5E3',fg:'1A7A3A'}
   };
   const argb = c => 'FF' + c;
   const fill = bg => ({ type:'pattern', pattern:'solid', fgColor:{ argb: argb(bg) } });
@@ -2064,7 +2154,7 @@ function exportExcel() {
     // Rows
     let R = HDR + 1;
     GROUPS.forEach(g => {
-      const gEmps = emps.filter(e => (e.category||'urban') === g);
+      const gEmps = emps.filter(e => (e.category||'urban') === g && !e.forced8);
       if (!gEmps.length) return;
       const gc = g==='urban' ? {bg:'D6EAF8',fg:'1A5276'} : {bg:'FDEBD0',fg:'935116'};
       const gLabel = (g==='urban'?'Urban':'Rural') + ' — ' + gEmps.length + ' electricieni';
@@ -2098,6 +2188,39 @@ function exportExcel() {
         R++;
       });
     });
+    const f8Emps = emps.filter(e => e.forced8);
+    if (f8Emps.length) {
+      const f8Label = 'Program 8 ore — ' + f8Emps.length + ' electricieni';
+      ws.getRow(R).height = 16;
+      for (let c = 1; c <= totalCols; c++) {
+        const cell = ws.getCell(R, c);
+        cell.fill = fill('2C3E50'); cell.font = fnt('FFFFFF', true, 9);
+        cell.alignment = aln(c===1?'left':'center','middle');
+        if (c === 1) cell.value = f8Label;
+      }
+      ws.mergeCells(R, 1, R, totalCols); R++;
+      f8Emps.forEach(emp => {
+        const st = getEmployeeStats(emp.id);
+        const diff = st.hours - expected;
+        const hBg = diff===0?'E8F8F0':diff>0?'FDE8E8':diff>=-16?'FFF8E1':'FDE8E8';
+        const hFg = diff===0?'1A7A3A':diff>0?'C0392B':diff>=-16?'B7770D':'C0392B';
+        ws.getRow(R).height = 15;
+        const c1=ws.getCell(R,1); c1.value=emp.name; c1.font=fnt('1A1A2E',true,9); c1.fill=fill('FFFFFF'); c1.alignment=aln('left','middle');
+        const c2=ws.getCell(R,2); c2.value=FUNC_NAMES[emp.functia||'emitent']; c2.font=fnt('444444',false,8); c2.fill=fill('F8F9FB'); c2.alignment=aln('center','middle');
+        const c3=ws.getCell(R,3); c3.value='—'; c3.font=fnt('888888',false,8); c3.fill=fill('F8F9FB'); c3.alignment=aln('center','middle');
+        for (let d = 1; d <= dim; d++) {
+          const dow = new Date(y,m-1,d).getDay(), isW = dow===0||dow===6;
+          const v = getShift(dateKey(y,m,d), emp.id), sv = v!==null?v:0;
+          const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
+          const dc = ws.getCell(R, firstDay+d);
+          dc.value=SHIFT_NAMES[sv]; dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
+        }
+        const lc=ws.getCell(R,colLucrate+1); lc.value=st.hours; lc.font=fnt(hFg,true,9); lc.fill=fill(hBg); lc.alignment=aln('center','middle');
+        const cc=ws.getCell(R,colCOCM+1); cc.value=(st.co+st.cm)*8; cc.font=fnt('6C3483',false,9); cc.fill=fill('F5EEF8'); cc.alignment=aln('center','middle');
+        const nc=ws.getCell(R,colNorma+1); nc.value=expected; nc.font=fnt('7F8C8D',false,9); nc.fill=fill('F8F9FB'); nc.alignment=aln('center','middle');
+        R++;
+      });
+    }
     R += 2;
     const org2 = getOrg();
     const sefCoreXls = 'Aprobat Șef CORE' + (org2.judet ? ' ' + org2.judet : '');
