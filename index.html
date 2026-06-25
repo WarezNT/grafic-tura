@@ -42,6 +42,7 @@ h1 small{font-size:13px;font-weight:400;color:var(--text-muted);margin-left:auto
 tr.group-header td{padding:6px 10px;font-weight:700;font-size:13px;border-bottom:2px solid rgba(0,0,0,.1)}
 tr.group-header.group-urban td{background:#d6eaf8;color:#1a5276}
 tr.group-header.group-rural td{background:#fdebd0;color:#935116}
+tr.group-header.group-f8 td{background:#e2e8f0;color:#4a5568}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 .table-wrap{overflow:auto;border:1px solid #e0e4e8;border-radius:8px;margin-bottom:16px;min-height:200px}
 table{width:100%;border-collapse:separate;border-spacing:2px;font-size:13px;min-width:0;table-layout:fixed}
@@ -85,6 +86,7 @@ td.shift-8{background:#d5f5e3;color:#1a7a3a}
 [data-theme="dark"] .cat-rural{background:#2e200a;color:#d49060}
 [data-theme="dark"] tr.group-header.group-urban td{background:#1a3050!important;color:#7ab0e8!important}
 [data-theme="dark"] tr.group-header.group-rural td{background:#2e200a!important;color:#d49060!important}
+[data-theme="dark"] tr.group-header.group-f8 td{background:#2d3748!important;color:#a0aec0!important}
 .ctrl-label{color:#555}
 .ctrl-urban-label{color:#1a5276}
 .ctrl-rural-label{color:#935116}
@@ -261,6 +263,7 @@ td.shift-8{background:#d5f5e3!important;color:#1a7a3a!important}
   tr.group-header td{font-size:9pt;padding:3px 6px!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   tr.group-header.group-urban td{background:#d6eaf8!important;color:#1a5276!important}
   tr.group-header.group-rural td{background:#fdebd0!important;color:#935116!important}
+  tr.group-header.group-f8 td{background:#e2e8f0!important;color:#4a5568!important}
   h1 img{height:80px!important;width:auto!important}
   h1{font-size:22px!important;margin-bottom:8px}
   h1 span>span:first-child{font-size:22px!important;font-weight:700!important}
@@ -1630,7 +1633,7 @@ function renderTable() {
   });
   const f8Emps = emps.filter(e => e.forced8);
   if (f8Emps.length) {
-    bhtml += '<tr class="group-header" style="background:var(--ctrl-bg)"><td colspan="' + colspan + '">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
+    bhtml += '<tr class="group-header group-f8"><td colspan="' + colspan + '">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
     f8Emps.forEach(emp => {
       const st = getEmployeeStats(emp.id);
       let cls = 'hours ok';
