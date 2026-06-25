@@ -255,8 +255,8 @@ td.emp-name-cell:hover{text-decoration:underline}
   td.shift-5{background:#e8d5f5!important;color:#6c3483!important}
   td.shift-6{background:#e8e8e8!important;color:#555!important}
   td.shift-7{background:#f0f4f8!important;color:#2c3e50!important}
-td.shift-8{background:#d5f5e3!important;color:#1a7a3a!important}
-.crew-indicator{display:block;font-size:7pt;color:#555!important;font-weight:600;text-align:center;line-height:1.2}
+  td.shift-8{background:#d5f5e3!important;color:#1a7a3a!important}
+  .crew-indicator{display:block;font-size:7pt;color:#555!important;font-weight:600;text-align:center;line-height:1.2}
   td.td-weekend{background:#fce4e4!important}
   td.hours,td.hours-cell{font-weight:700;font-size:8pt;text-align:center;padding:2px}
   td.hours.under,td.hours-cell.under{background:#fde8e8!important;color:#c0392b!important}
@@ -282,6 +282,7 @@ td.shift-8{background:#d5f5e3!important;color:#1a7a3a!important}
   .emp-card-hours{font-size:7pt}
   .emp-card-hours strong{font-size:9pt}
   .shift-pill{font-size:7pt;padding:1px 4px}
+  #table-legend .shift-pill{font-size:7pt!important;padding:1px 4px!important}
   .emp-card.warn{background:#fffde7!important;border-color:#f9e154!important}
   .emp-card.bad{background:#fde8e8!important;border-color:#e74c3c!important}
   .summary-grid .emp-card-header .cat-badge{font-size:8pt}
@@ -403,6 +404,7 @@ td.shift-8{background:#d5f5e3!important;color:#1a7a3a!important}
       <thead id="table-head"></thead>
       <tbody id="table-body"></tbody>
     </table>
+    <div id="table-legend" style="padding:6px 0 2px;font-size:11px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
     <div id="empty-msg" class="empty-msg"></div>
   </div>
   <div id="db-status" style="font-size:11px;color:#999;margin:4px 0 8px;text-align:right" class="no-print">💾 IndexedDB: inițializare...</div>
@@ -1673,16 +1675,15 @@ function renderTable() {
       bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (norma !== null ? norma + 'h' : '—') + '</td></tr>';
     });
   }
-  bhtml += '<tr class="legend-row"><td colspan="' + colspan + '" style="padding:6px 10px;border-top:2px solid var(--border)">'
-    + '<span style="font-size:11px;font-weight:700;color:var(--text-muted);margin-right:8px">Legendă:</span>'
+  const legendEl = document.getElementById('table-legend');
+  if (legendEl) legendEl.innerHTML = '<span style="font-weight:700;color:var(--text-muted);margin-right:4px">Legendă:</span>'
     + '<span class="shift-pill pill-t1" style="padding:2px 8px;font-size:11px">T1 / T1A &nbsp;06:00–14:00</span> '
     + '<span class="shift-pill pill-t2" style="padding:2px 8px;font-size:11px">T2 / T2A &nbsp;14:00–22:00</span> '
     + '<span class="shift-pill pill-c8" style="padding:2px 8px;font-size:11px">8h &nbsp;08:00–16:00</span> '
     + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:#d5f5e3;color:#1a7a3a">INST — Instruire</span> '
     + '<span class="shift-pill pill-co" style="padding:2px 8px;font-size:11px">CO — Concediu Odihnă</span> '
     + '<span class="shift-pill pill-cm" style="padding:2px 8px;font-size:11px">CM — Concediu Medical</span> '
-    + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>'
-    + '</td></tr>';
+    + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>';
   tbody.innerHTML = bhtml;
 }
 
@@ -2189,10 +2190,13 @@ function exportExcel() {
         const c3=ws.getCell(R,3); c3.value=emp.crew||'—'; c3.font=fnt('888888',false,8); c3.fill=fill('F8F9FB'); c3.alignment=aln('center','middle');
         for (let d = 1; d <= dim; d++) {
           const dow = new Date(y,m-1,d).getDay(), isW = dow===0||dow===6;
-          const v = getShift(dateKey(y,m,d), emp.id), sv = v!==null?v:0;
+          const dk = dateKey(y,m,d);
+          const v = getShift(dk, emp.id), sv = v!==null?v:0;
           const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
           const dc = ws.getCell(R, firstDay+d);
-          dc.value=SHIFT_NAMES[sv]; dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
+          var crewForDay=getCrewForDay(emp,dk);var defCrew=emp.crew||'';
+          dc.value=SHIFT_NAMES[sv]+(sv>0&&sv!==5&&sv!==6&&sv!==8&&crewForDay&&crewForDay!==defCrew?' ('+crewForDay+')':'');
+          dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
         }
         const lc=ws.getCell(R,colLucrate+1); lc.value=st.hours; lc.font=fnt(hFg,true,9); lc.fill=fill(hBg); lc.alignment=aln('center','middle');
         const cc=ws.getCell(R,colCOCM+1); cc.value=(st.co+st.cm)*8; cc.font=fnt('6C3483',false,9); cc.fill=fill('F5EEF8'); cc.alignment=aln('center','middle');
