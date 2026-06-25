@@ -98,6 +98,7 @@ td.shift-8{background:#d5f5e3;color:#1a7a3a}
 [data-theme="dark"] .ctrl-urban-wrap{background:#1a3050}
 [data-theme="dark"] .ctrl-rural-wrap{background:#2e200a}
 td.hours{font-weight:700;font-size:14px}
+.crew-indicator{display:block;font-size:8px;color:#f59e0b;font-weight:600;text-align:center;line-height:1.2}
 tbody tr:nth-child(even){background:var(--alt-row-bg)}
 tbody tr td:first-child{font-weight:700}
 td.hours.under{background:var(--hours-bad-bg);color:var(--hours-bad-text)}
@@ -255,6 +256,7 @@ td.emp-name-cell:hover{text-decoration:underline}
   td.shift-6{background:#e8e8e8!important;color:#555!important}
   td.shift-7{background:#f0f4f8!important;color:#2c3e50!important}
 td.shift-8{background:#d5f5e3!important;color:#1a7a3a!important}
+.crew-indicator{display:block;font-size:6pt;color:#f59e0b!important;font-weight:600;text-align:center;line-height:1.2}
   td.td-weekend{background:#fce4e4!important}
   td.hours,td.hours-cell{font-weight:700;font-size:8pt;text-align:center;padding:2px}
   td.hours.under,td.hours-cell.under{background:#fde8e8!important;color:#c0392b!important}
@@ -504,6 +506,7 @@ td.shift-8{background:#d5f5e3!important;color:#1a7a3a!important}
           <p>Membrii aceluiași echipaj primesc aceeași tură în aceeași zi — sunt tratați ca un bloc la generare. Dacă blocul nu încape pe o tură, tot echipajul trece la următoarea.</p>
           <p><strong>Echipaje predefinite:</strong> U1–U5 (Urban), R1–R5 (Rural). Poți adăuga orice denumire custom din câmpul de lângă select.</p>
           <p><strong>Schimbare echipaj pe dată</strong> — în modalul de editare, secțiunea <em>„Schimbări echipaj pe dată"</em> permite mutarea angajatului în alt echipaj de la o dată specificată. Poți adăuga oricâte schimbări; cea mai recentă dată ≤ ziua curentă este activă.</p>
+          <p><strong>🟠 Vizualizare în tabel</strong> — în zilele unde angajatul este mutat într-un alt echipaj, numele echipajului efectiv apare <span style="color:#f59e0b;font-weight:600">portocaliu</span> sub tură, în acea celulă. Astfel vezi exact din ce zi în ce zi se aplică fiecare schimbare, atât pe ecran cât și la printare.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">🔧 Configurare ture</div>
@@ -1623,7 +1626,12 @@ function renderTable() {
           if (weekend && (si === 5 || si === 6)) continue;
           bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
         }
-        bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span></td>';
+        bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span>';
+        const effectiveCrew = getCrewForDay(emp, dk);
+        if (effectiveCrew && effectiveCrew !== (emp.crew||'')) {
+          bhtml += '<span class="crew-indicator">' + esc(effectiveCrew) + '</span>';
+        }
+        bhtml += '</td>';
       }
       const norma = wdInfo !== null ? wdInfo * 8 : null;
       bhtml += '<td class="' + cls + ' hours-cell">' + st.hours + 'h</td>';
