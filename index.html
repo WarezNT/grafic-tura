@@ -1628,7 +1628,7 @@ function renderTable() {
         }
         bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span>';
         const effectiveCrew = getCrewForDay(emp, dk);
-        if (v > 0 && v !== 5 && v !== 6 && effectiveCrew && effectiveCrew !== (emp.crew||'')) {
+        if (v > 0 && v !== 5 && v !== 6 && v !== 8 && effectiveCrew && effectiveCrew !== (emp.crew||'')) {
           bhtml += '<span class="crew-indicator">' + esc(effectiveCrew) + '</span>';
         }
         bhtml += '</td>';
