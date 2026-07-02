@@ -337,6 +337,7 @@ td.emp-name-cell:hover{text-decoration:underline}
         <select id="gen-mode" onchange="state.genMode=this.value;saveState()" style="font-size:11px;padding:3px 5px">
           <option value="full">T1/T2 + T1A/T2A</option>
           <option value="t12">Doar T1/T2</option>
+          <option value="rotation">Rotație 8 zile</option>
         </select>
       </label>
       <span style="flex:1"></span>
@@ -540,6 +541,7 @@ td.emp-name-cell:hover{text-decoration:underline}
           <ul class="help-list">
             <li><strong>T1/T2 + T1A/T2A</strong> — varianta completă: toate turele se alocă automat</li>
             <li><strong>Doar T1/T2</strong> — doar T1 și T2 automat; T1A și T2A rămân pentru asignare manuală</li>
+            <li><strong>Rotație 8 zile</strong> — fiecare electrician urmează ciclul: T1→T1A→T2→L→T1→T2A→T2→L→(repetă). Echipajele și configurația numerică nu se aplică în acest mod.</li>
           </ul>
           <p>Modul poate fi schimbat oricând, inclusiv în timpul generării pas cu pas.</p>
         </div>
@@ -1130,6 +1132,21 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
   }
 }
 
+function assignRotationShifts(emps, dk, assigned, day) {
+  const ROTATION = [1, 3, 2, 0, 1, 4, 2, 0];
+  const eligible = emps.filter(e => !e.forced8 && !assigned.includes(e.id));
+  // Sort by ID for stable rotation offset
+  eligible.sort((a, b) => a.id - b.id);
+  eligible.forEach((emp, idx) => {
+    const pos = (idx + day - 1) % 8;
+    const v = ROTATION[pos];
+    if (v > 0) {
+      state.schedule[dk][String(emp.id)] = v;
+      assigned.push(emp.id);
+    }
+  });
+}
+
 function clearSchedule() {
   const m = state.currentMonth, y = state.currentYear;
   const keysToDelete = Object.keys(state.schedule).filter(k => {
@@ -1356,7 +1373,11 @@ function generateDay(day) {
   const groups = GROUPS;
   const cfgs = {};
   groups.forEach(g => { cfgs[g] = readConfig(g); });
-  groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day, state.genMode !== 'full'));
+  if (state.genMode === 'rotation') {
+    assignRotationShifts(emps, dk, assigned, day);
+  } else {
+    groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day, state.genMode !== 'full'));
+  }
   if (!weekend) {
     // Forced 8h employees ALWAYS get shift 8 (value 7), never T1/T2/T1A/T2A
     emps.filter(e => e.forced8 && !hasCOCM.includes(String(e.id)) && !(state.schedule[dk][String(e.id)] > 0)).forEach(e => {
