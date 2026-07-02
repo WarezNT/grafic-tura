@@ -541,7 +541,7 @@ td.emp-name-cell:hover{text-decoration:underline}
           <ul class="help-list">
             <li><strong>T1/T2 + T1A/T2A</strong> — varianta completă: toate turele se alocă automat</li>
             <li><strong>Doar T1/T2</strong> — doar T1 și T2 automat; T1A și T2A rămân pentru asignare manuală</li>
-            <li><strong>Rotație 8 zile</strong> — fiecare electrician urmează ciclul: T1→T1A→T2→L→T1→T2A→T2→L→(repetă). Echipajele și configurația numerică nu se aplică în acest mod.</li>
+            <li><strong>Rotație 8 zile</strong> — fiecare electrician urmează ciclul: T1→T1A→T2→L→T1→T2A→T2→L→(repetă), dar alocarea respectă limitele numerice din configurație și regulile de weekend (T1A/T2A doar L–V).</li>
           </ul>
           <p>Modul poate fi schimbat oricând, inclusiv în timpul generării pas cu pas.</p>
         </div>
@@ -1132,18 +1132,27 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
   }
 }
 
-function assignRotationShifts(emps, dk, assigned, day) {
+function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs) {
   const ROTATION = [1, 3, 2, 0, 1, 4, 2, 0];
   const eligible = emps.filter(e => !e.forced8 && !assigned.includes(e.id));
-  // Sort by ID for stable rotation offset
   eligible.sort((a, b) => a.id - b.id);
+  const limits = {}, used = {};
+  GROUPS.forEach(g => {
+    const c = cfgs[g];
+    limits[g] = { t1: c.t1||0, t1a: (weekend ? 0 : c.t1a||0), t2: c.t2||0, t2a: (weekend ? 0 : c.t2a||0) };
+    used[g] = { t1:0, t1a:0, t2:0, t2a:0 };
+  });
   eligible.forEach((emp, idx) => {
+    const cat = emp.category || 'urban';
+    if (!limits[cat]) return;
     const pos = (idx + day - 1) % 8;
-    const v = ROTATION[pos];
-    if (v > 0) {
-      state.schedule[dk][String(emp.id)] = v;
-      assigned.push(emp.id);
-    }
+    const sv = ROTATION[pos];
+    if (sv === 0) return;
+    const key = sv === 1 ? 't1' : sv === 2 ? 't2' : sv === 3 ? 't1a' : sv === 4 ? 't2a' : null;
+    if (!key || used[cat][key] >= limits[cat][key]) return;
+    state.schedule[dk][String(emp.id)] = sv;
+    assigned.push(emp.id);
+    used[cat][key]++;
   });
 }
 
@@ -1374,7 +1383,7 @@ function generateDay(day) {
   const cfgs = {};
   groups.forEach(g => { cfgs[g] = readConfig(g); });
   if (state.genMode === 'rotation') {
-    assignRotationShifts(emps, dk, assigned, day);
+    assignRotationShifts(emps, dk, assigned, day, weekend, cfgs);
   } else {
     groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day, state.genMode !== 'full'));
   }
