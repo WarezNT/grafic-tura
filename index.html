@@ -688,7 +688,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 45;
+const COMMIT_COUNT = 46;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -1159,10 +1159,14 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs) {
     limits[g] = { t1: c.t1||0, t1a: (weekend ? 0 : c.t1a||0), t2: c.t2||0, t2a: (weekend ? 0 : c.t2a||0) };
     used[g] = { t1:0, t1a:0, t2:0, t2a:0 };
   });
+  const MAX_CONSEC = 4;
   function doAssign(list, sv) {
     if (sv === 0) return;
     const key = sv === 1 ? 't1' : sv === 2 ? 't2' : sv === 3 ? 't1a' : sv === 4 ? 't2a' : null;
     if (!key) return;
+    // Max 4 zile consecutive lucrate — dacă oricare membru al echipajului/individul e deja
+    // la limită, tot grupul primește L în loc de tura dorită (aceeași regulă ca în full/t12).
+    if (list.some(e => genStats[e.id] && genStats[e.id].consec >= MAX_CONSEC)) return;
     const cat = list[0].category || 'urban';
     if (!limits[cat] || used[cat][key] + list.length > limits[cat][key]) return;
     list.forEach(e => { state.schedule[dk][String(e.id)] = sv; assigned.push(e.id); });
