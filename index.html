@@ -435,6 +435,7 @@ td.emp-name-cell:hover{text-decoration:underline}
     <div class="tb-group">
       <button class="btn btn-outline btn-sm" onclick="openHelp()" data-tooltip="Deschide manualul de utilizare cu instrucțiuni detaliate">📖 Manual</button>
       <span class="version-badge no-print" id="app-version-badge" onclick="showChangelog()" data-tooltip="Ce e nou în această versiune — click pentru detalii"></span>
+      <span class="version-badge no-print" id="commit-badge" data-tooltip="Numărul de commituri din istoricul aplicației — util ca reper de versiune"></span>
     </div>
   </div>
 
@@ -687,6 +688,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
+const COMMIT_COUNT = 42;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -2465,6 +2467,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (logoEl) logoEl.src = 'data:image/png;base64,' + LOGO_B64;
   const vBadge = document.getElementById('app-version-badge');
   if (vBadge) vBadge.textContent = APP_VERSION;
+  const cBadge = document.getElementById('commit-badge');
+  if (cBadge) cBadge.textContent = '#' + COMMIT_COUNT;
   if (typeof ExcelJS === 'undefined') {
     const banner = document.createElement('div');
     banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:8px;padding:12px 20px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:480px;text-align:center;line-height:1.5';
