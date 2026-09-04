@@ -1166,16 +1166,34 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs) {
     list.forEach(e => { state.schedule[dk][String(e.id)] = sv; assigned.push(e.id); });
     used[cat][key] += list.length;
   }
-  // Pass 1: complete crews by crew rotation
-  fullCrews.forEach((crew, idx) => {
-    const pos = (idx + day - 1) % 8;
-    doAssign(crew, ROTATION[pos]);
+  // Fiecare echipaj/individ urmează ciclul de 8 zile T1→T1A→T2→L→..., dar cu 2 particularități:
+  // 1. Fairness: când mai multe echipaje vor ACEEAȘI tură în ACEEAȘI zi și limita numerică nu ajunge
+  //    pentru toate, câștigă cel cu mai puține ore acumulate luna curentă — nu mai câștigă mereu id-ul mai mic.
+  // 2. Rotație de bloc: dacă sunt mai mult de 4 echipaje/grup, ciclul ROTATION are o simetrie de
+  //    perioadă 4 (T1/T2/L se repetă, doar T1A/T2A diferă) — cu 5+ echipaje, cel puțin o pereche va
+  //    cere mereu aceeași tură în aceeași zi. Ca să nu cadă mereu pe aceeași pereche (ex. mereu U1↔U5),
+  //    poziția fiecărui echipaj în ciclu se decalează la fiecare bloc de 8 zile, astfel încât perechea
+  //    care „se ciocnește" se rotește printre toate echipajele pe parcursul lunii.
+  const hoursOf = list => getEmployeeStats(list[0].id).hours;
+  const block = Math.floor((day - 1) / 8);
+
+  // Pass 1: complete crews by crew rotation, prioritizate după ore acumulate la conflict
+  const nCrews = fullCrews.length;
+  const crewWants = fullCrews.map((crew, i) => {
+    const idx = nCrews > 0 ? (i + block) % nCrews : i;
+    return { crew, sv: ROTATION[(idx + day - 1) % 8] };
   });
-  // Pass 2: individuals by individual rotation
-  individuals.forEach((emp, idx) => {
-    const pos = (idx + day - 1) % 8;
-    doAssign([emp], ROTATION[pos]);
+  crewWants.sort((a, b) => hoursOf(a.crew) - hoursOf(b.crew) || a.crew[0].id - b.crew[0].id);
+  crewWants.forEach(w => doAssign(w.crew, w.sv));
+
+  // Pass 2: individuals by individual rotation, aceeași regulă de fairness + rotație de bloc
+  const nIndiv = individuals.length;
+  const indivWants = individuals.map((emp, i) => {
+    const idx = nIndiv > 0 ? (i + block) % nIndiv : i;
+    return { emp, sv: ROTATION[(idx + day - 1) % 8] };
   });
+  indivWants.sort((a, b) => hoursOf([a.emp]) - hoursOf([b.emp]) || a.emp.id - b.emp.id);
+  indivWants.forEach(w => doAssign([w.emp], w.sv));
 }
 
 function clearSchedule() {
