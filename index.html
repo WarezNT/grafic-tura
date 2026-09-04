@@ -688,7 +688,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 43;
+const COMMIT_COUNT = 44;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -1191,20 +1191,33 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs) {
     return sv;
   };
 
+  // Rotația de fază (idx/block) se calculează SEPARAT per categorie (urban/rural). Limitele
+  // numerice sunt per-categorie — dacă idx s-ar calcula pe lista combinată urban+rural, numărul
+  // de „competitori" (nCrews) ar fi greșit (ex. 10 în loc de 5) și ar strica matematica de
+  // anti-coliziune derivată pentru dimensiunea reală a fiecărui grup.
+
   // Pass 1: complete crews by crew rotation, prioritizate după ore acumulate la conflict
-  const nCrews = fullCrews.length;
-  const crewWants = fullCrews.map((crew, i) => {
-    const idx = nCrews > 0 ? (i + block) % nCrews : i;
-    return { crew, sv: weekendFallback(ROTATION[(idx + day - 1) % 8], crew[0].category || 'urban') };
+  const crewWants = [];
+  GROUPS.forEach(cat => {
+    const catCrews = fullCrews.filter(c => (c[0].category || 'urban') === cat);
+    const n = catCrews.length;
+    catCrews.forEach((crew, i) => {
+      const idx = n > 0 ? (i + block) % n : i;
+      crewWants.push({ crew, sv: weekendFallback(ROTATION[(idx + day - 1) % 8], cat) });
+    });
   });
   crewWants.sort((a, b) => hoursOf(a.crew) - hoursOf(b.crew) || a.crew[0].id - b.crew[0].id);
   crewWants.forEach(w => doAssign(w.crew, w.sv));
 
-  // Pass 2: individuals by individual rotation, aceeași regulă de fairness + rotație de bloc
-  const nIndiv = individuals.length;
-  const indivWants = individuals.map((emp, i) => {
-    const idx = nIndiv > 0 ? (i + block) % nIndiv : i;
-    return { emp, sv: weekendFallback(ROTATION[(idx + day - 1) % 8], emp.category || 'urban') };
+  // Pass 2: individuals by individual rotation, aceeași regulă de fairness, tot separat per categorie
+  const indivWants = [];
+  GROUPS.forEach(cat => {
+    const catIndiv = individuals.filter(e => (e.category || 'urban') === cat);
+    const n = catIndiv.length;
+    catIndiv.forEach((emp, i) => {
+      const idx = n > 0 ? (i + block) % n : i;
+      indivWants.push({ emp, sv: weekendFallback(ROTATION[(idx + day - 1) % 8], cat) });
+    });
   });
   indivWants.sort((a, b) => hoursOf([a.emp]) - hoursOf([b.emp]) || a.emp.id - b.emp.id);
   indivWants.forEach(w => doAssign([w.emp], w.sv));
