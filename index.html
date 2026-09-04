@@ -1177,11 +1177,23 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs) {
   const hoursOf = list => getEmployeeStats(list[0].id).hours;
   const block = Math.floor((day - 1) / 8);
 
+  // În weekend, T1A/T2A sunt blocate (limită 0) — un echipaj a cărui fază cade pe T1A/T2A tocmai
+  // sâmbăta/duminica ar pierde ziua complet (L, fără recuperare). Dacă formația chiar folosește T1A/T2A
+  // în timpul săptămânii (config > 0), faza cade pe echivalentul principal (T1A→T1, T2A→T2) în weekend
+  // și concurează normal pentru acel slot — altfel (T1A/T2A dezactivate complet) rămâne L, ca înainte.
+  const weekendFallback = (sv, cat) => {
+    if (!weekend) return sv;
+    const c = cfgs[cat] || {};
+    if (sv === 3 && (c.t1a || 0) > 0) return 1;
+    if (sv === 4 && (c.t2a || 0) > 0) return 2;
+    return sv;
+  };
+
   // Pass 1: complete crews by crew rotation, prioritizate după ore acumulate la conflict
   const nCrews = fullCrews.length;
   const crewWants = fullCrews.map((crew, i) => {
     const idx = nCrews > 0 ? (i + block) % nCrews : i;
-    return { crew, sv: ROTATION[(idx + day - 1) % 8] };
+    return { crew, sv: weekendFallback(ROTATION[(idx + day - 1) % 8], crew[0].category || 'urban') };
   });
   crewWants.sort((a, b) => hoursOf(a.crew) - hoursOf(b.crew) || a.crew[0].id - b.crew[0].id);
   crewWants.forEach(w => doAssign(w.crew, w.sv));
@@ -1190,7 +1202,7 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs) {
   const nIndiv = individuals.length;
   const indivWants = individuals.map((emp, i) => {
     const idx = nIndiv > 0 ? (i + block) % nIndiv : i;
-    return { emp, sv: ROTATION[(idx + day - 1) % 8] };
+    return { emp, sv: weekendFallback(ROTATION[(idx + day - 1) % 8], emp.category || 'urban') };
   });
   indivWants.sort((a, b) => hoursOf([a.emp]) - hoursOf([b.emp]) || a.emp.id - b.emp.id);
   indivWants.forEach(w => doAssign([w.emp], w.sv));
