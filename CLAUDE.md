@@ -62,10 +62,12 @@ lunii, oricâte modificări pe lună).
 - **Extensie CO/CM la weekend adiacent**: dacă vinerea (sau lunea) are CO, sâmbăta/duminica
   adiacentă primește automat același marcaj la regenerare (`startGeneration()` +
   `generateDay()`, secțiunea „weekend extension").
-- **Max 4 zile consecutive lucrate** (doar în modurile `full`/`t12`, via
-  `assignCategoryShifts` → `MAX_CONSEC=4`): angajații cu `consec>=4` sunt excluși din
-  alocare, forțați spre `L`. **Nu există în modul `rotation`** — posibilă sursă viitoare
-  de dezechilibru sau oboseală dacă cineva prelungește manual un ciclu.
+- **Max 4 zile consecutive lucrate** (`MAX_CONSEC=4`, în `assignCategoryShifts` PENTRU
+  full/t12 ȘI în `assignRotationShifts` pentru `rotation` — adăugat ulterior, inițial lipsea
+  din rotation): dacă orice membru al echipajului/individul are `genStats[id].consec>=4`,
+  primește `L` în loc de tura dorită de rotație. Nu face compensare încrucișată — dacă un
+  echipaj e blocat de MAX_CONSEC, sloturile lui rămân neocupate (nu se redistribuie automat
+  către alt echipaj care dorea alt tip de tură în acea zi).
 - **T2 blochează T1/T1A a doua zi** (`checkYesterday`, doar `full`/`t12`): dacă ieri a fost
   T2, azi nu poate fi T1 sau T1A (gap de 8h între ture) — T2A nu blochează nimic.
 - **`forced8`**: angajatul primește mereu tura `8` (valoare 7) în zile lucrătoare, exclus
@@ -144,10 +146,11 @@ via `startGeneration()` + `generateAll()` în consolă browser):
 **Dacă apare din nou un raport de "cineva are mult mai multe/puține ore"**: prima
 verificare — cere config-ul exact (T1/T1A/T2/T2A pt. ambele grupe) + luna, reproduce
 în consolă browser (vezi metoda de testare mai jos), și verifică dacă nu cumva a apărut
-o A PATRA sursă de asimetrie neacoperită încă (ex. interacțiune cu CO/CM, cu `forced8`,
-cu `crewOverrides` la mijlocul lunii, sau cu `MAX_CONSEC` din `assignCategoryShifts` —
-regula de max 4 zile consecutive lucrate nu e implementată deloc în `assignRotationShifts`,
-ar putea fi următoarea sursă de dezechilibru la configurații extreme).
+o A CINCEA sursă de asimetrie neacoperită încă (ex. interacțiune cu CO/CM, cu `forced8`,
+cu `crewOverrides` la mijlocul lunii, sau cu faptul că MAX_CONSEC nu face compensare
+încrucișată — vezi mai sus). Cele 4 surse deja găsite și fixate: coliziune structurală
+la 5+ echipaje, T1A/T2A pierdute în weekend, amestec Urban/Rural în calculul de fază,
+MAX_CONSEC lipsă din rotation.
 
 ### Metodă de testare rapidă (fără UI, direct în consolă browser)
 
