@@ -693,7 +693,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.4';
-const COMMIT_COUNT = 67;
+const COMMIT_COUNT = 68;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -1202,8 +1202,11 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
     const eligible = crew => crew.every(e => {
       let wc = 0;
       for (let dd = mon; dd < day; dd++) {
-        if (dd < 1) continue;
-        const cdk = dateKey(yr, mo, dd);
+        // new Date normalizează automat zile <1 spre luna anterioară (ex. dd=0 -> ultima zi a
+        // lunii precedente) — altfel, la început de lună, zilele lucrate în luna trecută nu se
+        // numărau spre limita săptămânală, făcând regula mai permisivă exact acolo (bug audit).
+        const realDate = new Date(yr, mo - 1, dd);
+        const cdk = dateKey(realDate.getFullYear(), realDate.getMonth() + 1, realDate.getDate());
         const v = state.schedule[cdk]?.[String(e.id)];
         if (v >= 1 && v <= 4 || v === 7 || v === 8) wc++;
       }
@@ -1256,6 +1259,24 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
     used[g] = { t1:0, t1a:0, t2:0, t2a:0 };
   });
   const MAX_CONSEC = 4;
+  // Max 5 zile lucrate pe săptămâna calendaristică (Luni-Duminică) — aceeași regulă ca în
+  // full/t12, lipsea complet din modul de rotație (bug găsit la audit). new Date normalizează
+  // automat zilele <1 spre luna anterioară, ca să conteze corect și săptămânile de la
+  // început de lună.
+  const dkParts0 = dk.split('-');
+  const yr0 = parseInt(dkParts0[0]), mo0 = parseInt(dkParts0[1]);
+  const dow0 = new Date(yr0, mo0 - 1, day).getDay();
+  const weekStart = day + (dow0 === 0 ? -6 : 1 - dow0);
+  function weekCount(empId) {
+    let wc = 0;
+    for (let dd = weekStart; dd < day; dd++) {
+      const realDate = new Date(yr0, mo0 - 1, dd);
+      const cdk = dateKey(realDate.getFullYear(), realDate.getMonth() + 1, realDate.getDate());
+      const v = state.schedule[cdk]?.[String(empId)];
+      if (v >= 1 && v <= 4 || v === 7 || v === 8) wc++;
+    }
+    return wc;
+  }
   function doAssign(list, sv) {
     if (sv === 0) return;
     const key = sv === 1 ? 't1' : sv === 2 ? 't2' : sv === 3 ? 't1a' : sv === 4 ? 't2a' : null;
@@ -1263,6 +1284,8 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
     // Max 4 zile consecutive lucrate — dacă oricare membru al echipajului/individul e deja
     // la limită, tot grupul primește L în loc de tura dorită (aceeași regulă ca în full/t12).
     if (list.some(e => genStats[e.id] && genStats[e.id].consec >= MAX_CONSEC)) return;
+    // Max 5 zile lucrate pe săptămână — vezi mai sus.
+    if (list.some(e => weekCount(e.id) >= 5)) return;
     // T2 blochează T1/T1A a doua zi (gap de 8h între ture) — aceeași regulă ca în full/t12.
     // Ciclul propriu (8 sau 3 zile) nu produce natural T2→T1, dar rotația de bloc poate crea
     // un salt de fază la granița dintre blocuri; verificarea explicită acoperă și acel caz.
@@ -2330,8 +2353,15 @@ function applyJSON(text) {
       for (const dk in data.preservedCOCM) {
         if (dk.startsWith(prefix)) genCOCM[dk] = data.preservedCOCM[dk];
       }
-      state.employees = data.employees;
-      state.config = data.config;
+      // MERGE electricienii (adaugă după id pe cei lipsă din state curent), NU înlocui lista —
+      // altfel un import de lună mai veche ștergea silențios orice electrician adăugat de atunci
+      // (electricienii/config-ul sunt setări GLOBALE, nu specifice unei luni — un fișier de lună
+      // nu ar trebui să le poată suprascrie complet; bug găsit la audit).
+      if (Array.isArray(data.employees)) {
+        const existingIds = new Set(state.employees.map(e => e.id));
+        data.employees.forEach(emp => { if (!existingIds.has(emp.id)) state.employees.push(emp); });
+      }
+      // config NU se atinge la import de lună — e o setare curentă, nu ține de luna importată.
       // org lives in ORG_KEY — only migrate from file if ORG_KEY is empty
       if (data.org && data.org.sefFOL && !loadOrg()) saveOrg(data.org);
       state.currentMonth = data.month;
