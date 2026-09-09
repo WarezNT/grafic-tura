@@ -679,7 +679,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 54;
+const COMMIT_COUNT = 55;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -1020,7 +1020,7 @@ function getEmployeeStats(empId) {
     else if (v === 5 && !isWeekend) co++;
     else if (v === 6 && !isWeekend) cm++;
     else if (v === 7) c8++;
-    else if (v === 8) inst++;
+    else if (v === 8 && !isWeekend) inst++;
   }
   const worked = t1 + t2 + t1a + t2a + c8 + inst;
   return { t1, t2, t1a, t2a, co, cm, c8, inst, total: worked + co, hours: worked * 8 };
@@ -1768,12 +1768,12 @@ function renderTable() {
         let v = getShift(dk, emp.id);
         if (v === null || v === undefined) v = 0;
         const weekend = (dow === 0 || dow === 6);
-        const displayV = (weekend && (v === 5 || v === 6)) ? 0 : v;
+        const displayV = (weekend && (v === 5 || v === 6 || v === 8)) ? 0 : v;
         const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si <= 8; si++) {
           if (weekend && (si === 3 || si === 4 || si === 7)) continue;
-          if (weekend && (si === 5 || si === 6)) continue;
+          if (weekend && (si === 5 || si === 6 || si === 8)) continue;
           bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
         }
         bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span>';
@@ -1807,12 +1807,12 @@ function renderTable() {
         let v = getShift(dk, emp.id);
         if (v === null || v === undefined) v = 0;
         const weekend = (dow === 0 || dow === 6);
-        const displayV = (weekend && (v === 5 || v === 6)) ? 0 : v;
+        const displayV = (weekend && (v === 5 || v === 6 || v === 8)) ? 0 : v;
         const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si <= 8; si++) {
           if (weekend && (si === 3 || si === 4 || si === 7)) continue;
-          if (weekend && (si === 5 || si === 6)) continue;
+          if (weekend && (si === 5 || si === 6 || si === 8)) continue;
           bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
         }
         bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span></td>';
