@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grafic de tură - Formația Exploatare Măsură Piatra Neamț/Bicaz - Delgaz Grid S.A</title>
+<title>Grafic de tură - Delgaz Grid S.A</title>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <style>
 :root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--alt-row-bg:#f4f6f9;--shadow:0 2px 12px rgba(0,0,0,.08)}
@@ -679,7 +679,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 52;
+const COMMIT_COUNT = 53;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -2432,6 +2432,7 @@ function applyOrgToDOM() {
   const org = getOrg();
   const subtitle = document.getElementById('org-subtitle');
   if (subtitle) subtitle.textContent = [org.formatia, 'Delgaz Grid S.A'].filter(Boolean).join(' — ');
+  document.title = 'Grafic de tură' + (org.formatia ? ' — ' + org.formatia : '') + ' - Delgaz Grid S.A';
   const sigSef = document.getElementById('sig-sef');
   if (sigSef) sigSef.innerHTML = 'Șef FOL EM<br>' + (org.sefFOL || '—');
   const sigResp = document.getElementById('sig-resp');
