@@ -693,7 +693,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.4';
-const COMMIT_COUNT = 64;
+const COMMIT_COUNT = 65;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -1336,6 +1336,19 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   crewWants.sort((a, b) => hoursOf(a.crew) - hoursOf(b.crew) || a.crew[0].id - b.crew[0].id);
   crewWants.forEach(w => doAssign(w.crew, w.sv));
 
+  // Spillover: dacă un echipaj/individ a vrut T1 sau T2 dar a fost respins (capacitatea acelei
+  // ture era deja ocupată), încearcă tura alternativă (T1↔T2) înainte să rămână fără nimic.
+  // Necesar când T1/T2 au capacități ASIMETRICE (ex. T1=4, T2=2) — ciclul de rotație poate
+  // trimite într-o zi mai multe echipaje spre T2 decât încape, lăsând T1 parțial gol în timp ce
+  // echipajele respinse de la T2 rămân pe L, deși ar fi putut umple T1. `doAssign` verifică
+  // oricum toate regulile (capacitate, gap, MAX_CONSEC), deci încercarea e sigură.
+  function spillover(list, sv) {
+    if (sv !== 1 && sv !== 2) return;
+    if (state.schedule[dk][String(list[0].id)] !== undefined) return;
+    doAssign(list, sv === 1 ? 2 : 1);
+  }
+  crewWants.forEach(w => spillover(w.crew, w.sv));
+
   // Pass 2: individuals by individual rotation, aceeași regulă de fairness, tot separat per categorie
   const indivWants = [];
   GROUPS.forEach(cat => {
@@ -1349,6 +1362,7 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   });
   indivWants.sort((a, b) => hoursOf([a.emp]) - hoursOf([b.emp]) || a.emp.id - b.emp.id);
   indivWants.forEach(w => doAssign([w.emp], w.sv));
+  indivWants.forEach(w => spillover([w.emp], w.sv));
 }
 
 function clearSchedule() {
