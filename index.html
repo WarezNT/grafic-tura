@@ -693,7 +693,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 61;
+const COMMIT_COUNT = 62;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -1087,7 +1087,18 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
     if (!groups[key]) groups[key] = [];
     groups[key].push(e);
   });
-  const crews = Object.values(groups);
+  // Cei rămași fără pereche azi (partenerul e în CO/CM, sau angajatul n-are echipaj setat deloc)
+  // sunt împerecheați TEMPORAR între ei, determinist după id — practic (electricienii nu
+  // lucrează singuri) și mai corect pentru fairness decât tratarea ca indivizi separați, care
+  // putea duce la doi orfani lucrând pe ture DIFERITE în aceeași zi (unul T1, altul T2).
+  // Aceeași logică ca în assignRotationShifts, pt. modurile de rotație.
+  const rawCrews = Object.values(groups);
+  const soloGroups = rawCrews.filter(c => c.length === 1).sort((a, b) => a[0].id - b[0].id);
+  const pairedGroups = rawCrews.filter(c => c.length >= 2);
+  const tempPairs = [];
+  for (let i = 0; i + 1 < soloGroups.length; i += 2) tempPairs.push([...soloGroups[i], ...soloGroups[i + 1]]);
+  const leftoverSolo = soloGroups.length % 2 ? [soloGroups[soloGroups.length - 1]] : [];
+  const crews = [...pairedGroups, ...tempPairs, ...leftoverSolo];
 
   function avg(c, field) {
     return c.reduce((s, e) => s + stats[e.id][field], 0) / c.length;
@@ -1182,15 +1193,28 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
     if (!crews[key]) crews[key] = [];
     crews[key].push(e);
   });
-  // Full crews (≥2) rotate as a block; partial crews feed the individual pool
+  // Full crews (≥2) rotate as a block; partial crews (ex. partenerul e în CO/CM) feed the
+  // individual pool
   const fullCrews = [];
-  const individuals = [];
+  let individuals = [];
   Object.values(crews).forEach(c => {
     if (c.length >= 2) { fullCrews.push(c); }
     else { individuals.push(c[0]); }
   });
-  fullCrews.sort((a, b) => a[0].id - b[0].id);
   individuals.sort((a, b) => a.id - b.id);
+  // Cei rămași fără pereche (de obicei partenerul e în CO/CM) sunt împerecheați TEMPORAR între
+  // ei, din echipaje diferite dar aceeași categorie — practic (electricienii nu lucrează
+  // singuri) și mai corect pentru fairness: un „echipaj temporar" de 2 concurează normal pentru
+  // capacitate, în loc să rămână individ solo (capacitate 1), ușor blocat de echipajele complete.
+  const tempPairs = [];
+  GROUPS.forEach(cat => {
+    const catIndiv = individuals.filter(e => (e.category || 'urban') === cat);
+    for (let i = 0; i + 1 < catIndiv.length; i += 2) tempPairs.push([catIndiv[i], catIndiv[i + 1]]);
+  });
+  const pairedIds = new Set(tempPairs.flat().map(e => e.id));
+  individuals = individuals.filter(e => !pairedIds.has(e.id));
+  fullCrews.push(...tempPairs);
+  fullCrews.sort((a, b) => a[0].id - b[0].id);
   const limits = {}, used = {};
   GROUPS.forEach(g => {
     const c = cfgs[g];
