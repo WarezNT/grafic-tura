@@ -192,14 +192,35 @@ consolă browser):
   - 5 echipaje/grup, lună de 31 zile: spread ~8h (104-96h)
   - Zero violări T2→T1/T1A verificate programatic pe toate testele de mai sus
 
+6. **`hasCollision` nu vedea coliziunile create de `weekendFallback`** — găsit prin testare
+   automată (matrice 1-6 echipaje × 4 lungimi de lună). `hasCollision(n)` verifica doar
+   `ROTATION` static, dar `weekendFallback` remapează dinamic T1A→T1 și T2A→T2 în weekend
+   (când formația chiar folosește T1A/T2A activ) — o poziție din ciclu poate cădea pe orice
+   zi a săptămânii de-a lungul lunii, deci fallback-ul putea crea coliziuni noi (ex. T1 la
+   poz. 0 ȘI 1, dacă poz. 1 era T1A) nedetectate de verificarea pe array-ul static, lăsând
+   rotația de bloc dezactivată exact când era nevoie de ea (ex. n=3,4 cu T1A/T2A activ).
+   **Fix**: `hasCollision(n, cat)` verifică ACUM ambele variante — `ROTATION` de bază ȘI
+   varianta cu T1A/T2A remapate la T1/T2 (doar dacă formația chiar le folosește activ).
+   **Rezultat**: n=3 Septembrie 24h→8h spread, n=4 Septembrie 24h→16h spread, fără regresie.
+
+**Limitare cunoscută, ACCEPTATĂ deliberat (nu e bug, nu se fixează)**: dacă un membru al
+unui echipaj ia CO lung (10-15+ zile), partenerul rămas singur poate rămâne aproape complet
+pe `L` toată perioada (un "individ solo" concurează prost cu echipaje complete deja perfect
+potrivite pe capacitate — reprodus identic la n=4 și n=5, nu ține de mărimea grupului).
+Varianta corectă (alocare automată de 8h/`c8` pentru individul rămas singur) a fost
+propusă și **respinsă explicit de user** — responsabilul poate seta manual `8h` din
+dropdown pentru acea persoană pe durata CO-ului. Nu re-investiga sau propune fix pentru
+asta fără să fie cerut din nou.
+
 **Dacă apare din nou un raport de "cineva are mult mai multe/puține ore"**: prima
 verificare — cere config-ul exact (T1/T1A/T2/T2A pt. ambele grupe) + luna, reproduce
 în consolă browser (vezi metoda de testare mai jos), și verifică dacă nu cumva a apărut
-o A ȘASEA sursă de asimetrie neacoperită încă (ex. interacțiune cu CO/CM, cu `forced8`,
-cu `crewOverrides` la mijlocul lunii, sau cu faptul că MAX_CONSEC nu face compensare
-încrucișată — vezi mai sus). Cele 5 surse deja găsite și fixate: coliziune structurală
-la 5+ echipaje, T1A/T2A pierdute în weekend, amestec Urban/Rural în calculul de fază,
-MAX_CONSEC lipsă din rotation, bias persistent la reziduu + prag greșit pt. coliziune.
+o A ȘAPTEA sursă de asimetrie neacoperită încă (ex. interacțiune cu `crewOverrides` la
+mijlocul lunii, sau cu faptul că MAX_CONSEC nu face compensare încrucișată — vezi mai
+sus). Cele 6 surse deja găsite și fixate: coliziune structurală la 5+ echipaje, T1A/T2A
+pierdute în weekend, amestec Urban/Rural în calculul de fază, MAX_CONSEC lipsă din
+rotation, bias persistent la reziduu + prag greșit pt. coliziune, weekendFallback
+nedetectat de hasCollision.
 
 ### Metodă de testare rapidă (fără UI, direct în consolă browser)
 
@@ -244,3 +265,10 @@ nimic.
 - Dark mode: `[data-theme="dark"]` pe `<html>`, toggle manual (nu urmărește
   `prefers-color-scheme`).
 - Ștergere angajat: confirmare în 2 pași (`deleteConfirmStep()`, auto-reset după 3s).
+- `document.title` e setat dinamic în `applyOrgToDOM()` din `org.formatia` — `<title>` static
+  din HTML e generic ("Grafic de tură - Delgaz Grid S.A"), NU hardcodat cu o formație anume
+  (era bug: titlul static avea o formație specifică bătută în cod, vizibilă la orice
+  vizitator al link-ului, indiferent de propriile setări org).
+- INST (valoare 8) e exclus din selecție pe weekend, la fel ca CO/CM — nu apare în dropdown
+  pe S/D, se afișează ca `L` dacă e deja setat din date vechi, și nu se contorizează în ore
+  pe weekend (`getEmployeeStats`).
