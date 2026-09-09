@@ -679,7 +679,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 50;
+const COMMIT_COUNT = 51;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -1177,7 +1177,29 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   //    poziția fiecărui echipaj în ciclu se decalează la fiecare bloc de 8 zile, astfel încât perechea
   //    care „se ciocnește" se rotește printre toate echipajele pe parcursul lunii.
   const hoursOf = list => getEmployeeStats(list[0].id).hours;
-  const block = Math.floor((day - 1) / CYCLE_LEN);
+  // Când zilele lunii nu se împart exact la CYCLE_LEN (ex. 31 zile / ciclu de 3), rămâne un
+  // "rest" de zile în care nu toate echipajele pot avea acces egal la sloturi — fără offset,
+  // ar câștiga mereu ACELAȘI echipaj reziduul, lună de lună, tot anul. Offset-ul dependent
+  // de lună/an rotește care echipaj primește reziduul, fără să afecteze restul lunii.
+  const dkParts = dk.split('-');
+  const monthSeed = parseInt(dkParts[0]) * 12 + parseInt(dkParts[1]);
+  const blockWithinMonth = Math.floor((day - 1) / CYCLE_LEN);
+  // Detectează dacă n echipaje pot exista fără coliziune de tură pe acest ROTATION — nu e
+  // suficient n<=CYCLE_LEN (idx unic nu garantează valoare unică: ROTATION poate avea aceeași
+  // tură pe poziții diferite, ex. T1 la poz. 0 ȘI 4 în ciclul de 8 zile). Verifică direct: există
+  // vreo zi în care două idx din [0,n) cer aceeași tură reală (L exclus, nu produce conflict)?
+  function hasCollision(n) {
+    for (let D = 0; D < CYCLE_LEN; D++) {
+      const seen = new Set();
+      for (let idx = 0; idx < n; idx++) {
+        const v = ROTATION[(idx + D) % CYCLE_LEN];
+        if (v === 0) continue;
+        if (seen.has(v)) return true;
+        seen.add(v);
+      }
+    }
+    return false;
+  }
 
   // În weekend, T1A/T2A sunt blocate (limită 0) — un echipaj a cărui fază cade pe T1A/T2A tocmai
   // sâmbăta/duminica ar pierde ziua complet (L, fără recuperare). Dacă formația chiar folosește T1A/T2A
@@ -1196,13 +1218,24 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   // de „competitori" (nCrews) ar fi greșit (ex. 10 în loc de 5) și ar strica matematica de
   // anti-coliziune derivată pentru dimensiunea reală a fiecărui grup.
 
+  // Rotația de bloc (în interiorul lunii) e necesară DOAR când există coliziune structurală
+  // reală (n > CYCLE_LEN, mai multe echipaje decât pași distincți în ciclu). Când n <= CYCLE_LEN
+  // nu există nicio coliziune — fiecare echipaj ține un ciclu fix și simetric (T1,T2,L,T1,T2,L,...)
+  // toată luna, fără salturi de fază; se aplică doar decalajul de lună (monthSeed) pt. reziduu.
+  // Când există coliziune reală, rotația de bloc în interiorul lunii deja distribuie fair —
+  // adăugarea și a monthSeed acolo schimbă ordinea de tie-break în moduri imprevizibile și
+  // poate înrăutăți rezultatul (testat). monthSeed se aplică DOAR când nu există coliziune —
+  // acolo idx e fix toată luna, deci monthSeed doar re-etichetează cine ia reziduul, fără alte efecte.
+  function blockFor(n) { return hasCollision(n) ? blockWithinMonth : monthSeed; }
+
   // Pass 1: complete crews by crew rotation, prioritizate după ore acumulate la conflict
   const crewWants = [];
   GROUPS.forEach(cat => {
     const catCrews = fullCrews.filter(c => (c[0].category || 'urban') === cat);
     const n = catCrews.length;
+    const catBlock = blockFor(n);
     catCrews.forEach((crew, i) => {
-      const idx = n > 0 ? (i + block) % n : i;
+      const idx = n > 0 ? (i + catBlock) % n : i;
       crewWants.push({ crew, sv: weekendFallback(ROTATION[(idx + day - 1) % CYCLE_LEN], cat) });
     });
   });
@@ -1214,8 +1247,9 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   GROUPS.forEach(cat => {
     const catIndiv = individuals.filter(e => (e.category || 'urban') === cat);
     const n = catIndiv.length;
+    const catBlock = blockFor(n);
     catIndiv.forEach((emp, i) => {
-      const idx = n > 0 ? (i + block) % n : i;
+      const idx = n > 0 ? (i + catBlock) % n : i;
       indivWants.push({ emp, sv: weekendFallback(ROTATION[(idx + day - 1) % CYCLE_LEN], cat) });
     });
   });
