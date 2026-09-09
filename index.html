@@ -692,12 +692,25 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 63;
+const APP_VERSION = 'V2026.06.4';
+const COMMIT_COUNT = 64;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.06.4': {
+    title: 'Rotații echitabile + mod nou + împerechere',
+    items: [
+      { icon: '⚖️', text: 'Alocare mult mai echitabilă în modurile de Rotație — corectate mai multe surse de dezechilibru (coliziuni de tură, T1A/T2A pierdute în weekend, reziduu de lună favorizând mereu același echipaj)' },
+      { icon: '🔄', text: 'Mod nou de generare: Rotație T1-T2-L (3 zile) — ciclu simplu, simetric' },
+      { icon: '🤝', text: 'Electricienii rămași fără pereche (partenerul e în CO/CM) sunt împerecheați automat între ei, în loc să lucreze singuri sau pe ture diferite' },
+      { icon: '📅', text: 'Selector de interval pentru CO / CM / Instruire — alegi data de început și sfârșit, în loc să setezi zi cu zi' },
+      { icon: '🏷️', text: 'Moduri de generare redenumite și numerotate (1–4) pentru claritate' },
+      { icon: '👁️', text: 'Câmpurile T1A/T2A din configurare apar doar când modul selectat le poate folosi' },
+      { icon: '🚫', text: 'Instruirea (INST) nu mai poate fi setată în weekend, la fel ca CO/CM' },
+      { icon: '💬', text: 'Tooltipuri noi pe bara de sus și pe meniul Fișiere, cu denumiri clarificate' }
+    ]
+  },
   'V2026.06.3': {
     title: 'Instruire (INST) + reorganizare',
     items: [
