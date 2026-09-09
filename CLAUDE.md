@@ -203,14 +203,39 @@ consolă browser):
    varianta cu T1A/T2A remapate la T1/T2 (doar dacă formația chiar le folosește activ).
    **Rezultat**: n=3 Septembrie 24h→8h spread, n=4 Septembrie 24h→16h spread, fără regresie.
 
-**Limitare cunoscută, ACCEPTATĂ deliberat (nu e bug, nu se fixează)**: dacă un membru al
-unui echipaj ia CO lung (10-15+ zile), partenerul rămas singur poate rămâne aproape complet
-pe `L` toată perioada (un "individ solo" concurează prost cu echipaje complete deja perfect
-potrivite pe capacitate — reprodus identic la n=4 și n=5, nu ține de mărimea grupului).
-Varianta corectă (alocare automată de 8h/`c8` pentru individul rămas singur) a fost
-propusă și **respinsă explicit de user** — responsabilul poate seta manual `8h` din
-dropdown pentru acea persoană pe durata CO-ului. Nu re-investiga sau propune fix pentru
-asta fără să fie cerut din nou.
+### Împerechere temporară a „orfanilor" (echipaj rupt de CO/CM sau fără echipaj)
+
+Când un membru al unui echipaj ia CO/CM, partenerul rămas fără pereche era tratat ca individ
+solo — concura prost cu echipajele complete (putea rămâne aproape complet pe `L`), sau, mai
+grav, doi orfani din echipaje DIFERITE puteau ajunge să lucreze pe **ture diferite în aceeași
+zi** (unul T1, altul T2) — nu doar inechitabil, ci nerealist (electricienii nu lucrează
+singuri). Găsit de user pe date reale (captură cu 3 echipaje, unul cu CO parțial).
+
+**Fix, aplicat în TOATE cele 4 moduri**: cei rămași fără pereche într-o zi (CO/CM pe partener,
+sau angajat fără echipaj setat deloc) sunt împerecheați TEMPORAR între ei, determinist după id
+(primii doi din listă formează o pereche, următorii doi alta, ș.a.m.d.; ultimul rămâne solo
+dacă numărul e impar). Perechea temporară e tratată de restul algoritmului exact ca un echipaj
+normal de 2 — aceleași reguli de capacitate, gap T2→T1, MAX_CONSEC.
+- `assignRotationShifts` (moduri 3,4): `tempPairs` construite din `individuals`, per categorie,
+  apoi împinse în `fullCrews` înainte de calculul `idx`/`block`.
+- `assignCategoryShifts` (moduri 1,2): `crews` include acum `tempPairs` construite din
+  grupurile de mărime 1, înainte de `assignShift`.
+
+**Nu e o garanție 100%** — dacă unul din cei doi are deja `consec>=4` din activitate ANTERIOARĂ
+suprapunerii (independent de partener), regula de max 4 zile consecutive are prioritate corectă
+peste împerechere: acea persoană primește `L` obligatoriu, celălalt poate lucra solo în ziua
+respectivă. Testat: 3 din 5 zile de suprapunere perfect împerecheate, celelalte 2 explicate de
+consec individual preexistent — comportament corect, nu bug.
+
+**Grupare la 3+ orfani simultan**: împerecherea e silențioasă și deterministă (după id) — user
+a confirmat explicit că nu vrea modal/atenționare interactivă pentru a alege manual gruparea,
+nici pentru cazuri cu mai mult de 2 orfani. Nu propune din nou acest lucru fără cerere explicită.
+
+**Limitare cunoscută, ACCEPTATĂ deliberat (nu e bug, nu se fixează)**: NU există alocare
+automată de 8h/`c8` pentru cazul (rar) în care cineva rămâne fără nicio pereche posibilă
+(număr impar de orfani). Propusă și **respinsă explicit de user** — responsabilul poate seta
+manual `8h` din dropdown pentru acea persoană. Nu re-investiga sau propune fix pentru asta
+fără să fie cerut din nou.
 
 **Dacă apare din nou un raport de "cineva are mult mai multe/puține ore"**: prima
 verificare — cere config-ul exact (T1/T1A/T2/T2A pt. ambele grupe) + luna, reproduce
@@ -258,6 +283,19 @@ nimic.
   `width:100%` ca `flex:1` să aibă unde să se extindă).
 - Bara de jos (`.toolbar`): dropdown `💾 Fișiere` (salvare/încărcare JSON), `📊 Excel`,
   `🖨️ Print/PDF`, `📖 Manual`, badge versiune + `#commit`.
+- `Mod` (select `#gen-mode`): opțiunile sunt numerotate `1)`..`4)` în text, ca reper vizual
+  rapid — `2) Zilnic T1/T2` (fost „Doar T1/T2", redenumit ca să nu se confunde cu
+  `4) Rotație T1-T2-L`). Câmpurile T1A/T2A din config Urban/Rural (`.ta-field`, cu id
+  `cfg-{urban,rural}-{t1a,t2a}-field`) sunt ascunse dinamic (`updateModeFieldVisibility()`,
+  apelată la schimbarea modului și la încărcare) când modul curent nu le poate folosi
+  (ascunse la moduri 2 și 4, vizibile la 1 și 3).
+- Modalul de editare electrician are o secțiune „🏖️ CO / CM / Instruire pe interval"
+  (`applyLeaveInterval()`) — data început/sfârșit + tip, aplică direct în `state.schedule`
+  pentru tot intervalul (INST sare automat peste weekend). Inputurile de dată se
+  pre-completează la deschiderea modalului cu prima zi a LUNII SELECTATE ÎN GRAFIC
+  (`state.currentYear/currentMonth`), nu cu data reală de azi — altfel calendarul nativ al
+  browserului deschidea pe luna curentă reală, confuz dacă userul naviga graficul pe altă
+  lună (bug raportat de user, fixat).
 
 ## Alte convenții
 
