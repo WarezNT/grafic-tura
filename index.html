@@ -539,24 +539,14 @@ td.emp-name-cell:hover{text-decoration:underline}
         </div>
         <div class="help-section">
           <div class="help-section-title">🔀 Mod generare</div>
-          <p>Dropdown-ul <em>Mod</em> din bara de sus schimbă strategia:</p>
+          <p>Dropdown-ul <em>Mod</em> din bara de sus schimbă complet strategia de alocare. Modul poate fi schimbat oricând, inclusiv în timpul generării pas cu pas.</p>
           <ul class="help-list">
-            <li><strong>T1/T2 + T1A/T2A</strong> — varianta completă: toate turele se alocă automat</li>
-            <li><strong>Doar T1/T2</strong> — doar T1 și T2 automat; T1A și T2A rămân pentru asignare manuală</li>
-            <li><strong>Rotație 8 zile</strong> — fiecare electrician urmează ciclul: T1→T1A→T2→L→T1→T2A→T2→L→(repetă), dar alocarea respectă limitele numerice din configurație și regulile de weekend (T1A/T2A doar L–V).</li>
+            <li><strong>T1/T2 + T1A/T2A</strong> — toate turele se alocă automat zilnic (completare, nu ciclu fix). Reguli: T2 blochează T1/T1A a doua zi (pauză 8h); maxim 4 zile consecutive lucrate; maxim 5 zile lucrate pe săptămână (T1A/T2A/8h excluse după a 5-a zi); alternanță par/impar zi ca să nu se fixeze mereu același echipaj pe aceeași tură; T1A/T2A doar în zile lucrătoare.</li>
+            <li><strong>Doar T1/T2</strong> (implicit) — la fel ca mai sus, dar completează automat doar T1 și T2; T1A și T2A rămân complet manuale (nu se ating deloc). Aceleași reguli de gap, consecutiv și alternanță.</li>
+            <li><strong>Rotație 8 zile</strong> — fiecare echipaj/individ urmează un ciclu fix personal: T1→T1A→T2→L→T1→T2A→T2→L→(repetă). T1A/T2A doar în zile lucrătoare — dacă faza cade tocmai în weekend, cade automat pe echivalentul de bază (T1A→T1, T2A→T2) dacă formația chiar le folosește, altfel rămâne Liber. La 5 sau mai multe echipaje/grup apare o coliziune structurală (ciclul se repetă la jumătate) — rezolvată automat: câștigă cine are mai puține ore acumulate luna curentă, iar „perechea" care se ciocnește se rotește la fiecare 8 zile, ca dezechilibrul să nu cadă mereu pe aceiași electricieni. Se aplică și gap T2→T1/T1A și maxim 4 zile consecutive.</li>
+            <li><strong>Rotație T1-T2-L (3 zile)</strong> — ciclu fix personal, mai simplu: T1→T2→L→(repetă). Nu folosește deloc T1A/T2A/8h, indiferent de configurație. Aceeași protecție la coliziune (fairness pe ore + rotație de bloc, dar la fiecare 3 zile) — testat: egalitate perfectă a orelor chiar și la 5 echipaje/grup. Aceleași reguli de gap T2→T1 și maxim 4 consecutive.</li>
           </ul>
-          <p>Modul poate fi schimbat oricând, inclusiv în timpul generării pas cu pas.</p>
-        </div>
-        <div class="help-section">
-          <div class="help-section-title">🧠 Regulile algoritmului</div>
-          <ul class="help-list">
-            <li>Rotație echitabilă T1↔T2 — ieri T1 → azi T2 prioritar; ieri T2 → nu T2 din nou</li>
-            <li>Pauză de 8h — ieri T2 (14–22) → azi nu T1 (06–14)</li>
-            <li>Maxim 4 zile consecutive de muncă — a 5-a zi forțat Liber</li>
-            <li>Maxim 5 zile lucrate pe săptămână — T1A/T2A/8h excluse după 5 zile</li>
-            <li>Grupare echipaje — membrii aceluiași echipaj rămân pe aceeași tură</li>
-            <li>Echipaj pe dată — dacă angajatul are override activ, e tratat în noul echipaj</li>
-          </ul>
+          <p>Comune tuturor modurilor: grupare pe echipaje (membrii aceluiași echipaj primesc mereu aceeași tură), respectarea unui eventual <em>echipaj pe dată</em> (override activ la acea zi), și electricienii cu <em>Forțat 8h</em> — excluși din orice alocare automată, primesc mereu tura 8h în zile lucrătoare.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">🏷️ Legendă ture</div>
@@ -689,7 +679,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 49;
+const COMMIT_COUNT = 50;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
