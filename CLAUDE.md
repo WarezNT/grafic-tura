@@ -237,15 +237,48 @@ automată de 8h/`c8` pentru cazul (rar) în care cineva rămâne fără nicio pe
 manual `8h` din dropdown pentru acea persoană. Nu re-investiga sau propune fix pentru asta
 fără să fie cerut din nou.
 
+8. **Capacitate asimetrică T1≠T2 prost umplută în `rotation`/`rotation3`** — când un echipaj
+   pierdea competiția pentru tura dorită (coliziune), rămânea pur și simplu neasignat, fără
+   nicio încercare de redirecționare spre CEALALTĂ tură (T1↔T2) dacă acolo mai era loc.
+   **Fix**: `spillover(list, sv)` — după asignarea principală, orice echipaj/individ rămas
+   neasignat care voia T1 sau T2 încearcă automat tura alternativă (prin `doAssign`, deci
+   respectă toate regulile). **Limită reală, nu eliminabilă**: cu puține echipaje și
+   capacitate cerută mult peste ce oferă ciclul fix (ex. T1=4 cu doar 4 echipaje pe ciclu de
+   3 zile — cere 2 echipaje simultan, dar ciclul dă fiecărui echipaj doar 1 zi din 3 pe T1),
+   unele zile tot vor fi sub capacitate — a forța altfel ar însemna sacrificarea zilei
+   libere garantate a ciclului.
+
+9. **CRITIC — fairness pe ore complet suprascrisă de preferința de varietate, în `full`/`t12`**
+   (`assignCategoryShifts`/`assignShift`) — găsit de user cu config asimetric (T1=4, T2=2,
+   4 echipaje): un echipaj rămânea mereu ultimul (120h vs 168h pt. restul), fără să se
+   corecteze NICIODATĂ, deși diferența creștea zi de zi. Cauza: preferința „evită repetarea
+   aceleiași ture ieri" (`softPrefer`, menită doar să încurajeze varietate) **înlocuia
+   complet** lista de candidați eligibili — excludea definitiv orice echipaj/individ care
+   lucrase acea tură ieri, INDIFERENT cât de puține ore acumulate avea. Confirmat prin trace
+   zi de zi: echipajul cu cele mai puține ore din toată luna tot pierdea sistematic.
+   **Fix**: fairness pe ore e acum criteriul PRINCIPAL de sortare întotdeauna — `softPrefer`
+   intervine STRICT ca departajare la egalitate de ore, nu mai suprascrie niciodată o
+   diferență reală de fairness. Aplicat consistent la echipaje ȘI la fallback-ul individual.
+   **Rezultat**: spread redus de la 48h (168 vs 120) la 8h (192 vs 184) pe config asimetric.
+   În aceeași investigație s-a mai găsit și reparat: fallback-ul individual excludea
+   definitiv (hard skip) pe oricine lucrase ieri tura respectivă, lăsând capacitatea
+   configurată neumplută chiar și fără nicio alternativă (asta era bug-ul INIȚIAL raportat
+   de user — T1=4 configurat, umplut doar cu 2 în multe zile); și o regresie/bug pre-existent
+   expus abia acum: T1A nu avea deloc protecție hard împotriva gap-ului T2→T1A în `full`/`t12`
+   (fix: `assignShift(remaining, t1ac, 3, 't1a', false, [2])`, al 6-lea param `hardBlock`).
+
 **Dacă apare din nou un raport de "cineva are mult mai multe/puține ore"**: prima
-verificare — cere config-ul exact (T1/T1A/T2/T2A pt. ambele grupe) + luna, reproduce
-în consolă browser (vezi metoda de testare mai jos), și verifică dacă nu cumva a apărut
-o A ȘAPTEA sursă de asimetrie neacoperită încă (ex. interacțiune cu `crewOverrides` la
-mijlocul lunii, sau cu faptul că MAX_CONSEC nu face compensare încrucișată — vezi mai
-sus). Cele 6 surse deja găsite și fixate: coliziune structurală la 5+ echipaje, T1A/T2A
-pierdute în weekend, amestec Urban/Rural în calculul de fază, MAX_CONSEC lipsă din
-rotation, bias persistent la reziduu + prag greșit pt. coliziune, weekendFallback
-nedetectat de hasCollision.
+verificare — cere config-ul exact (T1/T1A/T2/T2A pt. ambele grupe), MODUL exact (1-4 —
+nu presupune, cere explicit; confuzie reală a avut loc în sesiune între modul 2 și 4), luna,
+reproduce în consolă browser (vezi metoda de testare mai jos), și verifică dacă nu cumva a
+apărut o A ZECEA sursă de asimetrie neacoperită încă (ex. interacțiune cu `crewOverrides` la
+mijlocul lunii, sau cu faptul că MAX_CONSEC nu face compensare încrucișată — vezi mai sus).
+Cele 9 surse deja găsite și fixate: coliziune structurală la 5+ echipaje, T1A/T2A pierdute în
+weekend, amestec Urban/Rural în calculul de fază, MAX_CONSEC lipsă din rotation, bias
+persistent la reziduu + prag greșit pt. coliziune, weekendFallback nedetectat de
+hasCollision, capacitate asimetrică fără spillover în rotation/rotation3, și CRITIC:
+fairness suprascrisă de preferința de varietate + hard-skip individual + gap T1A lipsă,
+toate în full/t12.
 
 ### Metodă de testare rapidă (fără UI, direct în consolă browser)
 
