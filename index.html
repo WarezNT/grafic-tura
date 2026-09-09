@@ -317,24 +317,24 @@ td.emp-name-cell:hover{text-decoration:underline}
       </label>
       <button class="btn btn-outline btn-sm" onclick="nextMonth()" title="Luna următoare" style="padding:4px 8px;font-size:14px">›</button>
       <span style="width:1px;height:24px;background:var(--border);display:inline-block"></span>
-      <span class="ctrl-group-label ctrl-urban-label" style="font-size:11px;font-weight:700;white-space:nowrap">Urban:</span>
+      <span class="ctrl-group-label ctrl-urban-label" style="font-size:11px;font-weight:700;white-space:nowrap" data-tooltip="Configurare pentru grupul Urban — câți electricieni pe fiecare tură">Urban:</span>
       <span class="ctrl-group-wrap ctrl-urban-wrap" style="display:flex;gap:3px;align-items:center;padding:3px 7px;border-radius:6px">
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">T1<input type="number" id="cfg-urban-t1" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">T1A<input type="number" id="cfg-urban-t1a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">T2<input type="number" id="cfg-urban-t2" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">T2A<input type="number" id="cfg-urban-t2a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">8h<input type="number" id="cfg-urban-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T1 (06:00–14:00) — se alocă automat în toate modurile">T1<input type="number" id="cfg-urban-t1" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label ta-field" id="cfg-urban-t1a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T1A (variantă T1, doar L–V) — folosită doar de modurile care o susțin">T1A<input type="number" id="cfg-urban-t1a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2 (14:00–22:00) — se alocă automat în toate modurile">T2<input type="number" id="cfg-urban-t2" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label ta-field" id="cfg-urban-t2a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2A (variantă T2, doar L–V) — folosită doar de modurile care o susțin">T2A<input type="number" id="cfg-urban-t2a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Program normal 8h (08:00–16:00, doar L–V) — pentru electricienii cu Forțat 8h">8h<input type="number" id="cfg-urban-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
       </span>
-      <span class="ctrl-group-label ctrl-rural-label" style="font-size:11px;font-weight:700;white-space:nowrap">Rural:</span>
+      <span class="ctrl-group-label ctrl-rural-label" style="font-size:11px;font-weight:700;white-space:nowrap" data-tooltip="Configurare pentru grupul Rural — câți electricieni pe fiecare tură">Rural:</span>
       <span class="ctrl-group-wrap ctrl-rural-wrap" style="display:flex;gap:3px;align-items:center;padding:3px 7px;border-radius:6px">
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">T1<input type="number" id="cfg-rural-t1" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">T1A<input type="number" id="cfg-rural-t1a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">T2<input type="number" id="cfg-rural-t2" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">T2A<input type="number" id="cfg-rural-t2a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center">8h<input type="number" id="cfg-rural-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T1 (06:00–14:00) — se alocă automat în toate modurile">T1<input type="number" id="cfg-rural-t1" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label ta-field" id="cfg-rural-t1a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T1A (variantă T1, doar L–V) — folosită doar de modurile care o susțin">T1A<input type="number" id="cfg-rural-t1a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2 (14:00–22:00) — se alocă automat în toate modurile">T2<input type="number" id="cfg-rural-t2" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label ta-field" id="cfg-rural-t2a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2A (variantă T2, doar L–V) — folosită doar de modurile care o susțin">T2A<input type="number" id="cfg-rural-t2a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Program normal 8h (08:00–16:00, doar L–V) — pentru electricienii cu Forțat 8h">8h<input type="number" id="cfg-rural-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
       </span>
-      <label class="ctrl-label" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;white-space:nowrap">Mod
-        <select id="gen-mode" onchange="state.genMode=this.value;saveState()" style="font-size:11px;padding:3px 5px">
+      <label class="ctrl-label" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;white-space:nowrap" data-tooltip="Strategia de generare a graficului — schimbă complet cum sunt alocate turele">Mod
+        <select id="gen-mode" onchange="state.genMode=this.value;saveState();updateModeFieldVisibility()" style="font-size:11px;padding:3px 5px">
           <option value="full">T1/T2 + T1A/T2A</option>
           <option value="t12">Doar T1/T2</option>
           <option value="rotation">Rotație 8 zile</option>
@@ -342,12 +342,12 @@ td.emp-name-cell:hover{text-decoration:underline}
         </select>
       </label>
       <span style="flex:1"></span>
-      <button class="btn btn-primary btn-sm" onclick="startGeneration()">▶ Generare</button>
-      <button class="btn btn-outline btn-sm" id="btn-prev-day" onclick="prevDay()" style="display:none">←</button>
-      <button class="btn btn-outline btn-sm" id="btn-next-day" onclick="generateNextDay()" style="display:none">Ziua →</button>
-      <button class="btn btn-success btn-sm" id="btn-generate-all" onclick="generateAll()" style="display:none">Generare totală →</button>
-      <button class="btn btn-warning btn-sm" onclick="clearSchedule()">✕ Curăță</button>
-      <button class="btn btn-success btn-sm" onclick="openAddEmployeeModal()">+ Electrician</button>
+      <button class="btn btn-primary btn-sm" onclick="startGeneration()" data-tooltip="Pornește generarea graficului pentru luna și anul selectate, cu modul și configurația de mai sus">▶ Generare</button>
+      <button class="btn btn-outline btn-sm" id="btn-prev-day" onclick="prevDay()" style="display:none" data-tooltip="Întoarce cu o zi înapoi, pentru a regenera ultima zi dacă rezultatul nu e satisfăcător">←</button>
+      <button class="btn btn-outline btn-sm" id="btn-next-day" onclick="generateNextDay()" style="display:none" data-tooltip="Generează doar ziua curentă și avansează — verificare pas cu pas">Ziua →</button>
+      <button class="btn btn-success btn-sm" id="btn-generate-all" onclick="generateAll()" style="display:none" data-tooltip="Generează dintr-odată toate zilele rămase din lună">Generare totală →</button>
+      <button class="btn btn-warning btn-sm" onclick="clearSchedule()" data-tooltip="Șterge tot graficul generat pentru luna curentă (electricienii rămân)">✕ Curăță</button>
+      <button class="btn btn-success btn-sm" onclick="openAddEmployeeModal()" data-tooltip="Adaugă un electrician nou în formație">+ Electrician</button>
     </div>
   </div>
 
@@ -418,11 +418,11 @@ td.emp-name-cell:hover{text-decoration:underline}
     <div class="tb-group tb-dd-wrap">
       <button class="btn btn-outline btn-sm" onclick="toggleTbDropdown('dd-fisiere')" data-tooltip="Salvează sau încarcă grafice și date">💾 Fișiere ▾</button>
       <div class="tb-dd" id="dd-fisiere">
-        <button onclick="closeTbDropdowns();exportMonthJSON()">💾 Salvează luna curentă <span class="tb-dd-hint">JSON</span></button>
-        <button onclick="closeTbDropdowns();exportFullJSON()">💿 Backup complet <span class="tb-dd-hint">JSON</span></button>
+        <button onclick="closeTbDropdowns();exportMonthJSON()" data-tooltip="Exportă DOAR luna afișată acum (grafic + electricieni + config) într-un fișier mic, ușor de trimis cuiva">💾 Descarcă doar luna curentă <span class="tb-dd-hint">JSON</span></button>
+        <button onclick="closeTbDropdowns();exportFullJSON()" data-tooltip="Exportă TOATE lunile salvate, toți electricienii și toate setările — backup complet al aplicației">💿 Descarcă tot (backup complet) <span class="tb-dd-hint">JSON</span></button>
         <div class="tb-dd-sep"></div>
-        <button onclick="closeTbDropdowns();loadJSON()">📂 Încarcă lună din fișier</button>
-        <button onclick="closeTbDropdowns();importEmployees()">👥 Import electricieni</button>
+        <button onclick="closeTbDropdowns();loadJSON()" data-tooltip="Deschide un fișier JSON exportat de aici — recunoaște automat dacă e o lună sau un backup complet">📂 Încarcă fișier (lună sau backup)</button>
+        <button onclick="closeTbDropdowns();importEmployees()" data-tooltip="Adaugă electricieni dintr-un alt fișier JSON, fără să șteargă graficul sau electricienii existenți">👥 Adaugă electricieni din fișier</button>
       </div>
     </div>
     <div class="tb-sep"></div>
@@ -679,7 +679,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 56;
+const COMMIT_COUNT = 57;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -2234,6 +2234,7 @@ function applyJSON(text) {
     // org lives in ORG_KEY — only migrate from file if ORG_KEY is empty
     if (data.org && data.org.sefFOL && !loadOrg()) saveOrg(data.org);
     document.getElementById('gen-mode').value = state.genMode || 'full';
+    updateModeFieldVisibility();
     saveState();
     document.getElementById('sel-month').value = state.currentMonth || 1;
     document.getElementById('sel-year').value = state.currentYear || new Date().getFullYear();
@@ -2513,6 +2514,13 @@ function toggleTbDropdown(id) {
 function closeTbDropdowns() {
   document.querySelectorAll('.tb-dd').forEach(d => d.classList.remove('open'));
 }
+function updateModeFieldVisibility() {
+  // T1A/T2A sunt relevante doar in modurile care le pot folosi automat: T1/T2+T1A/T2A
+  // ("full") si Rotatie 8 zile ("rotation"). In "t12" (Doar T1/T2) sunt ignorate complet
+  // de algoritm (raman doar pt editare manuala pe celule), iar in "rotation3" nu exista deloc.
+  const usesTA = state.genMode === 'full' || state.genMode === 'rotation';
+  document.querySelectorAll('.ta-field').forEach(el => { el.style.display = usesTA ? '' : 'none'; });
+}
 function toggleDarkMode() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
@@ -2550,6 +2558,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // migrate org from state to dedicated ORG_KEY if not yet migrated
     if (!loadOrg() && state.org && state.org.sefFOL) saveOrg(state.org);
     document.getElementById('gen-mode').value = state.genMode;
+    updateModeFieldVisibility();
     applyOrgToDOM();
     render();
     updateButtons();
