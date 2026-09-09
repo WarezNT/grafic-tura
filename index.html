@@ -679,7 +679,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 53;
+const COMMIT_COUNT = 54;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -1188,17 +1188,28 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   // suficient n<=CYCLE_LEN (idx unic nu garantează valoare unică: ROTATION poate avea aceeași
   // tură pe poziții diferite, ex. T1 la poz. 0 ȘI 4 în ciclul de 8 zile). Verifică direct: există
   // vreo zi în care două idx din [0,n) cer aceeași tură reală (L exclus, nu produce conflict)?
-  function hasCollision(n) {
-    for (let D = 0; D < CYCLE_LEN; D++) {
-      const seen = new Set();
-      for (let idx = 0; idx < n; idx++) {
-        const v = ROTATION[(idx + D) % CYCLE_LEN];
-        if (v === 0) continue;
-        if (seen.has(v)) return true;
-        seen.add(v);
+  // IMPORTANT: verifică și varianta cu weekendFallback aplicat (T1A→T1, T2A→T2) — o poziție din
+  // ciclu poate cădea pe orice zi a săptămânii de-a lungul lunii, deci fallback-ul de weekend
+  // poate crea coliziuni noi (ex. T1 la poz. 0 ȘI 1 dacă poz. 1 era T1A) pe care varianta de bază
+  // nu le arată. Verificată doar dacă formația chiar folosește T1A/T2A (altfel fallback-ul nu se
+  // activează niciodată, deci nu produce nicio coliziune suplimentară).
+  function hasCollision(n, cat) {
+    const c = cfgs[cat] || {};
+    const usesT1A = (c.t1a || 0) > 0, usesT2A = (c.t2a || 0) > 0;
+    const remapped = ROTATION.map(v => (v === 3 && usesT1A) ? 1 : (v === 4 && usesT2A) ? 2 : v);
+    function check(arr) {
+      for (let D = 0; D < CYCLE_LEN; D++) {
+        const seen = new Set();
+        for (let idx = 0; idx < n; idx++) {
+          const v = arr[(idx + D) % CYCLE_LEN];
+          if (v === 0) continue;
+          if (seen.has(v)) return true;
+          seen.add(v);
+        }
       }
+      return false;
     }
-    return false;
+    return check(ROTATION) || check(remapped);
   }
 
   // În weekend, T1A/T2A sunt blocate (limită 0) — un echipaj a cărui fază cade pe T1A/T2A tocmai
@@ -1226,14 +1237,14 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   // adăugarea și a monthSeed acolo schimbă ordinea de tie-break în moduri imprevizibile și
   // poate înrăutăți rezultatul (testat). monthSeed se aplică DOAR când nu există coliziune —
   // acolo idx e fix toată luna, deci monthSeed doar re-etichetează cine ia reziduul, fără alte efecte.
-  function blockFor(n) { return hasCollision(n) ? blockWithinMonth : monthSeed; }
+  function blockFor(n, cat) { return hasCollision(n, cat) ? blockWithinMonth : monthSeed; }
 
   // Pass 1: complete crews by crew rotation, prioritizate după ore acumulate la conflict
   const crewWants = [];
   GROUPS.forEach(cat => {
     const catCrews = fullCrews.filter(c => (c[0].category || 'urban') === cat);
     const n = catCrews.length;
-    const catBlock = blockFor(n);
+    const catBlock = blockFor(n, cat);
     catCrews.forEach((crew, i) => {
       const idx = n > 0 ? (i + catBlock) % n : i;
       crewWants.push({ crew, sv: weekendFallback(ROTATION[(idx + day - 1) % CYCLE_LEN], cat) });
@@ -1247,7 +1258,7 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   GROUPS.forEach(cat => {
     const catIndiv = individuals.filter(e => (e.category || 'urban') === cat);
     const n = catIndiv.length;
-    const catBlock = blockFor(n);
+    const catBlock = blockFor(n, cat);
     catIndiv.forEach((emp, i) => {
       const idx = n > 0 ? (i + catBlock) % n : i;
       indivWants.push({ emp, sv: weekendFallback(ROTATION[(idx + day - 1) % CYCLE_LEN], cat) });
