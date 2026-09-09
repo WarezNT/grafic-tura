@@ -335,10 +335,10 @@ td.emp-name-cell:hover{text-decoration:underline}
       </span>
       <label class="ctrl-label" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;white-space:nowrap" data-tooltip="Strategia de generare a graficului — schimbă complet cum sunt alocate turele">Mod
         <select id="gen-mode" onchange="state.genMode=this.value;saveState();updateModeFieldVisibility()" style="font-size:11px;padding:3px 5px">
-          <option value="full">T1/T2 + T1A/T2A</option>
-          <option value="t12">Doar T1/T2</option>
-          <option value="rotation">Rotație 8 zile</option>
-          <option value="rotation3">Rotație T1-T2-L (3 zile)</option>
+          <option value="full">1) T1/T2 + T1A/T2A</option>
+          <option value="t12">2) Zilnic T1/T2</option>
+          <option value="rotation">3) Rotație 8 zile</option>
+          <option value="rotation3">4) Rotație T1-T2-L</option>
         </select>
       </label>
       <span style="flex:1"></span>
@@ -541,10 +541,10 @@ td.emp-name-cell:hover{text-decoration:underline}
           <div class="help-section-title">🔀 Mod generare</div>
           <p>Dropdown-ul <em>Mod</em> din bara de sus schimbă complet strategia de alocare. Modul poate fi schimbat oricând, inclusiv în timpul generării pas cu pas.</p>
           <ul class="help-list">
-            <li><strong>T1/T2 + T1A/T2A</strong> — toate turele se alocă automat zilnic (completare, nu ciclu fix). Reguli: T2 blochează T1/T1A a doua zi (pauză 8h); maxim 4 zile consecutive lucrate; maxim 5 zile lucrate pe săptămână (T1A/T2A/8h excluse după a 5-a zi); alternanță par/impar zi ca să nu se fixeze mereu același echipaj pe aceeași tură; T1A/T2A doar în zile lucrătoare.</li>
-            <li><strong>Doar T1/T2</strong> (implicit) — la fel ca mai sus, dar completează automat doar T1 și T2; T1A și T2A rămân complet manuale (nu se ating deloc). Aceleași reguli de gap, consecutiv și alternanță.</li>
-            <li><strong>Rotație 8 zile</strong> — fiecare echipaj/individ urmează un ciclu fix personal: T1→T1A→T2→L→T1→T2A→T2→L→(repetă). T1A/T2A doar în zile lucrătoare — dacă faza cade tocmai în weekend, cade automat pe echivalentul de bază (T1A→T1, T2A→T2) dacă formația chiar le folosește, altfel rămâne Liber. La 5 sau mai multe echipaje/grup apare o coliziune structurală (ciclul se repetă la jumătate) — rezolvată automat: câștigă cine are mai puține ore acumulate luna curentă, iar „perechea" care se ciocnește se rotește la fiecare 8 zile, ca dezechilibrul să nu cadă mereu pe aceiași electricieni. Se aplică și gap T2→T1/T1A și maxim 4 zile consecutive.</li>
-            <li><strong>Rotație T1-T2-L (3 zile)</strong> — ciclu fix personal, mai simplu: T1→T2→L→(repetă). Nu folosește deloc T1A/T2A/8h, indiferent de configurație. Aceeași protecție la coliziune (fairness pe ore + rotație de bloc, dar la fiecare 3 zile) — testat: egalitate perfectă a orelor chiar și la 5 echipaje/grup. Aceleași reguli de gap T2→T1 și maxim 4 consecutive.</li>
+            <li><strong>1) T1/T2 + T1A/T2A</strong> — toate turele se alocă automat zilnic (completare, nu ciclu fix). Reguli: T2 blochează T1/T1A a doua zi (pauză 8h); maxim 4 zile consecutive lucrate; maxim 5 zile lucrate pe săptămână (T1A/T2A/8h excluse după a 5-a zi); alternanță par/impar zi ca să nu se fixeze mereu același echipaj pe aceeași tură; T1A/T2A doar în zile lucrătoare.</li>
+            <li><strong>2) Zilnic T1/T2</strong> (implicit) — la fel ca mai sus, dar completează automat doar T1 și T2; T1A și T2A rămân complet manuale (nu se ating deloc). Aceleași reguli de gap, consecutiv și alternanță.</li>
+            <li><strong>3) Rotație 8 zile</strong> — fiecare echipaj/individ urmează un ciclu fix personal: T1→T1A→T2→L→T1→T2A→T2→L→(repetă). T1A/T2A doar în zile lucrătoare — dacă faza cade tocmai în weekend, cade automat pe echivalentul de bază (T1A→T1, T2A→T2) dacă formația chiar le folosește, altfel rămâne Liber. La 5 sau mai multe echipaje/grup apare o coliziune structurală (ciclul se repetă la jumătate) — rezolvată automat: câștigă cine are mai puține ore acumulate luna curentă, iar „perechea" care se ciocnește se rotește la fiecare 8 zile, ca dezechilibrul să nu cadă mereu pe aceiași electricieni. Se aplică și gap T2→T1/T1A și maxim 4 zile consecutive.</li>
+            <li><strong>4) Rotație T1-T2-L</strong> — ciclu fix personal, mai simplu, de 3 zile: T1→T2→L→(repetă). Nu folosește deloc T1A/T2A/8h, indiferent de configurație. Aceeași protecție la coliziune (fairness pe ore + rotație de bloc, dar la fiecare 3 zile) — testat: egalitate perfectă a orelor chiar și la 5 echipaje/grup. Aceleași reguli de gap T2→T1 și maxim 4 consecutive.</li>
           </ul>
           <p>Comune tuturor modurilor: grupare pe echipaje (membrii aceluiași echipaj primesc mereu aceeași tură), respectarea unui eventual <em>echipaj pe dată</em> (override activ la acea zi), și electricienii cu <em>Forțat 8h</em> — excluși din orice alocare automată, primesc mereu tura 8h în zile lucrătoare.</p>
         </div>
@@ -679,7 +679,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 57;
+const COMMIT_COUNT = 58;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -2516,7 +2516,7 @@ function closeTbDropdowns() {
 }
 function updateModeFieldVisibility() {
   // T1A/T2A sunt relevante doar in modurile care le pot folosi automat: T1/T2+T1A/T2A
-  // ("full") si Rotatie 8 zile ("rotation"). In "t12" (Doar T1/T2) sunt ignorate complet
+  // ("full") si Rotatie 8 zile ("rotation"). In "t12" (Zilnic T1/T2) sunt ignorate complet
   // de algoritm (raman doar pt editare manuala pe celule), iar in "rotation3" nu exista deloc.
   const usesTA = state.genMode === 'full' || state.genMode === 'rotation';
   document.querySelectorAll('.ta-field').forEach(el => { el.style.display = usesTA ? '' : 'none'; });
