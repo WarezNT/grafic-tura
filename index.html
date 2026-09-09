@@ -693,7 +693,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.4';
-const COMMIT_COUNT = 65;
+const COMMIT_COUNT = 66;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -1117,15 +1117,28 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
     return c.reduce((s, e) => s + stats[e.id][field], 0) / c.length;
   }
 
-  function assignShift(crewsArr, count, shiftVal, sortField, blockValues) {
-    let pool = [...crewsArr];
-    if (blockValues && blockValues.length) {
-      pool = crewsArr.filter(c => c.every(e => stats[e.id].yesterday === null || !blockValues.includes(stats[e.id].yesterday)));
-      if (pool.length === 0) pool = [...crewsArr];
-    }
+  function assignShift(crewsArr, count, shiftVal, sortField, softPrefer, hardBlock) {
+    // Hard block: regulă reală de siguranță (T2 ieri → nu T1/T1A azi) — niciun echipaj/individ
+    // care o încalcă nu poate fi folosit pt. acest slot, nici măcar ca rezervă de completare.
+    const candidates = (hardBlock && hardBlock.length)
+      ? crewsArr.filter(c => c.every(e => stats[e.id].yesterday === null || !hardBlock.includes(stats[e.id].yesterday)))
+      : crewsArr;
+    // Fairness (ore acumulate) e ÎNTOTDEAUNA criteriul principal — softPrefer (evită repetarea
+    // aceleiași ture ieri, doar variație) intervine STRICT ca departajare la egalitate de ore,
+    // niciodată nu suprascrie fairness-ul. Înainte, softPrefer înlocuia complet lista de
+    // candidați (excludea pe oricine a lucrat ieri tura respectivă, chiar și pe cel cu cele mai
+    // puține ore din toată luna) — bug găsit de user: un echipaj rămânea mereu ultimul, oricât
+    // de mult rămânea în urmă la ore, pentru că "preferința de varietate" îl exclude sistematic.
+    const pool = [...candidates];
     pool.sort((a, b) => {
       const da = avg(a, 'total'), db = avg(b, 'total');
-      return da !== db ? da - db : avg(a, sortField) - avg(b, sortField);
+      if (da !== db) return da - db;
+      if (softPrefer && softPrefer.length) {
+        const aOK = a.every(e => stats[e.id].yesterday === null || !softPrefer.includes(stats[e.id].yesterday));
+        const bOK = b.every(e => stats[e.id].yesterday === null || !softPrefer.includes(stats[e.id].yesterday));
+        if (aOK !== bOK) return aOK ? -1 : 1;
+      }
+      return avg(a, sortField) - avg(b, sortField);
     });
     let placed = 0;
     const result = [];
@@ -1135,22 +1148,30 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
       placed += c.length;
       result.push(c);
     }
-    // fill remaining slots with individuals from unused crews
+    // fill remaining slots with individuals from unused crews (doar dintre candidates — cei
+    // hard-blocați rămân excluși și aici, dar softPrefer e doar preferință, nu excludere: dacă
+    // TOȚI cei rămași ar fi altfel excluși, capacitatea configurată tot se umple cât se poate —
+    // bug găsit de user: T1=4 configurat, dar umplut doar cu 2 în multe zile pt. că fallback-ul
+    // vechi excludea definitiv pe oricine lucrase ieri, chiar și când nu exista nicio alternativă.
     if (placed < count) {
       const indiv = [];
-      crewsArr.filter(c => !result.includes(c)).forEach(c => c.forEach(e => indiv.push(e)));
-      if (blockValues && blockValues.length) indiv.sort((a, b) => {
-        const aOK = stats[a.id].yesterday === null || !blockValues.includes(stats[a.id].yesterday);
-        const bOK = stats[b.id].yesterday === null || !blockValues.includes(stats[b.id].yesterday);
-        return aOK === bOK ? 0 : aOK ? -1 : 1;
+      candidates.filter(c => !result.includes(c)).forEach(c => c.forEach(e => indiv.push(e)));
+      // Fairness (total ore) e criteriul principal; softPrefer doar departajează la egalitate —
+      // al doilea .sort() de mai jos NU mai suprascrie complet ordinea (bug: cele două sortări
+      // separate anulau reciproc efectul softPrefer, dar asta nu era cauza principală a
+      // dezechilibrului, doar o inconsistență cu partea de echipaje, corectată acum la fel).
+      indiv.sort((a, b) => {
+        const ta = stats[a.id].total, tb = stats[b.id].total;
+        if (ta !== tb) return ta - tb;
+        if (softPrefer && softPrefer.length) {
+          const aOK = stats[a.id].yesterday === null || !softPrefer.includes(stats[a.id].yesterday);
+          const bOK = stats[b.id].yesterday === null || !softPrefer.includes(stats[b.id].yesterday);
+          if (aOK !== bOK) return aOK ? -1 : 1;
+        }
+        return 0;
       });
-      indiv.sort((a, b) => stats[a.id].total - stats[b.id].total);
       for (const e of indiv) {
         if (placed >= count) break;
-        if (blockValues && blockValues.length) {
-          const y = stats[e.id].yesterday;
-          if (y !== null && blockValues.includes(y)) continue;
-        }
         state.schedule[dk][String(e.id)] = shiftVal;
         assigned.push(e.id);
         placed++;
@@ -1164,9 +1185,9 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
   let r;
   if (day % 2 === 0) {
     r = assignShift(remaining, t2c, 2, 't2', [2]); remaining = r.remaining;
-    r = assignShift(remaining, t1c, 1, 't1', [1,2]); remaining = r.remaining;
+    r = assignShift(remaining, t1c, 1, 't1', [1], [2]); remaining = r.remaining;
   } else {
-    r = assignShift(remaining, t1c, 1, 't1', [1,2]); remaining = r.remaining;
+    r = assignShift(remaining, t1c, 1, 't1', [1], [2]); remaining = r.remaining;
     r = assignShift(remaining, t2c, 2, 't2', [2]); remaining = r.remaining;
   }
   if (!weekend && !skipTA) {
@@ -1189,7 +1210,7 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
       return wc < 5;
     });
     remaining = remaining.filter(eligible);
-    r = assignShift(remaining, t1ac, 3, 't1a', false); remaining = r.remaining;
+    r = assignShift(remaining, t1ac, 3, 't1a', false, [2]); remaining = r.remaining;
     r = assignShift(remaining, t2ac, 4, 't2a', false); remaining = r.remaining;
     r = assignShift(remaining, c8c, 7, 'c8', false); remaining = r.remaining;
   }
