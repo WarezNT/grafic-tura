@@ -338,6 +338,7 @@ td.emp-name-cell:hover{text-decoration:underline}
           <option value="full">T1/T2 + T1A/T2A</option>
           <option value="t12">Doar T1/T2</option>
           <option value="rotation">Rotație 8 zile</option>
+          <option value="rotation3">Rotație T1-T2-L (3 zile)</option>
         </select>
       </label>
       <span style="flex:1"></span>
@@ -688,7 +689,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 47;
+const COMMIT_COUNT = 48;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -1134,8 +1135,9 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
   }
 }
 
-function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs) {
-  const ROTATION = [1, 3, 2, 0, 1, 4, 2, 0];
+function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) {
+  if (!ROTATION) ROTATION = [1, 3, 2, 0, 1, 4, 2, 0];
+  const CYCLE_LEN = ROTATION.length;
   const eligible = emps.filter(e => !e.forced8 && !assigned.includes(e.id));
   // Group by effective crew
   const crews = {};
@@ -1167,6 +1169,10 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs) {
     // Max 4 zile consecutive lucrate — dacă oricare membru al echipajului/individul e deja
     // la limită, tot grupul primește L în loc de tura dorită (aceeași regulă ca în full/t12).
     if (list.some(e => genStats[e.id] && genStats[e.id].consec >= MAX_CONSEC)) return;
+    // T2 blochează T1/T1A a doua zi (gap de 8h între ture) — aceeași regulă ca în full/t12.
+    // Ciclul propriu (8 sau 3 zile) nu produce natural T2→T1, dar rotația de bloc poate crea
+    // un salt de fază la granița dintre blocuri; verificarea explicită acoperă și acel caz.
+    if ((sv === 1 || sv === 3) && list.some(e => genStats[e.id] && genStats[e.id].yesterday === 2)) return;
     const cat = list[0].category || 'urban';
     if (!limits[cat] || used[cat][key] + list.length > limits[cat][key]) return;
     list.forEach(e => { state.schedule[dk][String(e.id)] = sv; assigned.push(e.id); });
@@ -1181,7 +1187,7 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs) {
   //    poziția fiecărui echipaj în ciclu se decalează la fiecare bloc de 8 zile, astfel încât perechea
   //    care „se ciocnește" se rotește printre toate echipajele pe parcursul lunii.
   const hoursOf = list => getEmployeeStats(list[0].id).hours;
-  const block = Math.floor((day - 1) / 8);
+  const block = Math.floor((day - 1) / CYCLE_LEN);
 
   // În weekend, T1A/T2A sunt blocate (limită 0) — un echipaj a cărui fază cade pe T1A/T2A tocmai
   // sâmbăta/duminica ar pierde ziua complet (L, fără recuperare). Dacă formația chiar folosește T1A/T2A
@@ -1207,7 +1213,7 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs) {
     const n = catCrews.length;
     catCrews.forEach((crew, i) => {
       const idx = n > 0 ? (i + block) % n : i;
-      crewWants.push({ crew, sv: weekendFallback(ROTATION[(idx + day - 1) % 8], cat) });
+      crewWants.push({ crew, sv: weekendFallback(ROTATION[(idx + day - 1) % CYCLE_LEN], cat) });
     });
   });
   crewWants.sort((a, b) => hoursOf(a.crew) - hoursOf(b.crew) || a.crew[0].id - b.crew[0].id);
@@ -1220,7 +1226,7 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs) {
     const n = catIndiv.length;
     catIndiv.forEach((emp, i) => {
       const idx = n > 0 ? (i + block) % n : i;
-      indivWants.push({ emp, sv: weekendFallback(ROTATION[(idx + day - 1) % 8], cat) });
+      indivWants.push({ emp, sv: weekendFallback(ROTATION[(idx + day - 1) % CYCLE_LEN], cat) });
     });
   });
   indivWants.sort((a, b) => hoursOf([a.emp]) - hoursOf([b.emp]) || a.emp.id - b.emp.id);
@@ -1454,7 +1460,9 @@ function generateDay(day) {
   const cfgs = {};
   groups.forEach(g => { cfgs[g] = readConfig(g); });
   if (state.genMode === 'rotation') {
-    assignRotationShifts(emps, dk, assigned, day, weekend, cfgs);
+    assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 3, 2, 0, 1, 4, 2, 0]);
+  } else if (state.genMode === 'rotation3') {
+    assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 2, 0]);
   } else {
     groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day, state.genMode !== 'full'));
   }
