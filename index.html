@@ -666,7 +666,7 @@ td.emp-name-cell:hover{text-decoration:underline}
       <div id="crew-overrides-list"></div>
     </div>
     <div id="leave-interval-section" style="margin-bottom:12px">
-      <div data-tooltip="Setează CO sau CM pentru toate zilele din interval dintr-o dată, în loc să dai click pe fiecare celulă. Suprascrie orice era setat înainte în acele zile." style="font-size:13px;font-weight:600;margin-bottom:6px;color:#374151;cursor:help;display:inline-block">🏖️ Concediu (CO/CM) pe interval: ℹ️</div>
+      <div data-tooltip="Setează CO, CM sau Instruire pentru toate zilele din interval dintr-o dată, în loc să dai click pe fiecare celulă. Suprascrie orice era setat înainte în acele zile. Instruirea sare automat peste zilele de weekend (nu e permisă acolo)." style="font-size:13px;font-weight:600;margin-bottom:6px;color:#374151;cursor:help;display:inline-block">🏖️ CO / CM / Instruire pe interval: ℹ️</div>
       <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
         <input type="date" id="leave-from" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none">
         <span style="font-size:12px;color:var(--text-muted)">→</span>
@@ -674,6 +674,7 @@ td.emp-name-cell:hover{text-decoration:underline}
         <select id="leave-type" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none">
           <option value="5">CO — Concediu Odihnă</option>
           <option value="6">CM — Concediu Medical</option>
+          <option value="8">INST — Instruire</option>
         </select>
         <button class="btn btn-outline" onclick="applyLeaveInterval()" style="font-size:12px;padding:5px 10px">Aplică</button>
       </div>
@@ -692,7 +693,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 59;
+const COMMIT_COUNT = 60;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -893,8 +894,12 @@ function applyLeaveInterval() {
   // UTC miezul nopții, iar getDate()/getMonth() locale pot da o zi în minus/plus în funcție de fus.
   const start = new Date(from + 'T00:00:00');
   const end = new Date(to + 'T00:00:00');
-  let count = 0;
+  let count = 0, skippedWeekend = 0;
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    // INST nu e permis în weekend (aceeași regulă ca la selecția manuală pe celulă) — se sare
+    // peste acele zile, fără să atingă ce era deja acolo. CO/CM pot acoperi și weekendul (se
+    // afișează ca L acolo, dar valoarea rămâne CO/CM, la fel ca extensia automată de vineri).
+    if (type === 8 && (d.getDay() === 0 || d.getDay() === 6)) { skippedWeekend++; continue; }
     const dk = dateKey(d.getFullYear(), d.getMonth() + 1, d.getDate());
     if (!state.schedule[dk]) state.schedule[dk] = {};
     state.schedule[dk][String(modalEmpId)] = type;
@@ -904,7 +909,10 @@ function applyLeaveInterval() {
   render();
   document.getElementById('leave-from').value = '';
   document.getElementById('leave-to').value = '';
-  setStatus('Setat ' + (type === 5 ? 'CO' : 'CM') + ' pentru ' + count + ' zile (' + from + ' → ' + to + ').', 'success');
+  const typeLabel = type === 5 ? 'CO' : type === 6 ? 'CM' : 'INST';
+  let msg = 'Setat ' + typeLabel + ' pentru ' + count + ' zile (' + from + ' → ' + to + ').';
+  if (skippedWeekend > 0) msg += ' (' + skippedWeekend + ' zile de weekend sărite — INST nu e permis acolo)';
+  setStatus(msg, 'success');
 }
 
 function migrateState(s) {
