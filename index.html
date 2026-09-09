@@ -665,6 +665,19 @@ td.emp-name-cell:hover{text-decoration:underline}
       </div>
       <div id="crew-overrides-list"></div>
     </div>
+    <div id="leave-interval-section" style="margin-bottom:12px">
+      <div data-tooltip="Setează CO sau CM pentru toate zilele din interval dintr-o dată, în loc să dai click pe fiecare celulă. Suprascrie orice era setat înainte în acele zile." style="font-size:13px;font-weight:600;margin-bottom:6px;color:#374151;cursor:help;display:inline-block">🏖️ Concediu (CO/CM) pe interval: ℹ️</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
+        <input type="date" id="leave-from" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none">
+        <span style="font-size:12px;color:var(--text-muted)">→</span>
+        <input type="date" id="leave-to" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none">
+        <select id="leave-type" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none">
+          <option value="5">CO — Concediu Odihnă</option>
+          <option value="6">CM — Concediu Medical</option>
+        </select>
+        <button class="btn btn-outline" onclick="applyLeaveInterval()" style="font-size:12px;padding:5px 10px">Aplică</button>
+      </div>
+    </div>
     <label data-tooltip="Angajatul primește mereu tura 8h (08:00–16:00) în zilele lucrătoare, indiferent de configurația turelor. În weekend primește liber (L)." style="font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:12px"><input type="checkbox" id="modal-emp-forced"> Forțat 8 ore</label>
     <div class="modal-buttons">
       <button class="btn btn-danger" id="modal-btn-delete" onclick="deleteConfirmStep()">🗑 Șterge</button>
@@ -679,7 +692,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.3';
-const COMMIT_COUNT = 58;
+const COMMIT_COUNT = 59;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -867,6 +880,31 @@ function addCrewOverride() {
 function removeCrewOverride(date) {
   delete pendingOverrides[date];
   renderOverridesList();
+}
+
+function applyLeaveInterval() {
+  const from = document.getElementById('leave-from').value;
+  const to = document.getElementById('leave-to').value;
+  const type = parseInt(document.getElementById('leave-type').value);
+  if (!from || !to) { setStatus('Completează data de început și data de sfârșit.', 'warn'); return; }
+  if (to < from) { setStatus('Data de sfârșit e înainte de data de început.', 'warn'); return; }
+  if (modalEmpId === null) return;
+  // 'T00:00:00' evită bug-ul de fus orar: new Date('YYYY-MM-DD') fără oră se interpretează ca
+  // UTC miezul nopții, iar getDate()/getMonth() locale pot da o zi în minus/plus în funcție de fus.
+  const start = new Date(from + 'T00:00:00');
+  const end = new Date(to + 'T00:00:00');
+  let count = 0;
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dk = dateKey(d.getFullYear(), d.getMonth() + 1, d.getDate());
+    if (!state.schedule[dk]) state.schedule[dk] = {};
+    state.schedule[dk][String(modalEmpId)] = type;
+    count++;
+  }
+  saveState();
+  render();
+  document.getElementById('leave-from').value = '';
+  document.getElementById('leave-to').value = '';
+  setStatus('Setat ' + (type === 5 ? 'CO' : 'CM') + ' pentru ' + count + ' zile (' + from + ' → ' + to + ').', 'success');
 }
 
 function migrateState(s) {
