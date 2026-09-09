@@ -77,16 +77,24 @@ lunii, oricâte modificări pe lună).
   funcție de paritatea zilei, ca să nu se stabilizeze un singur echipaj mereu pe aceeași
   tură.
 
-## Algoritmul de generare — 3 moduri (`state.genMode`)
+## Algoritmul de generare — 4 moduri (`state.genMode`)
 
 - `full` — T1/T2 + T1A/T2A alocate automat
 - `t12` (**implicit**) — doar T1/T2 automat, T1A/T2A rămân manuale
-- `rotation` — „Rotație 8 zile", ciclu fix per echipaj/individ
+- `rotation` — „Rotație 8 zile": ciclu fix T1→T1A→T2→L→T1→T2A→T2→L per echipaj/individ
+- `rotation3` — „Rotație T1-T2-L (3 zile)": ciclu fix T1→T2→L per echipaj/individ
 
 Toate rulează prin `generateDay(day)` → `assignCategoryShifts()` (full/t12) sau
-`assignRotationShifts()` (rotation), apelat separat pt. fiecare grup (`urban`, `rural`)
-în `full`/`t12`, dar **o singură dată cu toți angajații amestecați** în `rotation` — motiv
-pentru bug-ul de mai jos.
+`assignRotationShifts()` (ambele moduri `rotation*`), apelat separat pt. fiecare grup
+(`urban`, `rural`) în `full`/`t12`, dar **o singură dată cu toți angajații amestecați** în
+`rotation*` — motiv pentru bug-ul #3 de mai jos.
+
+`assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION)` e generică —
+`ROTATION` e array-ul de cicluri (`[1,3,2,0,1,4,2,0]` pt. 8 zile, `[1,2,0]` pt. 3 zile),
+`CYCLE_LEN = ROTATION.length` înlocuiește orice `8` hardcodat (block, modulo). Adăugarea
+modului `rotation3` a fost doar generalizarea funcției + un nou `case` în `generateDay()`
++ o opțiune nouă în select — toate fixurile de mai jos (fairness, rotație de bloc,
+separare per categorie, MAX_CONSEC) se aplică automat la orice ciclu nou, fără duplicare.
 
 ### Modul `rotation` — cum gândește
 
@@ -134,14 +142,31 @@ restul (echipaj gol sau echipaj cu 1 singur membru rămas) în `individuals`.
    `GROUPS` (`['urban','rural']`) și filtrează `fullCrews`/`individuals` per categorie
    înainte de a calcula `idx`, fiecare cu propriul `n`.
 
-**Rezultate testate** (5 echipaje/grup, config identic ambele grupe, generare simulată
-via `startGeneration()` + `generateAll()` în consolă browser):
-- T1A/T2A=0: spread redus la ~16h (88-104h)
-- T1A/T2A=2 (config real, luna Septembrie): spread ~8h (136-144h) — cel mai bun caz
-- T1A/T2A=2 (Iulie): spread ~24h (136-160h) — variază puțin cu luna (nr. de weekend-uri,
-  aliniere zile), dar mult sub bug-ul original (56-104h spread)
-- 4 echipaje/grup (fără coliziune structurală): întotdeauna perfect egal (0h spread),
-  neschimbat de niciunul din fixuri — bun test de regresie rapid
+4. **Lipsea gap-ul de siguranță T2→T1/T1A** — regula „dacă ieri a fost T2, azi nu poate fi
+   T1 sau T1A" există în `full`/`t12` (`checkYesterday`) dar lipsea complet din
+   `assignRotationShifts`. Ciclurile proprii (8 și 3 zile) nu produc natural T2 urmat
+   direct de T1 — dar rotația de bloc poate crea un salt de fază la granița dintre
+   blocuri, unde teoretic ar putea apărea.
+   **Fix**: verificare explicită în `doAssign` — `sv∈{1,3} && cineva din listă are
+   `genStats[id].yesterday === 2`` → refuzat, primește `L`.
+   **Efect secundar acceptat**: cazul „perfect" cu 4 echipaje/ciclu de 8 zile (anterior
+   0h spread) are acum un spread mic (~8h) — regula de gap ocazional forțează un `L`
+   suplimentar. Corectitudinea (gap real de siguranță) contează mai mult decât
+   egalitatea perfectă.
+
+**Rezultate testate** (generare simulată via `startGeneration()` + `generateAll()` în
+consolă browser):
+- `rotation` (8 zile), 5 echipaje/grup, config identic ambele grupe:
+  - T1A/T2A=0: spread ~16h (88-104h)
+  - T1A/T2A=2 (Septembrie): spread ~8h (136-144h) — cel mai bun caz
+  - T1A/T2A=2 (Iulie): spread ~24h (136-160h) — variază cu luna, mult sub bug-ul
+    original (56-104h spread)
+  - 4 echipaje/grup: spread ~8h după adăugarea gap-ului T2→T1 (era 0h înainte, vezi #4)
+- `rotation3` (3 zile), T1=2/T2=2 ambele grupe:
+  - 3 echipaje/grup (fără coliziune structurală): 0h spread
+  - 5 echipaje/grup (coliziune la distanță 3 în ciclu, analog problemei #1): **0h
+    spread** — mai bun decât ciclul de 8 zile la aceeași dimensiune de grup
+  - Zero violări T2→T1/T1A verificate programatic pe toate testele de mai sus
 
 **Dacă apare din nou un raport de "cineva are mult mai multe/puține ore"**: prima
 verificare — cere config-ul exact (T1/T1A/T2/T2A pt. ambele grupe) + luna, reproduce
