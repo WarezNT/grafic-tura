@@ -267,6 +267,36 @@ fără să fie cerut din nou.
    expus abia acum: T1A nu avea deloc protecție hard împotriva gap-ului T2→T1A în `full`/`t12`
    (fix: `assignShift(remaining, t1ac, 3, 't1a', false, [2])`, al 6-lea param `hardBlock`).
 
+### Audit complet (cerut explicit de user, 3 probleme găsite și fixate)
+
+10. **Import „lună" suprascria lista GLOBALĂ de electricieni + config** (`applyJSON`, ramura
+    `type==='month'`) — comentariul zicea „overwrite only schedule", dar codul făcea
+    `state.employees = data.employees` și `state.config = data.config` necondiționat. Import
+    al unui fișier de lună mai vechi ștergea silențios orice electrician adăugat de atunci și
+    reseta config-ul. **Fix**: merge electricienii după id (adaugă doar cei lipsă din state
+    curent), `state.config` nu se mai atinge deloc la import de lună (e setare curentă, nu
+    ține de luna importată).
+
+11. **Regula „max 5 zile/săptămână" lipsea complet din `assignRotationShifts`** — există doar
+    în `assignCategoryShifts` (moduri 1/2), documentată în manual, dar absentă din modurile de
+    rotație (3/4). MAX_CONSEC verifică doar zile CONSECUTIVE, nu total pe săptămână — cineva
+    putea depăși 5 zile lucrate într-o săptămână calendaristică în rotație fără nicio
+    protecție. **Fix**: adăugat `weekCount(empId)` + verificare în `doAssign`, aceeași logică.
+
+12. **Cap-ul săptămânal nu numără zilele din luna anterioară** (ambele module) — bucla de
+    calcul avea `if (dd<1) continue;`, sărind peste zilele care cădeau în luna precedentă
+    când săptămâna calendaristică se întindea peste graniță — regulă mai permisivă exact la
+    început de lună. **Fix**: `new Date(yr, mo-1, dd)` normalizează automat zile ≤0 spre luna
+    anterioară, apoi se extrage data reală din obiectul normalizat — nu mai sare nimic.
+
+**Descoperire suplimentară, NEFIXATĂ încă (în afara scopului celor 3 de mai sus)**: regula de
+5 zile/săptămână nu limitează deloc T1/T2 în niciun mod — se aplică DOAR la eligibilitatea
+pentru T1A/T2A/8h (filtrul rulează înainte de acele pase, T1/T2 fiind deja asignate).
+Confirmat empiric: cineva poate lucra 6+ zile într-o săptămână calendaristică pe T1/T2 (respectă
+totuși max 4 consecutive, dar nu totalul săptămânal) fără nicio protecție, în orice mod. Nu a
+fost cerut fix pentru asta — dacă apare cerere, implementarea ar presupune un hard-block
+similar direct în `assignShift`/`doAssign` pentru sv∈{1,2}, nu doar pentru T1A/T2A/8h.
+
 **Dacă apare din nou un raport de "cineva are mult mai multe/puține ore"**: prima
 verificare — cere config-ul exact (T1/T1A/T2/T2A pt. ambele grupe), MODUL exact (1-4 —
 nu presupune, cere explicit; confuzie reală a avut loc în sesiune între modul 2 și 4), luna,
