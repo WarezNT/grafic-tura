@@ -149,33 +149,57 @@ restul (echipaj gol sau echipaj cu 1 singur membru rămas) în `individuals`.
    blocuri, unde teoretic ar putea apărea.
    **Fix**: verificare explicită în `doAssign` — `sv∈{1,3} && cineva din listă are
    `genStats[id].yesterday === 2`` → refuzat, primește `L`.
-   **Efect secundar acceptat**: cazul „perfect" cu 4 echipaje/ciclu de 8 zile (anterior
-   0h spread) are acum un spread mic (~8h) — regula de gap ocazional forțează un `L`
-   suplimentar. Corectitudinea (gap real de siguranță) contează mai mult decât
-   egalitatea perfectă.
+
+5. **Bias persistent la reziduu + prag greșit pt. detecția coliziunii** — două probleme
+   găsite împreună:
+   - Când zilele lunii nu se împart exact la `CYCLE_LEN` (ex. 31 zile / ciclu de 3 → 10
+     blocuri complete + 1 zi reziduală), fără corecție **ACELAȘI** echipaj (idx0) câștiga
+     mereu ziua în plus — nu doar o lună, ci în FIECARE lună de 31 de zile, tot anul.
+     Descoperit de user testând exact 3 echipaje/grup (potrivire perfectă cu ciclul de 3
+     zile — teoretic fără nicio coliziune, dar reziduul lunii tot introducea bias).
+   - În timp ce investigam, a ieșit la iveală un prag greșit: presupusesem că o coliziune
+     de tură apare doar dacă `n > CYCLE_LEN`. Fals — `n<=CYCLE_LEN` garantează idx unic,
+     dar NU garantează tură unică, dacă `ROTATION` însuși repetă aceeași valoare pe poziții
+     diferite (ex. T1 la poziția 0 ȘI 4 în ciclul de 8 zile). Pragul greșit dezactiva
+     incorect rotația de bloc pentru `rotation` (8 zile) cu n=5 (5≤8, dar EXISTĂ coliziune
+     reală — asta era exact problema #1 de mai sus).
+   **Fix**: `hasCollision(n)` verifică direct, pentru fiecare zi a ciclului, dacă există
+   două `idx` din `[0,n)` care cer aceeași tură reală (L exclus) — nu se mai bazează pe
+   un prag presupus. `blockFor(n)`: dacă NU există coliziune, `idx` rămâne FIX toată luna
+   (ciclu perfect simetric, neîntrerupt — exact ce a cerut userul) + se aplică doar un
+   offset dependent de lună (`monthSeed`) ca reziduul să se rotească între luni diferite,
+   nu să favorizeze mereu același echipaj. Dacă EXISTĂ coliziune, se folosește rotația de
+   bloc din interiorul lunii (ca înainte) — **fără** `monthSeed` suprapus, pentru că
+   adăugarea lui acolo schimbă tie-break-urile în moduri imprevizibile și înrăutățește
+   rezultatul (testat empiric și respins).
+   **Efect colateral bun**: odată cu pragul corect, cazul „perfect" cu 4 echipaje/ciclu de
+   8 zile (afectat ușor de fix-ul #4, spread ~8h) a revenit la 0h spread — fără coliziune
+   reală acolo, idx rămâne fix, deci ciclul neîntrerupt respectă deja natural gap-ul T2→T1.
 
 **Rezultate testate** (generare simulată via `startGeneration()` + `generateAll()` în
 consolă browser):
-- `rotation` (8 zile), 5 echipaje/grup, config identic ambele grupe:
-  - T1A/T2A=0: spread ~16h (88-104h)
-  - T1A/T2A=2 (Septembrie): spread ~8h (136-144h) — cel mai bun caz
-  - T1A/T2A=2 (Iulie): spread ~24h (136-160h) — variază cu luna, mult sub bug-ul
-    original (56-104h spread)
-  - 4 echipaje/grup: spread ~8h după adăugarea gap-ului T2→T1 (era 0h înainte, vezi #4)
+- `rotation` (8 zile), config identic ambele grupe:
+  - 4 echipaje/grup (fără coliziune): 0h spread (perfect)
+  - 5 echipaje/grup, T1A/T2A=0: spread ~16h (88-104h)
+  - 5 echipaje/grup, T1A/T2A=2 (Septembrie): spread ~8h (136-144h) — cel mai bun caz cu coliziune
+  - 5 echipaje/grup, T1A/T2A=2 (Iulie): spread ~24h (136-160h) — variază cu luna, mult sub
+    bug-ul original (56-104h spread)
 - `rotation3` (3 zile), T1=2/T2=2 ambele grupe:
-  - 3 echipaje/grup (fără coliziune structurală): 0h spread
-  - 5 echipaje/grup (coliziune la distanță 3 în ciclu, analog problemei #1): **0h
-    spread** — mai bun decât ciclul de 8 zile la aceeași dimensiune de grup
+  - 3 echipaje/grup, lună de 30 zile: 0h spread (perfect)
+  - 3 echipaje/grup, lună de 31 zile: reziduul (8h) se rotește între echipaje diferite,
+    de la lună la lună — verificat pe Ianuarie vs Martie (câștigători diferiți)
+  - 5 echipaje/grup, lună de 30 zile: 0h spread (perfect)
+  - 5 echipaje/grup, lună de 31 zile: spread ~8h (104-96h)
   - Zero violări T2→T1/T1A verificate programatic pe toate testele de mai sus
 
 **Dacă apare din nou un raport de "cineva are mult mai multe/puține ore"**: prima
 verificare — cere config-ul exact (T1/T1A/T2/T2A pt. ambele grupe) + luna, reproduce
 în consolă browser (vezi metoda de testare mai jos), și verifică dacă nu cumva a apărut
-o A CINCEA sursă de asimetrie neacoperită încă (ex. interacțiune cu CO/CM, cu `forced8`,
+o A ȘASEA sursă de asimetrie neacoperită încă (ex. interacțiune cu CO/CM, cu `forced8`,
 cu `crewOverrides` la mijlocul lunii, sau cu faptul că MAX_CONSEC nu face compensare
-încrucișată — vezi mai sus). Cele 4 surse deja găsite și fixate: coliziune structurală
+încrucișată — vezi mai sus). Cele 5 surse deja găsite și fixate: coliziune structurală
 la 5+ echipaje, T1A/T2A pierdute în weekend, amestec Urban/Rural în calculul de fază,
-MAX_CONSEC lipsă din rotation.
+MAX_CONSEC lipsă din rotation, bias persistent la reziduu + prag greșit pt. coliziune.
 
 ### Metodă de testare rapidă (fără UI, direct în consolă browser)
 
