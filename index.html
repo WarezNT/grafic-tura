@@ -179,7 +179,7 @@ td.emp-name-cell:hover{text-decoration:underline}
 .status-msg.info{background:#d6eaf8;color:#1a5276}
 .status-msg.warn{background:#fdebd0;color:#935116}
 .status-msg.err{background:#fde8e8;color:#c0392b}
-.status-msg.success{background:#d5f5e3;color:#1a7a3a}
+.status-msg.success{background:var(--shift8-bg);color:var(--shift8-text)}
 .empty-msg{padding:40px;text-align:center;color:var(--empty);font-size:15px}
 .dark-toggle{cursor:pointer;font-size:16px;padding:4px 8px;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--text);transition:all .2s;user-select:none;line-height:1}
 .theme-select{font-size:12px;padding:5px 8px;border-radius:6px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);cursor:pointer;outline:none;margin-right:6px;line-height:1}
@@ -553,7 +553,7 @@ td.emp-name-cell:hover{text-decoration:underline}
             <span class="shift-pill pill-co" style="padding:3px 10px;font-size:12px">CO — Concediu Odihnă</span>
             <span class="shift-pill pill-cm" style="padding:3px 10px;font-size:12px">CM — Concediu Medical</span>
             <span class="shift-pill pill-c8" style="padding:3px 10px;font-size:12px">8h — Program normal (08:00–16:00)</span>
-            <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:#d5f5e3;color:#1a7a3a;font-weight:600">INST — Instruire</span>
+            <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift8-bg);color:var(--shift8-text);font-weight:600">INST — Instruire</span>
             <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>
           </div>
         </div>
@@ -694,7 +694,7 @@ const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const THEME_KEY = 'graficTura_theme';
 const APP_VERSION = 'V2026.06.5';
-const COMMIT_COUNT = 75;
+const COMMIT_COUNT = 76;
 
 // Palete de culori — sursă UNICĂ, folosită și de grafic (CSS vars) și de exportul Excel.
 // s[0..8] = [bg, text] pt. fiecare valoare de tură (0=L..8=INST). Culori cu #, se
@@ -2077,7 +2077,7 @@ function renderLegend() {
     + '<span class="shift-pill pill-t1" style="padding:2px 8px;font-size:11px">T1 / T1A &nbsp;06:00–14:00</span> '
     + '<span class="shift-pill pill-t2" style="padding:2px 8px;font-size:11px">T2 / T2A &nbsp;14:00–22:00</span> '
     + '<span class="shift-pill pill-c8" style="padding:2px 8px;font-size:11px">8h &nbsp;08:00–16:00</span> '
-    + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:#d5f5e3;color:#1a7a3a">INST — Instruire</span> '
+    + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--shift8-bg);color:var(--shift8-text)">INST — Instruire</span> '
     + '<span class="shift-pill pill-co" style="padding:2px 8px;font-size:11px">CO — Concediu Odihnă</span> '
     + '<span class="shift-pill pill-cm" style="padding:2px 8px;font-size:11px">CM — Concediu Medical</span> '
     + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>';
@@ -2170,7 +2170,7 @@ function renderSummary() {
     if (st.t1a) pills.push('<span class="shift-pill pill-t1a">T1A ×' + st.t1a + '</span>');
     if (st.t2a) pills.push('<span class="shift-pill pill-t2a">T2A ×' + st.t2a + '</span>');
     if (st.c8)  pills.push('<span class="shift-pill pill-c8">8h ×' + st.c8 + '</span>');
-    if (st.inst) pills.push('<span class="shift-pill" style="padding:2px 6px;font-size:10px;border-radius:4px;background:#d5f5e3;color:#1a7a3a;font-weight:600">INST ×' + st.inst + '</span>');
+    if (st.inst) pills.push('<span class="shift-pill" style="padding:2px 6px;font-size:10px;border-radius:4px;background:var(--shift8-bg);color:var(--shift8-text);font-weight:600">INST ×' + st.inst + '</span>');
     if (st.co)  pills.push('<span class="shift-pill pill-co">CO ×' + st.co + '</span>');
     if (st.cm)  pills.push('<span class="shift-pill pill-cm">CM ×' + st.cm + '</span>');
     html += '<div class="' + cardCls + '">'
