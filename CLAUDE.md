@@ -383,7 +383,12 @@ nimic.
 `THEMES` (obiect JS lângă `APP_VERSION`) = SURSĂ UNICĂ pentru culorile turelor, folosită
 și de grafic (prin CSS vars) și de exportul Excel. Fiecare temă are `light` + `dark`, cu
 `s[0..8] = [bg, text]` (hex cu `#`) pentru fiecare valoare de tură + `weekendTd`.
-Momentan: `clasic` (culorile originale) și `pastel`.
+Momentan: `clasic` (originale), `pastel`, și trei teme **monocrome** (`mono_gri`,
+`mono_indigo`, `mono_teal`) generate de `monoTheme(name, h, s)` dintr-un singur hue —
+ turele diferă doar prin luminozitate/saturație (schedule `MONO_LIGHT`/`MONO_DARK`,
+per tură `[bgL, textL, satMul]`), `hslHex()` face HSL→hex. Contrast text/fundal ținut
+≥3.0 (text bold). Teme monocrome noi = un rând în `Object.assign(THEMES, {...})` + o
+`<option>` (nu ating schedule-ul).
 
 - `applyTheme(id)` scrie `--shift{0..8}-bg/-text` + `--weekend-td` pe `document.documentElement.style`,
   alegând varianta `light`/`dark` după `data-theme` curent. Persistă în `THEME_KEY`

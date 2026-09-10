@@ -289,6 +289,9 @@ td.emp-name-cell:hover{text-decoration:underline}
     <select class="theme-select no-print" id="theme-select" onchange="applyTheme(this.value)" title="Paletă de culori (grafic + Excel)">
       <option value="clasic">🎨 Clasic</option>
       <option value="pastel">🎨 Pastel</option>
+      <option value="mono_gri">⬛ Monocrom Gri</option>
+      <option value="mono_indigo">⬛ Monocrom Indigo</option>
+      <option value="mono_teal">⬛ Monocrom Teal</option>
     </select>
     <button class="dark-toggle no-print" onclick="toggleDarkMode()" title="Comută modul întunecat" id="dark-toggle-btn">🌙</button>
   </h1>
@@ -691,7 +694,7 @@ const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const THEME_KEY = 'graficTura_theme';
 const APP_VERSION = 'V2026.06.5';
-const COMMIT_COUNT = 74;
+const COMMIT_COUNT = 75;
 
 // Palete de culori — sursă UNICĂ, folosită și de grafic (CSS vars) și de exportul Excel.
 // s[0..8] = [bg, text] pt. fiecare valoare de tură (0=L..8=INST). Culori cu #, se
@@ -720,6 +723,39 @@ const THEMES = {
     }
   }
 };
+
+// Teme monocrome — o singură nuanță, turele diferă prin luminozitate/saturație.
+// Generate dintr-un singur hue: bun pentru print laser și pentru daltonism.
+function hslHex(h, s, l) {
+  s = Math.max(0, Math.min(100, s)) / 100; l = Math.max(0, Math.min(100, l)) / 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    const c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(255 * c).toString(16).padStart(2, '0');
+  };
+  return '#' + f(0) + f(8) + f(4);
+}
+// per tură: [luminozitate fundal, luminozitate text, multiplicator saturație]
+const MONO_LIGHT = { 0:[96,43,.34], 6:[94,41,.32], 7:[93,38,.55], 5:[91,36,.68], 3:[90,37,.72], 4:[85,31,.85], 1:[87,28,1], 2:[77,22,1], 8:[67,18,1] };
+const MONO_DARK  = { 0:[18,60,.32], 6:[19,58,.32], 7:[21,62,.55], 5:[22,65,.68], 3:[21,64,.72], 4:[25,71,.85], 1:[27,75,1], 2:[33,81,1], 8:[41,86,1] };
+function monoTheme(name, h, s) {
+  const build = (sched, wkL, wkS) => {
+    const o = { s: {}, weekendTd: hslHex(h, s * wkS, wkL) };
+    for (const k in sched) {
+      const [bl, tl, sm] = sched[k];
+      o.s[k] = [hslHex(h, s * sm, bl), hslHex(h, Math.min(s * sm + 8, 90), tl)];
+    }
+    return o;
+  };
+  return { name, light: build(MONO_LIGHT, 95, .20), dark: build(MONO_DARK, 15, .28) };
+}
+Object.assign(THEMES, {
+  mono_gri:    monoTheme('Monocrom Gri', 214, 10),
+  mono_indigo: monoTheme('Monocrom Indigo', 230, 40),
+  mono_teal:   monoTheme('Monocrom Teal', 185, 32)
+});
+
 let _themeId = null;
 function currentThemeId() {
   if (THEMES[_themeId]) return _themeId;
@@ -753,7 +789,8 @@ const CHANGELOG = {
   'V2026.06.5': {
     title: 'Palete de culori',
     items: [
-      { icon: '🎨', text: 'Selector de paletă lângă butonul 🌙 — Clasic sau Pastel, fiecare cu variantă pentru mod clar și întunecat' },
+      { icon: '🎨', text: 'Selector de paletă lângă butonul 🌙 — Clasic, Pastel sau trei variante Monocrom (Gri / Indigo / Teal)' },
+      { icon: '⬛', text: 'Paletele Monocrom folosesc o singură nuanță — turele diferă prin luminozitate; ideale pentru print laser și daltonism' },
       { icon: '📊', text: 'Paleta selectată ajunge automat și în exportul Excel (mereu varianta clară, pentru print)' },
       { icon: '💾', text: 'Alegerea paletei se salvează local între sesiuni' }
     ]
