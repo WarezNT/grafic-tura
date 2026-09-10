@@ -693,7 +693,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.4';
-const COMMIT_COUNT = 71;
+const COMMIT_COUNT = 72;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -1304,13 +1304,15 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   //    poziția fiecărui echipaj în ciclu se decalează la fiecare bloc de 8 zile, astfel încât perechea
   //    care „se ciocnește" se rotește printre toate echipajele pe parcursul lunii.
   const hoursOf = list => getEmployeeStats(list[0].id).hours;
-  // Când zilele lunii nu se împart exact la CYCLE_LEN (ex. 31 zile / ciclu de 3), rămâne un
-  // "rest" de zile în care nu toate echipajele pot avea acces egal la sloturi — fără offset,
-  // ar câștiga mereu ACELAȘI echipaj reziduul, lună de lună, tot anul. Offset-ul dependent
-  // de lună/an rotește care echipaj primește reziduul, fără să afecteze restul lunii.
-  const dkParts = dk.split('-');
-  const monthSeed = parseInt(dkParts[0]) * 12 + parseInt(dkParts[1]);
-  const blockWithinMonth = Math.floor((day - 1) / CYCLE_LEN);
+  // Faza ciclului se calculează din numărul ABSOLUT de zile (de la epoca Unix), nu din ziua
+  // lunii (care se resetează la 1 în fiecare lună). Astfel ciclul curge CONTINUU peste granițele
+  // dintre luni — nu mai există un salt de fază la trecerea lună→lună care putea produce un
+  // T2→T1 ilegal chiar pe ziua 1 (blocat de regula de gap → tura rămânea complet neacoperită).
+  // Reziduul lunilor cu 31 de zile se rotește oricum natural între echipaje, pentru că lungimile
+  // de lună diferă (31 % CYCLE_LEN ≠ 0), deci fiecare lună începe într-un punct diferit al ciclului
+  // — nu mai e nevoie de `monthSeed`.
+  const absDay = Math.round(new Date(dk + 'T00:00:00Z').getTime() / 86400000);
+  const blockAbs = Math.floor(absDay / CYCLE_LEN);
   // Detectează dacă n echipaje pot exista fără coliziune de tură pe acest ROTATION — nu e
   // suficient n<=CYCLE_LEN (idx unic nu garantează valoare unică: ROTATION poate avea aceeași
   // tură pe poziții diferite, ex. T1 la poz. 0 ȘI 4 în ciclul de 8 zile). Verifică direct: există
@@ -1356,15 +1358,12 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   // de „competitori" (nCrews) ar fi greșit (ex. 10 în loc de 5) și ar strica matematica de
   // anti-coliziune derivată pentru dimensiunea reală a fiecărui grup.
 
-  // Rotația de bloc (în interiorul lunii) e necesară DOAR când există coliziune structurală
-  // reală (n > CYCLE_LEN, mai multe echipaje decât pași distincți în ciclu). Când n <= CYCLE_LEN
-  // nu există nicio coliziune — fiecare echipaj ține un ciclu fix și simetric (T1,T2,L,T1,T2,L,...)
-  // toată luna, fără salturi de fază; se aplică doar decalajul de lună (monthSeed) pt. reziduu.
-  // Când există coliziune reală, rotația de bloc în interiorul lunii deja distribuie fair —
-  // adăugarea și a monthSeed acolo schimbă ordinea de tie-break în moduri imprevizibile și
-  // poate înrăutăți rezultatul (testat). monthSeed se aplică DOAR când nu există coliziune —
-  // acolo idx e fix toată luna, deci monthSeed doar re-etichetează cine ia reziduul, fără alte efecte.
-  function blockFor(n, cat) { return hasCollision(n, cat) ? blockWithinMonth : monthSeed; }
+  // Rotația de bloc e necesară DOAR când există coliziune structurală reală (`ROTATION` repetă
+  // aceeași tură pe poziții din intervalul [0,n) — vezi `hasCollision`). Când NU există coliziune,
+  // idx rămâne fix (i) — fiecare echipaj ține un ciclu perfect continuu T1→T2→L→..., iar `absDay`
+  // asigură continuitatea peste granițele de lună. Când EXISTĂ coliziune, blocul (bazat tot pe
+  // `absDay`, continuu) se decalează la fiecare CYCLE_LEN zile, rotind perechea care se ciocnește.
+  function blockFor(n, cat) { return hasCollision(n, cat) ? blockAbs : 0; }
 
   // Pass 1: complete crews by crew rotation, prioritizate după ore acumulate la conflict
   const crewWants = [];
@@ -1374,7 +1373,7 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
     const catBlock = blockFor(n, cat);
     catCrews.forEach((crew, i) => {
       const idx = n > 0 ? (i + catBlock) % n : i;
-      crewWants.push({ crew, sv: weekendFallback(ROTATION[(idx + day - 1) % CYCLE_LEN], cat) });
+      crewWants.push({ crew, sv: weekendFallback(ROTATION[(idx + absDay) % CYCLE_LEN], cat) });
     });
   });
   crewWants.sort((a, b) => hoursOf(a.crew) - hoursOf(b.crew) || a.crew[0].id - b.crew[0].id);
@@ -1401,7 +1400,7 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
     const catBlock = blockFor(n, cat);
     catIndiv.forEach((emp, i) => {
       const idx = n > 0 ? (i + catBlock) % n : i;
-      indivWants.push({ emp, sv: weekendFallback(ROTATION[(idx + day - 1) % CYCLE_LEN], cat) });
+      indivWants.push({ emp, sv: weekendFallback(ROTATION[(idx + absDay) % CYCLE_LEN], cat) });
     });
   });
   indivWants.sort((a, b) => hoursOf([a.emp]) - hoursOf([b.emp]) || a.emp.id - b.emp.id);
