@@ -178,19 +178,17 @@ restul (echipaj gol sau echipaj cu 1 singur membru rămas) în `individuals`.
 
 **Rezultate testate** (generare simulată via `startGeneration()` + `generateAll()` în
 consolă browser):
+(după fix #14 — fază continuă `absDay`, fără `monthSeed`):
 - `rotation` (8 zile), config identic ambele grupe:
   - 4 echipaje/grup (fără coliziune): 0h spread (perfect)
-  - 5 echipaje/grup, T1A/T2A=0: spread ~16h (88-104h)
-  - 5 echipaje/grup, T1A/T2A=2 (Septembrie): spread ~8h (136-144h) — cel mai bun caz cu coliziune
-  - 5 echipaje/grup, T1A/T2A=2 (Iulie): spread ~24h (136-160h) — variază cu luna, mult sub
-    bug-ul original (56-104h spread)
+  - 5 echipaje/grup, T1A/T2A=2 (Sept ȘI Iulie): spread ~8h (136-152h) — Iulie s-a
+    îmbunătățit de la ~24h la ~8h datorită continuității
 - `rotation3` (3 zile), T1=2/T2=2 ambele grupe:
-  - 3 echipaje/grup, lună de 30 zile: 0h spread (perfect)
-  - 3 echipaje/grup, lună de 31 zile: reziduul (8h) se rotește între echipaje diferite,
-    de la lună la lună — verificat pe Ianuarie vs Martie (câștigători diferiți)
-  - 5 echipaje/grup, lună de 30 zile: 0h spread (perfect)
-  - 5 echipaje/grup, lună de 31 zile: spread ~8h (104-96h)
-  - Zero violări T2→T1/T1A verificate programatic pe toate testele de mai sus
+  - 3 echipaje/grup: 0h spread pe unele luni, 8h pe altele — reziduul se rotește natural
+    între echipaje de la lună la lună
+  - 5 echipaje/grup: spread ~8-16h în toate lunile (era 0h pe lunile de 30 zile cu
+    `monthSeed`, dar acela avea bug-ul de graniță #14 — compromis acceptat)
+  - Zero violări T2→T1/T1A și tranziții de lună legale, verificate programatic pe toate
 
 6. **`hasCollision` nu vedea coliziunile create de `weekendFallback`** — găsit prin testare
    automată (matrice 1-6 echipaje × 4 lungimi de lună). `hasCollision(n)` verifica doar
@@ -297,6 +295,25 @@ fără să fie cerut din nou.
     tuturor turelor — T1, T2, T1A, T2A, 8h. Filtrul separat de dinainte (doar pt. T1A/T2A/8h)
     a devenit redundant și a fost eliminat. `assignRotationShifts` nu a necesitat schimbări —
     `weekCount()` din `doAssign()` (sursa #11) era deja universal, fără distincție de tură.
+
+14. **CRITIC — faza ciclului de rotație sărea la granița dintre luni** — raportat de user (mod
+    4, Octombrie continuând din Septembrie): **prima zi din lună nu avea deloc T1**. Cauza:
+    `monthSeed` (offset dependent de lună pt. rotația reziduului) se schimba lună→lună, iar
+    `day-1` se reseta la 0 → faza făcea un SALT la graniță. Un echipaj cu T2 pe 30 sept primea
+    brusc cerere de T1 pe 1 oct → gap T2→T1 o bloca → și cum doar acel echipaj voia T1 acea zi,
+    tura rămânea COMPLET neacoperită. **Fix**: faza se calculează acum din numărul ABSOLUT de
+    zile (`absDay = Math.round(new Date(dk+'T00:00:00Z').getTime()/86400000)`), nu din ziua
+    lunii — ciclul curge CONTINUU peste toate granițele. `monthSeed` eliminat complet (reziduul
+    lunilor de 31 zile se rotește oricum natural — fiecare lună începe într-un punct diferit al
+    ciclului continuu, fiindcă 31 % CYCLE_LEN ≠ 0). `blockFor` = `hasCollision ? blockAbs : 0`
+    (`blockAbs = Math.floor(absDay/CYCLE_LEN)`). **Compromis acceptat**: `rotation3` la n=5
+    echipaje are acum spread ~8-16h pe lunile de 30 zile (era 0h cu `monthSeed` — super-ciclul
+    de 5 blocuri se alinia perfect cu 30 zile). `rotation` 8 zile la n=5 S-A ÎMBUNĂTĂȚIT însă
+    (Iulie 24h→8h). Continuitatea + acoperirea garantată a turelor contează mai mult decât 0h
+    perfect într-un caz. **Verificat pentru TOATE modurile**: tranziția Sept→Oct continuă →
+    ziua 1 complet acoperită, zero tranziții ilegale, zero violări de gap. Modurile 1/2/full
+    nu aveau problema (fill greedy + seed de gap din luna anterioară în `startGeneration` deja
+    funcționau).
 
 **Dacă apare din nou un raport de "cineva are mult mai multe/puține ore"**: prima
 verificare — cere config-ul exact (T1/T1A/T2/T2A pt. ambele grupe), MODUL exact (1-4 —
