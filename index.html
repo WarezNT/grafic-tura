@@ -6,8 +6,8 @@
 <title>Grafic de tură - Delgaz Grid S.A</title>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <style>
-:root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--shift3-bg:#aed6f1;--shift3-text:#154360;--shift4-bg:#fad7a0;--shift4-text:#7e4d0e;--shift5-bg:#e8d5f5;--shift5-text:#6c3483;--shift6-bg:#e8e8e8;--shift6-text:#555;--shift7-bg:#f0f4f8;--shift7-text:#2c3e50;--shift8-bg:#d5f5e3;--shift8-text:#1a7a3a;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--alt-row-bg:#f4f6f9;--shadow:0 2px 12px rgba(0,0,0,.08)}
-[data-theme="dark"]{--bg:#18191c;--card-bg:#222428;--text:#dde1e7;--text-muted:#8b929e;--heading:#f0f2f5;--ctrl-bg:#2a2d32;--border:#3a3d45;--border-light:#32353d;--accent:#4d9de0;--accent-dark:#3a8fd4;--header-bg:#1a1c20;--row-even:#262830;--hover-bg:#2e3440;--hover-first:#2a3548;--input-bg:#2a2d32;--sum-bg:#222428;--status-bg:#1e3048;--status-text:#7db8e8;--warn-bg:#2e2400;--warn-border:#c49a00;--bad-bg:#2e1515;--bad-border:#c0392b;--empty:#555;--group-urban-bg:#1e3048;--group-urban-text:#7db8e8;--group-rural-bg:#2e2010;--group-rural-text:#d4956a;--shift0-bg:#252830;--shift0-text:#7a8090;--shift1-bg:#1a3550;--shift1-text:#7ec8f0;--shift2-bg:#2e200e;--shift2-text:#e8a855;--shift3-bg:#1a3d52;--shift3-text:#7ad4f8;--shift4-bg:#352610;--shift4-text:#f0c060;--shift5-bg:#2e1a48;--shift5-text:#d090ff;--shift6-bg:#2a2c38;--shift6-text:#a0a8c0;--shift7-bg:#1e2838;--shift7-text:#a0bcd8;--shift8-bg:#1a3a28;--shift8-text:#6cdb9a;--weekend-bg:#2e1a1a;--weekend-td:#2a2020;--hours-ok-bg:#0e2e1a;--hours-ok-text:#4ccc80;--hours-bad-bg:#2e1212;--hours-bad-text:#f07070;--alt-row-bg:#202226;--shadow:0 2px 16px rgba(0,0,0,.5)}
+:root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--alt-row-bg:#f4f6f9;--shadow:0 2px 12px rgba(0,0,0,.08)}
+[data-theme="dark"]{--bg:#18191c;--card-bg:#222428;--text:#dde1e7;--text-muted:#8b929e;--heading:#f0f2f5;--ctrl-bg:#2a2d32;--border:#3a3d45;--border-light:#32353d;--accent:#4d9de0;--accent-dark:#3a8fd4;--header-bg:#1a1c20;--row-even:#262830;--hover-bg:#2e3440;--hover-first:#2a3548;--input-bg:#2a2d32;--sum-bg:#222428;--status-bg:#1e3048;--status-text:#7db8e8;--warn-bg:#2e2400;--warn-border:#c49a00;--bad-bg:#2e1515;--bad-border:#c0392b;--empty:#555;--group-urban-bg:#1e3048;--group-urban-text:#7db8e8;--group-rural-bg:#2e2010;--group-rural-text:#d4956a;--shift0-bg:#2a2d32;--shift0-text:#6b7280;--shift1-bg:#1a3550;--shift1-text:#7ec8f0;--shift2-bg:#2e200e;--shift2-text:#e8a855;--weekend-bg:#2e1a1a;--weekend-td:#2a1e1e;--hours-ok-bg:#0e2e1a;--hours-ok-text:#4ccc80;--hours-bad-bg:#2e1212;--hours-bad-text:#f07070;--alt-row-bg:#202226;--shadow:0 2px 16px rgba(0,0,0,.5)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;padding:20px;transition:background .3s,color .3s;overflow-y:scroll}
 #app{max-width:1800px;margin:0 auto;background:var(--card-bg);border-radius:12px;box-shadow:var(--shadow);padding:24px 20px;overflow:hidden;transition:background .3s}
@@ -64,12 +64,20 @@ td.td-weekend{background:var(--weekend-td)!important}
 td.shift-0{background:var(--shift0-bg);color:var(--shift0-text)}
 td.shift-1{background:var(--shift1-bg);color:var(--shift1-text)}
 td.shift-2{background:var(--shift2-bg);color:var(--shift2-text)}
-td.shift-3{background:var(--shift3-bg);color:var(--shift3-text)}
-td.shift-4{background:var(--shift4-bg);color:var(--shift4-text)}
-td.shift-5{background:var(--shift5-bg);color:var(--shift5-text)}
-td.shift-6{background:var(--shift6-bg);color:var(--shift6-text)}
-td.shift-7{background:var(--shift7-bg);color:var(--shift7-text)}
-td.shift-8{background:var(--shift8-bg);color:var(--shift8-text)}
+td.shift-3{background:#aed6f1;color:#154360}
+td.shift-4{background:#fad7a0;color:#7e4d0e}
+td.shift-5{background:#e8d5f5;color:#6c3483}
+td.shift-6{background:#e8e8e8;color:#555}
+td.shift-7{background:#f0f4f8;color:#2c3e50}
+td.shift-8{background:#d5f5e3;color:#1a7a3a}
+[data-theme="dark"] td.shift-0{background:#252830;color:#7a8090}
+[data-theme="dark"] td.shift-3{background:#1a3d52;color:#7ad4f8}
+[data-theme="dark"] td.shift-4{background:#352610;color:#f0c060}
+[data-theme="dark"] td.shift-5{background:#2e1a48;color:#d090ff}
+[data-theme="dark"] td.shift-6{background:#2a2c38;color:#a0a8c0}
+[data-theme="dark"] td.shift-7{background:#1e2838;color:#a0bcd8}
+[data-theme="dark"] td.shift-8{background:#1a3a28;color:#6cdb9a}
+[data-theme="dark"] td.td-weekend{background:#2a2020!important}
 [data-theme="dark"] .fn-emitent{background:#2d1f4a;color:#c088f0}
 [data-theme="dark"] .fn-admitent{background:#3a1520;color:#f07090}
 [data-theme="dark"] .fn-electrician{background:#2e2200;color:#d4a030}
@@ -124,11 +132,16 @@ td.hours.ok{background:var(--hours-ok-bg);color:var(--hours-ok-text)}
 .shift-pill{font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;white-space:nowrap}
 .pill-t1{background:var(--shift1-bg);color:var(--shift1-text)}
 .pill-t2{background:var(--shift2-bg);color:var(--shift2-text)}
-.pill-t1a{background:var(--shift3-bg);color:var(--shift3-text)}
-.pill-t2a{background:var(--shift4-bg);color:var(--shift4-text)}
-.pill-c8{background:var(--shift7-bg);color:var(--shift7-text)}
-.pill-co{background:var(--shift5-bg);color:var(--shift5-text)}
-.pill-cm{background:var(--shift6-bg);color:var(--shift6-text)}
+.pill-t1a{background:#aed6f1;color:#154360}
+.pill-t2a{background:#fad7a0;color:#7e4d0e}
+.pill-c8{background:#f0f4f8;color:#2c3e50}
+.pill-co{background:#e8d5f5;color:#6c3483}
+.pill-cm{background:#e8e8e8;color:#555}
+[data-theme="dark"] .pill-t1a{background:#1a3d52;color:#7ad4f8}
+[data-theme="dark"] .pill-t2a{background:#352610;color:#f0c060}
+[data-theme="dark"] .pill-c8{background:#1e2838;color:#a0bcd8}
+[data-theme="dark"] .pill-co{background:#2e1a48;color:#d090ff}
+[data-theme="dark"] .pill-cm{background:#2a2c38;color:#a0a8c0}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:1000}
 .modal-content{background:var(--card-bg);color:var(--text);border-radius:12px;padding:24px;min-width:320px;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.2)}
 .modal-content h3{margin-bottom:16px;font-size:16px;color:var(--heading)}
@@ -179,10 +192,9 @@ td.emp-name-cell:hover{text-decoration:underline}
 .status-msg.info{background:#d6eaf8;color:#1a5276}
 .status-msg.warn{background:#fdebd0;color:#935116}
 .status-msg.err{background:#fde8e8;color:#c0392b}
-.status-msg.success{background:var(--shift8-bg);color:var(--shift8-text)}
+.status-msg.success{background:#d5f5e3;color:#1a7a3a}
 .empty-msg{padding:40px;text-align:center;color:var(--empty);font-size:15px}
 .dark-toggle{cursor:pointer;font-size:16px;padding:4px 8px;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--text);transition:all .2s;user-select:none;line-height:1}
-.theme-select{font-size:12px;padding:5px 8px;border-radius:6px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);cursor:pointer;outline:none;margin-right:6px;line-height:1}
 .dark-toggle:hover{background:var(--hover-bg)}
 .stats-chart{margin-top:16px;padding:16px;background:var(--ctrl-bg);border-radius:8px}
 .stats-chart h3{font-size:14px;font-weight:700;color:var(--heading);margin-bottom:12px}
@@ -286,13 +298,6 @@ td.emp-name-cell:hover{text-decoration:underline}
       <span id="org-subtitle" style="font-size:13px;font-weight:500;color:var(--text-muted)">Delgaz Grid S.A</span>
     </span>
     <button class="btn btn-outline btn-sm no-print" onclick="openOrgModal()" title="Setări organizație" style="margin-right:6px;font-size:16px;padding:4px 10px">⚙️</button>
-    <select class="theme-select no-print" id="theme-select" onchange="applyTheme(this.value)" title="Paletă de culori (grafic + Excel)">
-      <option value="clasic">🎨 Clasic</option>
-      <option value="pastel">🎨 Pastel</option>
-      <option value="mono_gri">⬛ Monocrom Gri</option>
-      <option value="mono_indigo">⬛ Monocrom Indigo</option>
-      <option value="mono_teal">⬛ Monocrom Teal</option>
-    </select>
     <button class="dark-toggle no-print" onclick="toggleDarkMode()" title="Comută modul întunecat" id="dark-toggle-btn">🌙</button>
   </h1>
 
@@ -553,7 +558,7 @@ td.emp-name-cell:hover{text-decoration:underline}
             <span class="shift-pill pill-co" style="padding:3px 10px;font-size:12px">CO — Concediu Odihnă</span>
             <span class="shift-pill pill-cm" style="padding:3px 10px;font-size:12px">CM — Concediu Medical</span>
             <span class="shift-pill pill-c8" style="padding:3px 10px;font-size:12px">8h — Program normal (08:00–16:00)</span>
-            <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift8-bg);color:var(--shift8-text);font-weight:600">INST — Instruire</span>
+            <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:#d5f5e3;color:#1a7a3a;font-weight:600">INST — Instruire</span>
             <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>
           </div>
         </div>
@@ -586,11 +591,6 @@ td.emp-name-cell:hover{text-decoration:underline}
         <div class="help-section">
           <div class="help-section-title">🌙 Mod întunecat</div>
           <p>Butonul 🌙 / ☀️ din colțul dreapta-sus comută între tema clară și cea întunecată. Preferința nu se salvează între sesiuni.</p>
-        </div>
-        <div class="help-section">
-          <div class="help-section-title">🎨 Paletă de culori</div>
-          <p>Selectorul de lângă 🌙 alege paleta turelor: <em>Clasic</em> sau <em>Pastel</em>. Fiecare are variantă separată pentru modul clar și cel întunecat. Alegerea se salvează local între sesiuni.</p>
-          <p>Paleta selectată se aplică și în exportul <strong>Excel</strong> — mereu în varianta clară, indiferent de modul de pe ecran, ca fișierul să se printeze curat.</p>
         </div>
       </div>
 
@@ -692,109 +692,12 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const THEME_KEY = 'graficTura_theme';
-const APP_VERSION = 'V2026.06.5';
-const COMMIT_COUNT = 76;
-
-// Palete de culori — sursă UNICĂ, folosită și de grafic (CSS vars) și de exportul Excel.
-// s[0..8] = [bg, text] pt. fiecare valoare de tură (0=L..8=INST). Culori cu #, se
-// stripează pt. Excel (ARGB fără #). weekendTd = fundal celulă goală în weekend.
-const THEMES = {
-  clasic: {
-    name: 'Clasic',
-    light: {
-      s: { 0:['#f0f0f0','#666666'], 1:['#d6eaf8','#1a5276'], 2:['#fdebd0','#935116'], 3:['#aed6f1','#154360'], 4:['#fad7a0','#7e4d0e'], 5:['#e8d5f5','#6c3483'], 6:['#e8e8e8','#555555'], 7:['#f0f4f8','#2c3e50'], 8:['#d5f5e3','#1a7a3a'] },
-      weekendTd: '#fce4e4'
-    },
-    dark: {
-      s: { 0:['#252830','#7a8090'], 1:['#1a3550','#7ec8f0'], 2:['#2e200e','#e8a855'], 3:['#1a3d52','#7ad4f8'], 4:['#352610','#f0c060'], 5:['#2e1a48','#d090ff'], 6:['#2a2c38','#a0a8c0'], 7:['#1e2838','#a0bcd8'], 8:['#1a3a28','#6cdb9a'] },
-      weekendTd: '#2a2020'
-    }
-  },
-  pastel: {
-    name: 'Pastel',
-    light: {
-      s: { 0:['#f4f4f6','#8a8a95'], 1:['#dbeafe','#3b6ea5'], 2:['#ffe8d4','#b3701f'], 3:['#e0f2fe','#4a83a8'], 4:['#fdecc8','#a6791a'], 5:['#ece4f7','#7e5aa8'], 6:['#ebedf0','#6b7280'], 7:['#e8f0f4','#4a6572'], 8:['#d9f0e4','#2f8659'] },
-      weekendTd: '#f6ecec'
-    },
-    dark: {
-      s: { 0:['#2b2d33','#7c828e'], 1:['#26384d','#8fb9dd'], 2:['#3a2f22','#d9a878'], 3:['#223d4a','#85bcd8'], 4:['#392f1e','#d0b071'], 5:['#322a44','#b79ad6'], 6:['#2e3036','#9aa1ad'], 7:['#263038','#93b0bd'], 8:['#223a30','#7fc8a4'] },
-      weekendTd: '#322828'
-    }
-  }
-};
-
-// Teme monocrome — o singură nuanță, turele diferă prin luminozitate/saturație.
-// Generate dintr-un singur hue: bun pentru print laser și pentru daltonism.
-function hslHex(h, s, l) {
-  s = Math.max(0, Math.min(100, s)) / 100; l = Math.max(0, Math.min(100, l)) / 100;
-  const a = s * Math.min(l, 1 - l);
-  const f = n => {
-    const k = (n + h / 30) % 12;
-    const c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
-    return Math.round(255 * c).toString(16).padStart(2, '0');
-  };
-  return '#' + f(0) + f(8) + f(4);
-}
-// per tură: [luminozitate fundal, luminozitate text, multiplicator saturație]
-const MONO_LIGHT = { 0:[96,43,.34], 6:[94,41,.32], 7:[93,38,.55], 5:[91,36,.68], 3:[90,37,.72], 4:[85,31,.85], 1:[87,28,1], 2:[77,22,1], 8:[67,18,1] };
-const MONO_DARK  = { 0:[18,60,.32], 6:[19,58,.32], 7:[21,62,.55], 5:[22,65,.68], 3:[21,64,.72], 4:[25,71,.85], 1:[27,75,1], 2:[33,81,1], 8:[41,86,1] };
-function monoTheme(name, h, s) {
-  const build = (sched, wkL, wkS) => {
-    const o = { s: {}, weekendTd: hslHex(h, s * wkS, wkL) };
-    for (const k in sched) {
-      const [bl, tl, sm] = sched[k];
-      o.s[k] = [hslHex(h, s * sm, bl), hslHex(h, Math.min(s * sm + 8, 90), tl)];
-    }
-    return o;
-  };
-  return { name, light: build(MONO_LIGHT, 95, .20), dark: build(MONO_DARK, 15, .28) };
-}
-Object.assign(THEMES, {
-  mono_gri:    monoTheme('Monocrom Gri', 214, 10),
-  mono_indigo: monoTheme('Monocrom Indigo', 230, 40),
-  mono_teal:   monoTheme('Monocrom Teal', 185, 32)
-});
-
-let _themeId = null;
-function currentThemeId() {
-  if (THEMES[_themeId]) return _themeId;
-  let id = null;
-  try { id = localStorage.getItem(THEME_KEY); } catch (e) {}
-  return THEMES[id] ? id : 'clasic';
-}
-function themeVariant(id, dark) {
-  const t = THEMES[id] || THEMES.clasic;
-  return dark ? t.dark : t.light;
-}
-function applyTheme(id) {
-  if (!THEMES[id]) id = 'clasic';
-  _themeId = id;
-  try { localStorage.setItem(THEME_KEY, id); } catch (e) {}
-  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const v = themeVariant(id, dark);
-  const r = document.documentElement.style;
-  for (let i = 0; i <= 8; i++) {
-    r.setProperty('--shift' + i + '-bg', v.s[i][0]);
-    r.setProperty('--shift' + i + '-text', v.s[i][1]);
-  }
-  r.setProperty('--weekend-td', v.weekendTd);
-  const sel = document.getElementById('theme-select');
-  if (sel && sel.value !== id) sel.value = id;
-}
+const APP_VERSION = 'V2026.06.4';
+const COMMIT_COUNT = 77;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
-  'V2026.06.5': {
-    title: 'Palete de culori',
-    items: [
-      { icon: '🎨', text: 'Selector de paletă lângă butonul 🌙 — Clasic, Pastel sau trei variante Monocrom (Gri / Indigo / Teal)' },
-      { icon: '⬛', text: 'Paletele Monocrom folosesc o singură nuanță — turele diferă prin luminozitate; ideale pentru print laser și daltonism' },
-      { icon: '📊', text: 'Paleta selectată ajunge automat și în exportul Excel (mereu varianta clară, pentru print)' },
-      { icon: '💾', text: 'Alegerea paletei se salvează local între sesiuni' }
-    ]
-  },
   'V2026.06.4': {
     title: 'Rotații echitabile + mod nou + împerechere',
     items: [
@@ -2077,7 +1980,7 @@ function renderLegend() {
     + '<span class="shift-pill pill-t1" style="padding:2px 8px;font-size:11px">T1 / T1A &nbsp;06:00–14:00</span> '
     + '<span class="shift-pill pill-t2" style="padding:2px 8px;font-size:11px">T2 / T2A &nbsp;14:00–22:00</span> '
     + '<span class="shift-pill pill-c8" style="padding:2px 8px;font-size:11px">8h &nbsp;08:00–16:00</span> '
-    + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--shift8-bg);color:var(--shift8-text)">INST — Instruire</span> '
+    + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:#d5f5e3;color:#1a7a3a">INST — Instruire</span> '
     + '<span class="shift-pill pill-co" style="padding:2px 8px;font-size:11px">CO — Concediu Odihnă</span> '
     + '<span class="shift-pill pill-cm" style="padding:2px 8px;font-size:11px">CM — Concediu Medical</span> '
     + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>';
@@ -2170,7 +2073,7 @@ function renderSummary() {
     if (st.t1a) pills.push('<span class="shift-pill pill-t1a">T1A ×' + st.t1a + '</span>');
     if (st.t2a) pills.push('<span class="shift-pill pill-t2a">T2A ×' + st.t2a + '</span>');
     if (st.c8)  pills.push('<span class="shift-pill pill-c8">8h ×' + st.c8 + '</span>');
-    if (st.inst) pills.push('<span class="shift-pill" style="padding:2px 6px;font-size:10px;border-radius:4px;background:var(--shift8-bg);color:var(--shift8-text);font-weight:600">INST ×' + st.inst + '</span>');
+    if (st.inst) pills.push('<span class="shift-pill" style="padding:2px 6px;font-size:10px;border-radius:4px;background:#d5f5e3;color:#1a7a3a;font-weight:600">INST ×' + st.inst + '</span>');
     if (st.co)  pills.push('<span class="shift-pill pill-co">CO ×' + st.co + '</span>');
     if (st.cm)  pills.push('<span class="shift-pill pill-cm">CM ×' + st.cm + '</span>');
     html += '<div class="' + cardCls + '">'
@@ -2516,12 +2419,11 @@ function exportExcel() {
   const wd = workingDays(y, m);
   const expected = wd !== null ? wd * 8 : 184;
   const DAY_NAMES = ['D','L','M','M','J','V','S'];
-  // Excel folosește MEREU varianta light a paletei selectate (fișier de printat/trimis).
-  const hx = c => String(c).replace('#', '').toUpperCase();
-  const tv = themeVariant(currentThemeId(), false);
-  const shiftFill = {};
-  for (let i = 0; i <= 8; i++) shiftFill[i] = { bg: hx(tv.s[i][0]), fg: hx(tv.s[i][1]) };
-  const weekendEmptyBg = hx(tv.weekendTd);
+  const shiftFill = {
+    0:{bg:'F0F0F0',fg:'666666'}, 1:{bg:'D6EAF8',fg:'1A5276'}, 2:{bg:'FDEBD0',fg:'935116'},
+    3:{bg:'AED6F1',fg:'154360'}, 4:{bg:'FAD7A0',fg:'7E4D0E'}, 5:{bg:'E8D5F5',fg:'6C3483'},
+    6:{bg:'E8E8E8',fg:'555555'}, 7:{bg:'F0F4F8',fg:'2C3E50'}, 8:{bg:'D5F5E3',fg:'1A7A3A'}
+  };
   const argb = c => 'FF' + c;
   const fill = bg => ({ type:'pattern', pattern:'solid', fgColor:{ argb: argb(bg) } });
   const fnt = (fg, bold, sz, italic) => ({ color:{ argb: argb(fg) }, bold:!!bold, size: sz||10, italic:!!italic });
@@ -2597,7 +2499,7 @@ function exportExcel() {
           const dow = new Date(y,m-1,d).getDay(), isW = dow===0||dow===6;
           const dk = dateKey(y,m,d);
           const v = getShift(dk, emp.id), sv = v!==null?v:0;
-          const ss = shiftFill[sv], bg = isW&&sv===0?weekendEmptyBg:ss.bg, fg = isW&&sv===0?'999999':ss.fg;
+          const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
           const dc = ws.getCell(R, firstDay+d);
           var crewForDay=getCrewForDay(emp,dk);var defCrew=emp.crew||'';
           dc.value=SHIFT_NAMES[sv]+(sv>0&&sv!==5&&sv!==6&&sv!==8&&crewForDay&&crewForDay!==defCrew?' ('+crewForDay+')':'');
@@ -2632,7 +2534,7 @@ function exportExcel() {
         for (let d = 1; d <= dim; d++) {
           const dow = new Date(y,m-1,d).getDay(), isW = dow===0||dow===6;
           const v = getShift(dateKey(y,m,d), emp.id), sv = v!==null?v:0;
-          const ss = shiftFill[sv], bg = isW&&sv===0?weekendEmptyBg:ss.bg, fg = isW&&sv===0?'999999':ss.fg;
+          const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
           const dc = ws.getCell(R, firstDay+d);
           dc.value=SHIFT_NAMES[sv]; dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
         }
@@ -2646,7 +2548,7 @@ function exportExcel() {
     ws.getRow(R).height = 22;
     var lc=ws.getCell(R,1); lc.value='Legendă:'; lc.font=fnt('2C3E50',true,10);
     ws.mergeCells(R,1,R,2);
-    var li=[['T1 / T1A  06-14',shiftFill[1].bg,shiftFill[1].fg],['T2 / T2A  14-22',shiftFill[2].bg,shiftFill[2].fg],['8h  08-16',shiftFill[7].bg,shiftFill[7].fg],['INST  Instruire',shiftFill[8].bg,shiftFill[8].fg],['CO  Concediu',shiftFill[5].bg,shiftFill[5].fg],['CM  Medical',shiftFill[6].bg,shiftFill[6].fg],['L  Liber',shiftFill[0].bg,shiftFill[0].fg]];
+    var li=[['T1 / T1A  06-14','D6EAF8','1A5276'],['T2 / T2A  14-22','FDEBD0','935116'],['8h  08-16','F0F4F8','2C3E50'],['INST  Instruire','D5F5E3','1A7A3A'],['CO  Concediu','E8D5F5','6C3483'],['CM  Medical','E8E8E8','555555'],['L  Liber','F0F0F0','666666']];
     for(var i=0,ci=3;i<li.length;i++,ci+=3){ws.mergeCells(R,ci,R,ci+2);var cw=ws.getCell(R,ci);cw.value=li[i][0];cw.font=fnt(li[i][2],true,9);cw.fill=fill(li[i][1]);cw.alignment=aln('center','middle');}
     R += 2;
     const org2 = getOrg();
@@ -2777,7 +2679,6 @@ function toggleDarkMode() {
   document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
   const btn = document.getElementById('dark-toggle-btn');
   if (btn) btn.textContent = isDark ? '🌙' : '☀️';
-  applyTheme(currentThemeId());
 }
 
 document.addEventListener('click', e => {
@@ -2786,7 +2687,6 @@ document.addEventListener('click', e => {
 document.addEventListener('DOMContentLoaded', () => {
   const logoEl = document.getElementById('header-logo');
   if (logoEl) logoEl.src = 'data:image/png;base64,' + LOGO_B64;
-  applyTheme(currentThemeId());
   const vBadge = document.getElementById('app-version-badge');
   if (vBadge) vBadge.textContent = APP_VERSION;
   const cBadge = document.getElementById('commit-badge');
