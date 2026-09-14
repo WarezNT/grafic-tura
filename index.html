@@ -708,12 +708,19 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.06.6';
-const COMMIT_COUNT = 80;
+const APP_VERSION = 'V2026.06.7';
+const COMMIT_COUNT = 81;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.06.7': {
+    title: 'Analiza moduri respectă CO/CM reale + fix config la reload',
+    items: [
+      { icon: '🏖️', text: 'Analiza moduri ținea cont greșit doar de electricieni disponibili integral — acum respectă CO/CM deja introduse manual în graficul lunii curente, inclusiv extensia de weekend' },
+      { icon: '🐛', text: 'Câmpurile de configurare T1/T1A/T2/T2A/8h reveneau la valorile implicite din pagină la fiecare reîncărcare, chiar dacă graficul afișat fusese generat cu altă capacitate — acum se restaurează corect din ultima configurare salvată' }
+    ]
+  },
   'V2026.06.6': {
     title: 'Analiză moduri de generare',
     items: [
@@ -2925,6 +2932,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // migrate org from state to dedicated ORG_KEY if not yet migrated
     if (!loadOrg() && state.org && state.org.sefFOL) saveOrg(state.org);
     document.getElementById('gen-mode').value = state.genMode;
+    // Sincronizează inputurile de configurare (T1/T1A/T2/T2A/8h) cu state.config salvat —
+    // lipsea complet la încărcarea normală a paginii (doar importul de backup complet o
+    // făcea). Inputurile reveneau la valorile hardcodate din HTML (T1A/T2A=0) la fiecare
+    // reload, chiar dacă graficul deja generat folosea o altă capacitate — panoul de
+    // configurare mințea vizual, nelegat de ce era efectiv salvat sau folosit la generare.
+    GROUPS.forEach(g => {
+      const c = (state.config && state.config[g]) || {};
+      document.getElementById('cfg-' + g + '-t1').value = c.t1 ?? 2;
+      document.getElementById('cfg-' + g + '-t1a').value = c.t1a ?? 0;
+      document.getElementById('cfg-' + g + '-t2').value = c.t2 ?? 2;
+      document.getElementById('cfg-' + g + '-t2a').value = c.t2a ?? 0;
+      document.getElementById('cfg-' + g + '-c8').value = c.c8 ?? 0;
+    });
     updateModeFieldVisibility();
     applyOrgToDOM();
     render();
@@ -2934,6 +2954,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const org = getOrg();
     if (!org.sefFOL && !org.responsabilTehnic && !org.aprobat) openOrgModal();
   }).catch(e => {
+    GROUPS.forEach(g => {
+      const c = (state.config && state.config[g]) || {};
+      document.getElementById('cfg-' + g + '-t1').value = c.t1 ?? 2;
+      document.getElementById('cfg-' + g + '-t1a').value = c.t1a ?? 0;
+      document.getElementById('cfg-' + g + '-t2').value = c.t2 ?? 2;
+      document.getElementById('cfg-' + g + '-t2a').value = c.t2a ?? 0;
+      document.getElementById('cfg-' + g + '-c8').value = c.c8 ?? 0;
+    });
     render();
     updateButtons();
     applyOrgToDOM();
