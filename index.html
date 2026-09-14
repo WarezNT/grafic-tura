@@ -399,6 +399,17 @@ td.emp-name-cell:hover{text-decoration:underline}
     </div>
   </div>
 
+  <!-- Modal analiză moduri -->
+  <div id="analyze-modal" class="modal-overlay no-print" style="display:none" onclick="if(event.target===this)closeAnalyzeModal()">
+    <div class="modal-content" style="max-width:900px;width:96%;max-height:86vh;overflow:auto">
+      <h3>📈 Analiză moduri — utilizare echipaje pe lună</h3>
+      <div id="analyze-body" style="font-size:13px"></div>
+      <div class="modal-buttons">
+        <button class="btn btn-outline" onclick="closeAnalyzeModal()">Închide</button>
+      </div>
+    </div>
+  </div>
+
   <div id="status" class="status-msg info no-print" style="display:none"></div>
 
   <div class="table-wrap">
@@ -430,6 +441,11 @@ td.emp-name-cell:hover{text-decoration:underline}
     <div class="tb-group">
       <button class="btn btn-outline btn-sm" onclick="exportExcel()" data-tooltip="Exportă graficul în format Excel (.xlsx) cu stiluri și logo">📊 Excel</button>
       <button class="btn btn-primary btn-sm" onclick="printSchedule()" data-tooltip="Printează graficul sau salvează ca PDF (Ctrl+P)">🖨️ Print / PDF</button>
+    </div>
+    <div class="tb-sep"></div>
+    <!-- Analiză moduri -->
+    <div class="tb-group">
+      <button class="btn btn-outline btn-sm" onclick="analyzeModes()" data-tooltip="Compară cele 4 moduri de generare pe baza echipajelor detectate automat și a configurației curente — care mod utilizează cel mai bine echipajele pe lună">📈 Analiză moduri</button>
     </div>
     <div class="tb-sep"></div>
     <!-- Ajutor + versiune -->
@@ -692,12 +708,18 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.06.5';
-const COMMIT_COUNT = 78;
+const APP_VERSION = 'V2026.06.6';
+const COMMIT_COUNT = 79;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.06.6': {
+    title: 'Analiză moduri de generare',
+    items: [
+      { icon: '📈', text: 'Buton nou „Analiză moduri" — compară cele 4 moduri de generare pe baza echipajelor detectate automat și a configurației curente, arată care mod utilizează cel mai bine echipajele pe lună (fără să modifice graficul real)' }
+    ]
+  },
   'V2026.06.5': {
     title: 'Corecții export Excel + fairness rotație',
     items: [
@@ -2590,6 +2612,171 @@ function exportExcel() {
 
 function printSchedule() {
   window.print();
+}
+
+// ── Analiză moduri ──────────────────────────────────────────────────────
+// Simulează pe rând toate cele 4 moduri de generare, pentru luna selectată
+// curent, folosind exact motorul real de generare (generateDay), pe o copie
+// izolată a state.schedule/genStats — starea reală nu e atinsă (backup +
+// restore complet la final, saveState() dezactivat temporar cât timp rulează
+// simulările, ca autosave-ul din generateDay() să nu scrie variante
+// intermediare peste datele reale din localStorage/IndexedDB).
+function groupByEffectiveCrew(emps, dk) {
+  const groups = {};
+  emps.forEach(e => {
+    const key = getCrewForDay(e, dk) || ('__' + e.id);
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(e);
+  });
+  return groups;
+}
+
+function computeCategoryAnalysis(cat, year, month, dim) {
+  const catEmps = state.employees.filter(e => (e.category || 'urban') === cat && !e.forced8);
+  if (catEmps.length === 0) return null;
+  const staticCrews = {};
+  catEmps.forEach(e => { const k = e.crew || ('__' + e.id); (staticCrews[k] = staticCrews[k] || []).push(e); });
+  const fullCrewCount = Object.values(staticCrews).filter(c => c.length >= 2).length;
+  const soloCount = Object.values(staticCrews).filter(c => c.length === 1).length;
+
+  let totalWorked = 0, totalGroupDays = 0, fullUtilDays = 0;
+  for (let d = 1; d <= dim; d++) {
+    const dk = dateKey(year, month, d);
+    const dayGroups = groupByEffectiveCrew(catEmps, dk);
+    const vals = Object.values(dayGroups);
+    let worked = 0;
+    vals.forEach(g => {
+      const v = state.schedule[dk] ? state.schedule[dk][String(g[0].id)] : undefined;
+      if (v >= 1 && v <= 4) worked++;
+    });
+    totalWorked += worked;
+    totalGroupDays += vals.length;
+    if (vals.length > 0 && worked === vals.length) fullUtilDays++;
+  }
+  const utilPct = totalGroupDays > 0 ? (totalWorked / totalGroupDays * 100) : 0;
+  const avgPerDay = totalWorked / dim;
+
+  // conflicte reale: max 4 consecutive, max 5/săptămână, gap T2->T1/T1A
+  const violations = [];
+  catEmps.forEach(e => {
+    let consec = 0, maxConsec = 0, prevV = null;
+    for (let d = 1; d <= dim; d++) {
+      const dk = dateKey(year, month, d);
+      const v = state.schedule[dk] ? state.schedule[dk][String(e.id)] : undefined;
+      const worked = (v >= 1 && v <= 4) || v === 7 || v === 8;
+      if (worked) { consec++; maxConsec = Math.max(maxConsec, consec); } else { consec = 0; }
+      if (prevV === 2 && (v === 1 || v === 3)) violations.push('gap');
+      prevV = v;
+    }
+    if (maxConsec > 4) violations.push('consec');
+    const weekStarts = new Set();
+    for (let d = 1; d <= dim; d++) {
+      const dow = new Date(year, month - 1, d).getDay();
+      weekStarts.add(d + (dow === 0 ? -6 : 1 - dow));
+    }
+    weekStarts.forEach(ws => {
+      let wc = 0;
+      for (let dd = Math.max(1, ws); dd <= Math.min(dim, ws + 6); dd++) {
+        const dk2 = dateKey(year, month, dd);
+        const v2 = state.schedule[dk2] ? state.schedule[dk2][String(e.id)] : undefined;
+        if ((v2 >= 1 && v2 <= 4) || v2 === 7 || v2 === 8) wc++;
+      }
+      if (wc > 5) violations.push('weekly');
+    });
+  });
+
+  const hoursArr = catEmps.map(e => getEmployeeStats(e.id).hours);
+  return {
+    fullCrewCount, soloCount, avgPerDay, utilPct, fullUtilDays, dim,
+    minH: Math.min(...hoursArr), maxH: Math.max(...hoursArr), spread: Math.max(...hoursArr) - Math.min(...hoursArr),
+    violations: violations.length
+  };
+}
+
+const ANALYZE_MODES = [
+  { key: 'full', label: '1) T1/T2 + T1A/T2A' },
+  { key: 't12', label: '2) Zilnic T1/T2' },
+  { key: 'rotation', label: '3) Rotație 8 zile' },
+  { key: 'rotation3', label: '4) Rotație T1-T2-L' }
+];
+
+function analyzeModes() {
+  if (state.employees.length === 0) { setStatus('Adaugă cel puțin un electrician pentru analiză.', 'warn'); return; }
+  const year = state.currentYear, month = state.currentMonth;
+  const dim = daysInMonth(year, month);
+  const cfgs = {};
+  GROUPS.forEach(g => cfgs[g] = readConfig(g));
+
+  const backup = {
+    schedule: JSON.parse(JSON.stringify(state.schedule)),
+    genStats: genStats ? JSON.parse(JSON.stringify(genStats)) : null,
+    genDay, genYear, genMonth, genDim,
+    genCOCM: JSON.parse(JSON.stringify(genCOCM)),
+    genMode: state.genMode
+  };
+  const realSaveState = saveState;
+  saveState = function () { return Promise.resolve(); };
+
+  const perMode = {};
+  try {
+    ANALYZE_MODES.forEach(({ key: mode }) => {
+      state.schedule = {};
+      genCOCM = {};
+      state.genMode = mode;
+      genYear = year; genMonth = month; genDim = dim; genDay = 0;
+      genStats = {};
+      state.employees.forEach(e => { genStats[e.id] = { total: 0, t1: 0, t2: 0, t1a: 0, t2a: 0, c8: 0, inst: 0, yesterday: null, consec: 0 }; });
+      for (let d = 1; d <= dim; d++) generateDay(d);
+      const byCat = {};
+      GROUPS.forEach(cat => { byCat[cat] = computeCategoryAnalysis(cat, year, month, dim); });
+      perMode[mode] = byCat;
+    });
+  } finally {
+    state.schedule = backup.schedule;
+    genStats = backup.genStats;
+    genDay = backup.genDay; genYear = backup.genYear; genMonth = backup.genMonth; genDim = backup.genDim;
+    genCOCM = backup.genCOCM;
+    state.genMode = backup.genMode;
+    saveState = realSaveState;
+    const sel = document.getElementById('gen-mode');
+    if (sel) sel.value = backup.genMode;
+    saveState();
+    render();
+  }
+  renderAnalyzeModal(perMode, year, month);
+}
+
+function renderAnalyzeModal(perMode, year, month) {
+  let html = '<p style="color:var(--text-muted);margin-bottom:14px">Simulare pe baza electricienilor și configurației curente (Urban/Rural), pentru <strong>' + getMonthName(month) + ' ' + year + '</strong>. Graficul real nu este modificat.</p>';
+  GROUPS.forEach(cat => {
+    const rows = ANALYZE_MODES.map(m => ({ ...m, stats: perMode[m.key][cat] }));
+    if (!rows[0].stats) return;
+    const best = rows.reduce((a, b) => (b.stats.utilPct > a.stats.utilPct ? b : a), rows[0]);
+    const gc = cat === 'urban' ? { bg: 'D6EAF8', fg: '1A5276' } : { bg: 'FDEBD0', fg: '935116' };
+    html += '<div style="margin-bottom:18px">';
+    html += '<div style="font-weight:700;font-size:13px;margin-bottom:6px;color:var(--heading)">' + (cat === 'urban' ? 'Urban' : 'Rural') + ' — ' + rows[0].stats.fullCrewCount + ' echipaje complete' + (rows[0].stats.soloCount ? ' + ' + rows[0].stats.soloCount + ' individuali' : '') + '</div>';
+    html += '<table class="stat-table"><thead><tr><th>Mod</th><th>Echipaje active/zi</th><th>Utilizare</th><th>Zile cu toate echipajele</th><th>Ore min–max</th><th>Spread</th><th>Conflicte</th></tr></thead><tbody>';
+    rows.forEach(r => {
+      const s = r.stats;
+      const isBest = r.key === best.key;
+      html += '<tr class="' + (isBest ? 'stat-row-ok' : '') + '" style="' + (isBest ? 'outline:2px solid var(--accent);outline-offset:-2px' : '') + '">';
+      html += '<td style="text-align:left;white-space:normal;overflow:visible;text-overflow:clip">' + esc(r.label) + (isBest ? ' <span class="shift-pill pill-t1" style="margin-left:4px">recomandat</span>' : '') + '</td>';
+      html += '<td>' + s.avgPerDay.toFixed(2) + '</td>';
+      html += '<td class="' + (s.utilPct >= 70 ? 'stat-hours-ok' : s.utilPct >= 50 ? 'stat-hours-warn' : 'stat-hours-bad') + '">' + s.utilPct.toFixed(1) + '%</td>';
+      html += '<td>' + s.fullUtilDays + '/' + s.dim + '</td>';
+      html += '<td>' + s.minH + 'h – ' + s.maxH + 'h</td>';
+      html += '<td>' + s.spread + 'h</td>';
+      html += '<td class="' + (s.violations ? 'stat-hours-bad' : 'stat-hours-ok') + '">' + (s.violations || '—') + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+  });
+  document.getElementById('analyze-body').innerHTML = html;
+  document.getElementById('analyze-modal').style.display = 'flex';
+}
+
+function closeAnalyzeModal() {
+  document.getElementById('analyze-modal').style.display = 'none';
 }
 
 function loadOrg() {
