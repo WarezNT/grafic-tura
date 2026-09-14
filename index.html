@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grafic de tură - Delgaz Grid S.A</title>
+<!-- OG/Twitter statice, generice — document.title e suprascris la runtime cu numele formației
+     din datele organizației (applyOrgToDOM), dar preview-urile de link (WhatsApp/Facebook/
+     Telegram) trebuie să arate mereu un titlu generic, nu numele intern al vreunei formații. -->
+<meta property="og:title" content="Grafic de tură - Delgaz Grid S.A">
+<meta property="og:description" content="Aplicație pentru generarea graficelor de tură — Urban/Rural, T1/T2/T1A/T2A/8h.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Grafic de tură - Delgaz Grid S.A">
+<meta name="twitter:description" content="Aplicație pentru generarea graficelor de tură — Urban/Rural, T1/T2/T1A/T2A/8h.">
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <style>
 :root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--alt-row-bg:#f4f6f9;--shadow:0 2px 12px rgba(0,0,0,.08)}
@@ -708,12 +717,18 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.06.7';
-const COMMIT_COUNT = 81;
+const APP_VERSION = 'V2026.06.8';
+const COMMIT_COUNT = 82;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.06.8': {
+    title: 'Preview link generic, fără nume de formație',
+    items: [
+      { icon: '🔗', text: 'Link-ul partajat (WhatsApp/Facebook/Telegram) arăta uneori numele formației tale, luat din titlul paginii setat la runtime — acum preview-ul folosește mereu un titlu generic, static' }
+    ]
+  },
   'V2026.06.7': {
     title: 'Analiza moduri respectă CO/CM reale + fix config la reload',
     items: [
