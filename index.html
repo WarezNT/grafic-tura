@@ -709,7 +709,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.06.6';
-const COMMIT_COUNT = 79;
+const COMMIT_COUNT = 80;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -2714,6 +2714,18 @@ function analyzeModes() {
     genCOCM: JSON.parse(JSON.stringify(genCOCM)),
     genMode: state.genMode
   };
+  // CO/CM deja introduse manual în graficul REAL al lunii curente trebuie respectate în
+  // simulare — altfel analiza răspunde la întrebarea greșită ("dacă nimeni nu ar fi în
+  // concediu"), nu la cea reală ("cu concediile/lipsurile deja introduse"). Se extrag din
+  // backup ÎNAINTE de a goli state.schedule, apoi se re-seedează ca genCOCM la fiecare mod —
+  // generateDay() le tratează la fel ca orice CO/CM preexistent (inclusiv extensia de weekend).
+  const realCOCM = {};
+  for (const dk in backup.schedule) {
+    for (const eid in backup.schedule[dk]) {
+      const v = backup.schedule[dk][eid];
+      if (v === 5 || v === 6) { if (!realCOCM[dk]) realCOCM[dk] = {}; realCOCM[dk][eid] = v; }
+    }
+  }
   const realSaveState = saveState;
   saveState = function () { return Promise.resolve(); };
 
@@ -2721,7 +2733,7 @@ function analyzeModes() {
   try {
     ANALYZE_MODES.forEach(({ key: mode }) => {
       state.schedule = {};
-      genCOCM = {};
+      genCOCM = JSON.parse(JSON.stringify(realCOCM));
       state.genMode = mode;
       genYear = year; genMonth = month; genDim = dim; genDay = 0;
       genStats = {};
@@ -2747,7 +2759,7 @@ function analyzeModes() {
 }
 
 function renderAnalyzeModal(perMode, year, month) {
-  let html = '<p style="color:var(--text-muted);margin-bottom:14px">Simulare pe baza electricienilor și configurației curente (Urban/Rural), pentru <strong>' + getMonthName(month) + ' ' + year + '</strong>. Graficul real nu este modificat.</p>';
+  let html = '<p style="color:var(--text-muted);margin-bottom:14px">Simulare pe baza electricienilor și configurației curente (Urban/Rural), pentru <strong>' + getMonthName(month) + ' ' + year + '</strong> — respectă CO/CM deja introduse manual în graficul real. Graficul real nu este modificat.</p>';
   GROUPS.forEach(cat => {
     const rows = ANALYZE_MODES.map(m => ({ ...m, stats: perMode[m.key][cat] }));
     if (!rows[0].stats) return;
