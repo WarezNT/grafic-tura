@@ -692,12 +692,19 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.06.4';
-const COMMIT_COUNT = 77;
+const APP_VERSION = 'V2026.06.5';
+const COMMIT_COUNT = 78;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.06.5': {
+    title: 'Corecții export Excel + fairness rotație',
+    items: [
+      { icon: '📊', text: 'Exportul Excel afișează acum corect L în weekend pentru zilele cu CO/CM/Instruire, la fel ca pe ecran' },
+      { icon: '⚖️', text: 'Fairness-ul din modurile de Rotație nu mai poate citi ore din altă lună dacă schimbi selectorul de lună/an în timpul generării pas cu pas' }
+    ]
+  },
   'V2026.06.4': {
     title: 'Rotații echitabile + mod nou + împerechere',
     items: [
@@ -1303,7 +1310,11 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   //    cere mereu aceeași tură în aceeași zi. Ca să nu cadă mereu pe aceeași pereche (ex. mereu U1↔U5),
   //    poziția fiecărui echipaj în ciclu se decalează la fiecare bloc de 8 zile, astfel încât perechea
   //    care „se ciocnește" se rotește printre toate echipajele pe parcursul lunii.
-  const hoursOf = list => getEmployeeStats(list[0].id).hours;
+  // genStats direct, nu getEmployeeStats(id).hours — acela citește din state.currentYear/Month
+  // (setate de dropdown-urile lună/an din DOM), nu din luna generată efectiv (genYear/genMonth).
+  // Dacă userul schimbă dropdown-ul lună/an în timpul unei generări pas-cu-pas, fairness-ul
+  // ajungea să citească silent orele altei luni (bug găsit la audit).
+  const hoursOf = list => genStats[list[0].id] ? genStats[list[0].id].total : 0;
   // Faza ciclului se calculează din numărul ABSOLUT de zile (de la epoca Unix), nu din ziua
   // lunii (care se resetează la 1 în fiecare lună). Astfel ciclul curge CONTINUU peste granițele
   // dintre luni — nu mai există un salt de fază la trecerea lună→lună care putea produce un
@@ -1504,13 +1515,18 @@ function startGeneration() {
       }
     }
   }
-  // preserve existing generated days — find first day without non-CO data
+  // preserve existing generated days — find first day not yet fully generated.
+  // generateDay() always writes an entry (chiar și 0/L) pentru FIECARE electrician — deci o zi
+  // deja generată are câte o intrare per electrician, indiferent dacă rezultatul a fost o zi cu
+  // toată lumea pe L (capacitate 0, sau toți blocați de MAX_CONSEC/cap săptămânal). Verificarea
+  // veche ("există vreo tură lucrată") trata greșit o astfel de zi ca negenerată și o rescria
+  // silențios la fiecare click pe Generare (bug găsit la audit).
   const dim = daysInMonth(year, month);
   let firstEmpty = dim + 1;
   for (let d = 1; d <= dim; d++) {
     const dk = dateKey(year, month, d);
     const dayData = state.schedule[dk];
-    if (!dayData || Object.keys(dayData).length === 0 || !Object.values(dayData).some(v => v > 0 && v !== 5 && v !== 6)) {
+    if (!dayData || Object.keys(dayData).length < emps.length) {
       firstEmpty = d;
       break;
     }
@@ -1829,8 +1845,8 @@ function deleteModalEmployee() {
   const emp = state.employees.find(e => e.id === modalEmpId);
   if (!emp) return;
   state.employees = state.employees.filter(e => e.id !== modalEmpId);
-  for (const dateKey in state.schedule) {
-    delete state.schedule[dateKey][modalEmpId];
+  for (const dk in state.schedule) {
+    delete state.schedule[dk][modalEmpId];
   }
   closeModal();
   saveState();
@@ -2498,7 +2514,8 @@ function exportExcel() {
         for (let d = 1; d <= dim; d++) {
           const dow = new Date(y,m-1,d).getDay(), isW = dow===0||dow===6;
           const dk = dateKey(y,m,d);
-          const v = getShift(dk, emp.id), sv = v!==null?v:0;
+          const v = getShift(dk, emp.id), rawSv = v!==null?v:0;
+          const sv = (isW && (rawSv===5||rawSv===6||rawSv===8)) ? 0 : rawSv;
           const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
           const dc = ws.getCell(R, firstDay+d);
           var crewForDay=getCrewForDay(emp,dk);var defCrew=emp.crew||'';
@@ -2572,8 +2589,6 @@ function exportExcel() {
 }
 
 function printSchedule() {
-  const sumEl = document.getElementById('summary');
-  const wasNoPrint = sumEl.classList.contains('no-print');
   window.print();
 }
 
