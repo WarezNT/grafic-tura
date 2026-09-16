@@ -707,12 +707,18 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.06.12';
-const COMMIT_COUNT = 86;
+const APP_VERSION = 'V2026.06.13';
+const COMMIT_COUNT = 87;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.06.13': {
+    title: 'Curățenie repo',
+    items: [
+      { icon: '🧹', text: 'Șterse fișierele JSON de test lăsate în rădăcina repo-ului (nu erau parte din aplicație, ignorate deja de git)' }
+    ]
+  },
   'V2026.06.12': {
     title: 'Audit runda 4: securitate, curățenie și corecții minore',
     items: [
