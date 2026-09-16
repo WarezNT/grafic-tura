@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%85%3C/text%3E%3C/svg%3E">
 <title>Grafic de tură - Delgaz Grid S.A</title>
 <!-- OG/Twitter statice, generice — document.title e suprascris la runtime cu numele formației
      din datele organizației (applyOrgToDOM), dar preview-urile de link (WhatsApp/Facebook/
@@ -13,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Grafic de tură - Delgaz Grid S.A">
 <meta name="twitter:description" content="Aplicație pentru generarea graficelor de tură — Urban/Rural, T1/T2/T1A/T2A/8h.">
-<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
 <style>
 :root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--alt-row-bg:#f4f6f9;--shadow:0 2px 12px rgba(0,0,0,.08)}
 [data-theme="dark"]{--bg:#18191c;--card-bg:#222428;--text:#dde1e7;--text-muted:#8b929e;--heading:#f0f2f5;--ctrl-bg:#2a2d32;--border:#3a3d45;--border-light:#32353d;--accent:#4d9de0;--accent-dark:#3a8fd4;--header-bg:#1a1c20;--row-even:#262830;--hover-bg:#2e3440;--hover-first:#2a3548;--input-bg:#2a2d32;--sum-bg:#222428;--status-bg:#1e3048;--status-text:#7db8e8;--warn-bg:#2e2400;--warn-border:#c49a00;--bad-bg:#2e1515;--bad-border:#c0392b;--empty:#555;--group-urban-bg:#1e3048;--group-urban-text:#7db8e8;--group-rural-bg:#2e2010;--group-rural-text:#d4956a;--shift0-bg:#2a2d32;--shift0-text:#6b7280;--shift1-bg:#1a3550;--shift1-text:#7ec8f0;--shift2-bg:#2e200e;--shift2-text:#e8a855;--weekend-bg:#2e1a1a;--weekend-td:#2a1e1e;--hours-ok-bg:#0e2e1a;--hours-ok-text:#4ccc80;--hours-bad-bg:#2e1212;--hours-bad-text:#f07070;--alt-row-bg:#202226;--shadow:0 2px 16px rgba(0,0,0,.5)}
@@ -21,7 +22,6 @@
 body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;padding:20px;transition:background .3s,color .3s;overflow-y:scroll}
 #app{max-width:1800px;margin:0 auto;background:var(--card-bg);border-radius:12px;box-shadow:var(--shadow);padding:24px 20px;overflow:hidden;transition:background .3s}
 h1{font-size:22px;font-weight:700;color:var(--heading);margin-bottom:16px;display:flex;align-items:center;gap:8px}
-h1 small{font-size:13px;font-weight:400;color:var(--text-muted);margin-left:auto}
 .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end;padding:16px;background:var(--ctrl-bg);border-radius:8px;margin-bottom:16px}
 .controls label{font-size:12px;font-weight:600;color:#555;display:flex;flex-direction:column;gap:4px}
 .controls input,.controls select{font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;outline:none;background:var(--input-bg);color:var(--text)}
@@ -35,7 +35,6 @@ h1 small{font-size:13px;font-weight:400;color:var(--text-muted);margin-left:auto
 .btn-outline{background:var(--ctrl-bg);color:#555;border:1px solid var(--border)}.btn-outline:hover{background:#e8e8e8}
 [data-theme="dark"] .btn-outline{background:var(--ctrl-bg);color:#bbb;border-color:#3a4a7b}[data-theme="dark"] .btn-outline:hover{background:#1a2744}
 .btn-sm{padding:5px 14px;font-size:12px}
-.emp-section{margin-bottom:16px;padding:16px;background:var(--ctrl-bg);border-radius:8px}
 .emp-header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 .emp-header input{flex:1;min-width:160px;font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;outline:none}
 .emp-header input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,152,219,.15)}
@@ -49,10 +48,9 @@ h1 small{font-size:13px;font-weight:400;color:var(--text-muted);margin-left:auto
 .forced-badge{display:inline-block;background:#fbbf24;color:#78350f;font-size:10px;font-weight:700;width:16px;height:16px;line-height:16px;text-align:center;border-radius:3px;vertical-align:middle;margin-left:3px}
 .cat-rural{background:#fdebd0;color:#935116}
 tr.group-header td{padding:6px 10px;font-weight:700;font-size:13px;border-bottom:2px solid rgba(0,0,0,.1)}
-tr.group-header.group-urban td{background:#d6eaf8;color:#1a5276}
-tr.group-header.group-rural td{background:#fdebd0;color:#935116}
-tr.group-header.group-f8 td{background:#e2e8f0;color:#4a5568}
-.actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+tr.group-header.group-urban td{background:#d6eaf8!important;color:#1a5276!important}
+tr.group-header.group-rural td{background:#fdebd0!important;color:#935116!important}
+tr.group-header.group-f8 td{background:#e2e8f0!important;color:#4a5568!important}
 .table-wrap{overflow:auto;border:1px solid #e0e4e8;border-radius:8px;margin-bottom:16px;min-height:200px}
 table{width:100%;border-collapse:separate;border-spacing:2px;font-size:13px;min-width:0;table-layout:fixed}
 thead{position:sticky;top:0;z-index:3}
@@ -205,20 +203,10 @@ td.emp-name-cell:hover{text-decoration:underline}
 .empty-msg{padding:40px;text-align:center;color:var(--empty);font-size:15px}
 .dark-toggle{cursor:pointer;font-size:16px;padding:4px 8px;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--text);transition:all .2s;user-select:none;line-height:1}
 .dark-toggle:hover{background:var(--hover-bg)}
-.stats-chart{margin-top:16px;padding:16px;background:var(--ctrl-bg);border-radius:8px}
-.stats-chart h3{font-size:14px;font-weight:700;color:var(--heading);margin-bottom:12px}
-.chart-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
-.chart-bar-row .label{width:120px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
-.chart-bar-row .bar{height:20px;border-radius:4px;transition:width .3s;min-width:2px}
-.chart-bar-row .val{font-weight:600;font-size:11px;color:var(--text-muted);white-space:nowrap}
-.chart-legend{display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap;font-size:11px}
-.chart-legend span{display:flex;align-items:center;gap:4px}
-.chart-legend .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
 @media(max-width:768px){
   body{padding:10px;font-size:13px}
   #app{padding:12px 8px}
   h1{font-size:18px;flex-wrap:wrap}
-  h1 small{margin-left:0;width:100%;margin-top:4px}
   .controls{padding:10px;gap:8px}
   .controls label{font-size:11px}
   .controls input,.controls select{padding:5px 8px;font-size:12px}
@@ -233,14 +221,12 @@ td.emp-name-cell:hover{text-decoration:underline}
   .summary{padding:8px;gap:6px}
   .summary .emp-sum{padding:3px 8px;font-size:11px}
   .modal-content{min-width:auto;margin:16px;max-width:calc(100vw - 32px)}
-  .actions{gap:6px}
-  .actions .btn{font-size:11px;padding:5px 10px}
 }
 @media print{
   @page{size:A3 landscape;margin:1.2cm 1cm;@top-left{content:''}@top-center{content:''}@top-right{content:''}@bottom-left{content:''}@bottom-right{content:''}@bottom-center{content:counter(page) " / " counter(pages);font-size:9pt;color:#555}}
   body{background:#fff;padding:0;margin:0;font-size:11px}
   #app{box-shadow:none;border-radius:0;padding:0;max-width:100%}
-  .no-print,.no-print-hide,.controls,.emp-section,.actions,.summary .btn,.stats-chart{display:none!important}
+  .no-print,.no-print-hide,.controls,.summary .btn{display:none!important}
   .dark-toggle{display:none!important}
   .table-wrap{border:none;overflow:visible;border-radius:0;margin-bottom:0;width:100%}
   table{table-layout:fixed;width:100%;min-width:0;font-size:9pt;border-collapse:separate;border-spacing:1px}
@@ -431,6 +417,23 @@ td.emp-name-cell:hover{text-decoration:underline}
   </div>
   <div id="db-status" style="font-size:11px;color:#999;margin:4px 0 8px;text-align:right" class="no-print">💾 IndexedDB: inițializare...</div>
 
+  <!-- Semnături — poziționate imediat după tabel în DOM (nu doar în CSS) ca la print să apară
+       chiar sub grafic, pe aceeași pagină. Invizibile pe ecran (.signatures{display:none}),
+       poziția DOM contează doar pt. ordinea de print — mutate aici din josul paginii, unde
+       apăreau DUPĂ #summary (care are page-break-before:always), ajungând pe altă pagină decât
+       tabelul, contrar intenției documentate în CSS (bug găsit la audit). -->
+  <div id="signatures" class="signatures">
+    <div class="signature-box">
+      <div class="line" id="sig-sef">Șef FOL EM<br>—</div>
+    </div>
+    <div class="signature-box">
+      <div class="line" id="sig-resp">Responsabil Tehnic<br>—</div>
+    </div>
+    <div class="signature-box">
+      <div class="line" id="sig-aprobat">Aprobat<br>—</div>
+    </div>
+  </div>
+
   <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
   <input type="file" id="import-employees-file" accept=".json" style="display:none" onchange="importEmployeesJSON(event)">
   <div class="toolbar no-print">
@@ -466,19 +469,6 @@ td.emp-name-cell:hover{text-decoration:underline}
   </div>
 
   <div id="summary" class="summary"></div>
-
-
-  <div id="signatures" class="signatures">
-    <div class="signature-box">
-      <div class="line" id="sig-sef">Șef FOL EM<br>—</div>
-    </div>
-    <div class="signature-box">
-      <div class="line" id="sig-resp">Responsabil Tehnic<br>—</div>
-    </div>
-    <div class="signature-box">
-      <div class="line" id="sig-aprobat">Aprobat<br>—</div>
-    </div>
-  </div>
 </div>
 
 <!-- Modal changelog / ce e nou -->
@@ -717,12 +707,29 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.06.11';
-const COMMIT_COUNT = 85;
+const APP_VERSION = 'V2026.06.12';
+const COMMIT_COUNT = 86;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.06.12': {
+    title: 'Audit runda 4: securitate, curățenie și corecții minore',
+    items: [
+      { icon: '🔒', text: 'Securitate: nume de echipaj custom cu ghilimele puteau injecta cod în pagină (select-ul de echipaj) — descoperit și fixat un gol în funcția de escapare folosită în toată aplicația (esc() nu proteja atribute HTML, doar text)' },
+      { icon: '🔒', text: 'Securitate: aceeași clasă de problemă fixată și la lista de schimbări de echipaj din modalul de editare' },
+      { icon: '🐛', text: '„8h" (program normal) setat manual pe weekend nu se mai numără la ore lucrate și se afișează corect ca L, la fel ca CO/CM/Instruire' },
+      { icon: '🐛', text: '„✕ Curăță" nu mai lasă graficul într-o stare „pe jumătate generată" care declanșa mereu confirmarea de continuare la următorul „Generare"' },
+      { icon: '🐛', text: '„Încarcă fișier" păstrează acum permisiunea de scriere pe fișierul ales — „Descarcă tot" poate salva înapoi în același fișier fără să redeschidă dialogul' },
+      { icon: '🐛', text: 'La date corupte în browser, aplicația nu mai pornește tăcut cu o stare goală — arată un avertisment și păstrează o copie a datelor vechi' },
+      { icon: '🐛', text: 'Modul de generare implicit e acum consecvent (2 — Zilnic T1/T2) în toate situațiile, nu doar la instalare nouă' },
+      { icon: '🐛', text: 'Exportul lunii curente salvează datele de organizație corecte, nu o copie posibil învechită' },
+      { icon: '📊', text: '„Analiză moduri": un echipaj integral în concediu nu mai scade artificial procentul de utilizare; un echipaj cu membri pe ture diferite e recunoscut corect ca activ; verifică și săptămâna de la granița lunii anterioare' },
+      { icon: '🎨', text: 'Antetele de grup (Urban/Rural) își păstrează culoarea corectă pe toate rândurile, inclusiv cele pare' },
+      { icon: '🖨️', text: 'Semnăturile la print apar acum direct sub tabelul de grafic, pe aceeași pagină, nu după cardurile de sumar' },
+      { icon: '🧹', text: 'Curățenie: cod CSS/HTML mort eliminat (grafic neimplementat, clase nefolosite), ExcelJS nu mai blochează încărcarea paginii, favicon adăugat' }
+    ]
+  },
   'V2026.06.11': {
     title: 'Audit runda 3: rotație cu T1A/T2A=0 nu mai pierde zile lucrătoare',
     items: [
@@ -825,6 +832,7 @@ const CHANGELOG = {
 };
 const DB_STORE = 'state';
 let db = null;
+let stateLoadCorrupted = false;
 let state = loadState();
 let savedFileHandle = null;
 let genDay = state.genDay || 0, genStats = state.genStats || null, genCOCM = state.preservedCOCM || {}, genYear = state.genYear || 0, genMonth = state.genMonth || 0, genDim = state.genDim || 0;
@@ -890,8 +898,22 @@ function loadState() {
         migrateState(s);
         return s;
       }
+      // JSON valid dar formă neașteptată (fără employees[]) — tot corupt din perspectiva
+      // aplicației, tratat la fel ca eșecul de parsare de mai jos.
+      throw new Error('shape invalid: missing employees[]');
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('loadState: date corupte în localStorage, pornesc de la zero.', e);
+    // Salvează raw-ul corupt sub o cheie separată — nu se pierde, doar nu se folosește direct.
+    // Înainte, eroarea era înghițită silențios (catch gol) și aplicația repornea cu stare nouă
+    // fără nicio urmă a ce s-a întâmplat — userul afla abia când observa că lipsesc date
+    // (bug găsit la audit).
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) localStorage.setItem(STORAGE_KEY + '_corrupt_backup', raw);
+    } catch (e2) {}
+    stateLoadCorrupted = true;
+  }
   return defaultState();
 }
 
@@ -911,15 +933,21 @@ function addCrewToCustom(crew) {
 function populateCrewSelect(selectId, currentVal) {
   const sel = document.getElementById(selectId);
   if (!sel) return;
+  // Nume de echipaj custom = text liber introdus de user (sau importat dintr-un JSON) — atât
+  // atributul value="..." CÂT ȘI textul vizibil al opțiunii trebuie escapate separat: esc() nu
+  // codifică ghilimelele (irelevante în conținut text, dar critice într-un atribut), de-asta
+  // există escAttr() pt. value="..." — text-ul vizibil (era complet NEescapat înainte, gap
+  // găsit acum) folosește esc() (bug latent, reproductibil prin UI normal: un nume de echipaj
+  // cu `"` sau `<script>` rupea atributul / injecta cod la fiecare randare a select-ului).
   const all = ['', ...PREDEFINED_CREWS, ...(state.customCrews || [])];
-  sel.innerHTML = all.map(c => '<option value="' + esc(c) + '"' + (c === (currentVal||'') ? ' selected' : '') + '>' + (c || '—') + '</option>').join('');
+  sel.innerHTML = all.map(c => '<option value="' + escAttr(c) + '"' + (c === (currentVal||'') ? ' selected' : '') + '>' + (c ? esc(c) : '—') + '</option>').join('');
 }
 
 function populateCrewDatalist(datalistId) {
   const dl = document.getElementById(datalistId);
   if (!dl) return;
   const all = [...PREDEFINED_CREWS, ...(state.customCrews || [])];
-  dl.innerHTML = all.map(c => '<option value="' + esc(c) + '">').join('');
+  dl.innerHTML = all.map(c => '<option value="' + escAttr(c) + '">').join('');
 }
 
 function addCustomCrewToList() {
@@ -946,11 +974,16 @@ function renderOverridesList() {
     container.innerHTML = '<span style="font-size:12px;color:#888">Nicio schimbare setată.</span>';
     return;
   }
+  // `d` (cheia de dată din crewOverrides) poate veni dintr-un angajat IMPORTAT dintr-un fișier
+  // JSON — nevalidat, potențial arbitrar, nu neapărat un format de dată curat. Interpolarea
+  // directă în onclick="...('+d+')" (fost cod) era vulnerabilă la XSS dacă d conținea ghilimele.
+  // Fix: atribut data-* (escapat de esc() ca orice alt text) + citire din dataset la click —
+  // nu se mai construiește deloc un literal JS din date neîncrezute.
   container.innerHTML = sorted.map(d =>
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:13px">'
-    + '<span style="color:var(--text-muted);min-width:90px">' + d + '</span>'
+    + '<span style="color:var(--text-muted);min-width:90px">' + esc(d) + '</span>'
     + '<span style="font-weight:700;color:var(--text)">→ ' + esc(pendingOverrides[d]) + '</span>'
-    + '<button onclick="removeCrewOverride(\'' + d + '\')" style="background:none;border:none;color:#e53e3e;cursor:pointer;font-size:16px;line-height:1;padding:0 4px">✕</button>'
+    + '<button data-override-date="' + escAttr(d) + '" onclick="removeCrewOverride(this.dataset.overrideDate)" style="background:none;border:none;color:#e53e3e;cursor:pointer;font-size:16px;line-height:1;padding:0 4px">✕</button>'
     + '</div>'
   ).join('');
 }
@@ -1024,7 +1057,8 @@ function migrateState(s) {
   if (s.genMonth === undefined) s.genMonth = 0;
   if (s.genDim === undefined) s.genDim = 0;
   if (!s.org) s.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
-  if (!s.genMode) s.genMode = 'full';
+  // Consecvent cu defaultState() (t12) — era 'full' aici, inconsistent (bug găsit la audit).
+  if (!s.genMode) s.genMode = 't12';
 }
 
 async function initStateFromDB() {
@@ -1157,7 +1191,7 @@ function getEmployeeStats(empId) {
     else if (v === 4) t2a++;
     else if (v === 5 && !isWeekend) co++;
     else if (v === 6 && !isWeekend) cm++;
-    else if (v === 7) c8++;
+    else if (v === 7 && !isWeekend) c8++;
     else if (v === 8 && !isWeekend) inst++;
   }
   const worked = t1 + t2 + t1a + t2a + c8 + inst;
@@ -1637,14 +1671,17 @@ function startGeneration() {
       break;
     }
   }
-  // restore CO from genCOCM on days that have none yet
+  // restore CO from genCOCM on days that have none yet — NU crea obiect gol pt. zile fără CO de
+  // restaurat: umplea silențios toate cele ~30 zile ale lunii cu `{}`, ceea ce făcea ca
+  // `Object.keys(state.schedule).length > 0` (mai sus) să fie mereu adevărat la orice click
+  // ulterior pe „Generare", chiar dacă nimic nu fusese de fapt generat — confirmarea „Continuați
+  // generarea?" apărea mereu, inutil (bug găsit la audit).
   for (let d = 1; d <= dim; d++) {
     const dk = dateKey(year, month, d);
-    if (!state.schedule[dk]) state.schedule[dk] = {};
     if (genCOCM[dk]) {
-      let changed = false;
+      if (!state.schedule[dk]) state.schedule[dk] = {};
       for (const eid in genCOCM[dk]) {
-        if (!(eid in state.schedule[dk])) { state.schedule[dk][eid] = genCOCM[dk][eid]; changed = true; }
+        if (!(eid in state.schedule[dk])) { state.schedule[dk][eid] = genCOCM[dk][eid]; }
       }
     }
   }
@@ -2013,7 +2050,7 @@ function renderTable() {
         let v = getShift(dk, emp.id);
         if (v === null || v === undefined) v = 0;
         const weekend = (dow === 0 || dow === 6);
-        const displayV = (weekend && (v === 5 || v === 6 || v === 8)) ? 0 : v;
+        const displayV = (weekend && (v === 5 || v === 6 || v === 7 || v === 8)) ? 0 : v;
         const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si <= 8; si++) {
@@ -2050,7 +2087,7 @@ function renderTable() {
         let v = getShift(dk, emp.id);
         if (v === null || v === undefined) v = 0;
         const weekend = (dow === 0 || dow === 6);
-        const displayV = (weekend && (v === 5 || v === 6 || v === 8)) ? 0 : v;
+        const displayV = (weekend && (v === 5 || v === 6 || v === 7 || v === 8)) ? 0 : v;
         const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si <= 8; si++) {
@@ -2329,6 +2366,15 @@ function esc(s) {
   return d.innerHTML;
 }
 
+// esc() NU escapează ghilimele (verificat: textContent->innerHTML nu codifică " sau ' — sunt
+// irelevante într-un nod de TEXT, dar critice într-o valoare de ATRIBUT). Pt. interpolare în
+// interiorul unui atribut HTML (ex. data-*="..."), e nevoie de escAttr(), care adaugă și &quot;/
+// &#39; peste esc() — altfel un `"` din date neîncrezute (ex. un câmp importat dintr-un JSON)
+// rupe atributul (bug audit: XSS posibil în renderOverridesList prin cheile din crewOverrides).
+function escAttr(s) {
+  return esc(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 async function saveFileWithPicker(data, suggestedName) {
   try {
     if ('showSaveFilePicker' in window) {
@@ -2390,7 +2436,7 @@ async function exportMonthJSON() {
   }
   const data = JSON.stringify({
     type: 'month', version: 1, year, month,
-    employees: state.employees, config: state.config, org: state.org || {},
+    employees: state.employees, config: state.config, org: getOrg(),
     schedule: monthSchedule, preservedCOCM: monthCOCM
   }, null, 2);
   const suggestedName = 'grafic_ture_' + year + '_' + pad(month) + '.json';
@@ -2400,7 +2446,10 @@ async function exportMonthJSON() {
 async function loadJSON() {
   try {
     if ('showOpenFilePicker' in window) {
-      const [handle] = await showOpenFilePicker({ types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }] });
+      // mode:'readwrite' — fără el, handle-ul e read-only, deci "Descarcă tot" nu poate scrie
+      // înapoi în același fișier (createWritable() eșuează silențios, redeschide dialogul de
+      // salvare de fiecare dată, chiar dacă userul a ales explicit fișierul respectiv la import).
+      const [handle] = await showOpenFilePicker({ types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }], mode: 'readwrite' });
       savedFileHandle = handle;
       const file = await handle.getFile();
       const text = await file.text();
@@ -2771,25 +2820,42 @@ function computeCategoryAnalysis(cat, year, month, dim) {
     const dk = dateKey(year, month, d);
     const dayGroups = groupByEffectiveCrew(catEmps, dk);
     const vals = Object.values(dayGroups);
-    let worked = 0;
+    let worked = 0, available = 0;
     vals.forEach(g => {
-      const v = state.schedule[dk] ? state.schedule[dk][String(g[0].id)] : undefined;
-      if (v >= 1 && v <= 4) worked++;
+      const memberVals = g.map(e => state.schedule[dk] ? state.schedule[dk][String(e.id)] : undefined);
+      // Un echipaj integral în CO/CM azi nu era niciodată DISPONIBIL — nu ar trebui să scadă
+      // utilizarea raportată (numitorul), la fel cum un om în concediu legal nu e o "capacitate
+      // irosită". Fără asta, utilPct arăta mai rău decât realitatea de fiecare dată când exista
+      // concediu în echipă (bug găsit la audit).
+      const allOnLeave = memberVals.every(v => v === 5 || v === 6);
+      if (allOnLeave) return;
+      available++;
+      // "activ" = CEL PUȚIN un membru lucrează, nu doar primul din listă — un echipaj cu
+      // membri pe ture diferite (split legitim, ex. capacitate impară față de mărimea echipajului)
+      // era raportat greșit ca inactiv dacă tocmai primul membru avea L (bug găsit la audit).
+      if (memberVals.some(v => v >= 1 && v <= 4)) worked++;
     });
     totalWorked += worked;
-    totalGroupDays += vals.length;
-    if (vals.length > 0 && worked === vals.length) fullUtilDays++;
+    totalGroupDays += available;
+    if (available > 0 && worked === available) fullUtilDays++;
   }
   const utilPct = totalGroupDays > 0 ? (totalWorked / totalGroupDays * 100) : 0;
   const avgPerDay = totalWorked / dim;
 
-  // conflicte reale: max 4 consecutive, max 5/săptămână, gap T2->T1/T1A
+  // conflicte reale: max 4 consecutive, max 5/săptămână, gap T2->T1/T1A. Citește și zilele
+  // dinaintea zilei 1 (din luna reală anterioară, dacă a fost vreodată generată) pt. săptămâna
+  // care traversează granița de lună — altfel o violare reală, ce se întinde peste graniță, nu
+  // era niciodată văzută de analiză (bug găsit la audit; generatorul real deja face asta corect).
   const violations = [];
-  catEmps.forEach(e => {
+  const readV = (empId, y, m, d) => {
+    if (d < 1) { const pm = m === 1 ? 12 : m - 1, py = m === 1 ? y - 1 : y; const pdim = daysInMonth(py, pm); d += pdim; m = pm; y = py; }
+    const dk = dateKey(y, m, d);
+    return state.schedule[dk] ? state.schedule[dk][String(empId)] : undefined;
+  };
+  catEmps.forEach(emp => {
     let consec = 0, maxConsec = 0, prevV = null;
     for (let d = 1; d <= dim; d++) {
-      const dk = dateKey(year, month, d);
-      const v = state.schedule[dk] ? state.schedule[dk][String(e.id)] : undefined;
+      const v = readV(emp.id, year, month, d);
       const worked = (v >= 1 && v <= 4) || v === 7 || v === 8;
       if (worked) { consec++; maxConsec = Math.max(maxConsec, consec); } else { consec = 0; }
       if (prevV === 2 && (v === 1 || v === 3)) violations.push('gap');
@@ -2803,9 +2869,8 @@ function computeCategoryAnalysis(cat, year, month, dim) {
     }
     weekStarts.forEach(ws => {
       let wc = 0;
-      for (let dd = Math.max(1, ws); dd <= Math.min(dim, ws + 6); dd++) {
-        const dk2 = dateKey(year, month, dd);
-        const v2 = state.schedule[dk2] ? state.schedule[dk2][String(e.id)] : undefined;
+      for (let dd = ws; dd <= ws + 6; dd++) {
+        const v2 = readV(emp.id, year, month, dd);
         if ((v2 >= 1 && v2 <= 4) || v2 === 7 || v2 === 8) wc++;
       }
       if (wc > 5) violations.push('weekly');
@@ -3046,6 +3111,12 @@ document.addEventListener('DOMContentLoaded', () => {
     banner.innerHTML = '⚠️ <strong>Fără conexiune la internet</strong><br>Exportul în Excel nu va funcționa în această sesiune. Toate celelalte funcții sunt disponibile offline.<br><button onclick="this.parentElement.remove()" style="margin-top:8px;border:none;background:#856404;color:#fff;padding:4px 14px;border-radius:6px;cursor:pointer;font-size:12px">OK</button>';
     document.body.appendChild(banner);
   }
+  if (stateLoadCorrupted) {
+    const banner2 = document.createElement('div');
+    banner2.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;background:#fde8e8;color:#c0392b;border:1px solid #e74c3c;border-radius:8px;padding:12px 20px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:480px;text-align:center;line-height:1.5';
+    banner2.innerHTML = '⚠️ <strong>Date corupte găsite la pornire</strong><br>S-a pornit cu o stare nouă, goală. Datele vechi (corupte) au fost păstrate sub o cheie separată în browser, pentru cazul în care vrei să le recuperezi manual.<br><button onclick="this.parentElement.remove()" style="margin-top:8px;border:none;background:#c0392b;color:#fff;padding:4px 14px;border-radius:6px;cursor:pointer;font-size:12px">OK</button>';
+    document.body.appendChild(banner2);
+  }
   const now = new Date();
   document.getElementById('sel-year').value = state.currentYear || now.getFullYear();
   document.getElementById('sel-month').value = state.currentMonth || (now.getMonth() + 1);
@@ -3056,7 +3127,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('sel-year').value = state.currentYear;
       document.getElementById('sel-month').value = state.currentMonth;
     }
-    if (!state.genMode) state.genMode = 'full';
+    if (!state.genMode) state.genMode = 't12'; // consecvent cu defaultState() (bug audit)
     // migrate org from state to dedicated ORG_KEY if not yet migrated
     if (!loadOrg() && state.org && state.org.sefFOL) saveOrg(state.org);
     document.getElementById('gen-mode').value = state.genMode;
