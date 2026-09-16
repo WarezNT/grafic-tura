@@ -16,8 +16,8 @@
 <meta name="twitter:description" content="Aplicație pentru generarea graficelor de tură — Urban/Rural, T1/T2/T1A/T2A/8h.">
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
 <style>
-:root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--holiday-bg:#fdf3d0;--holiday-text:#8a6d1a;--holiday-border:#d4a017;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--alt-row-bg:#f4f6f9;--shadow:0 2px 12px rgba(0,0,0,.08)}
-[data-theme="dark"]{--bg:#18191c;--card-bg:#222428;--text:#dde1e7;--text-muted:#8b929e;--heading:#f0f2f5;--ctrl-bg:#2a2d32;--border:#3a3d45;--border-light:#32353d;--accent:#4d9de0;--accent-dark:#3a8fd4;--header-bg:#1a1c20;--row-even:#262830;--hover-bg:#2e3440;--hover-first:#2a3548;--input-bg:#2a2d32;--sum-bg:#222428;--status-bg:#1e3048;--status-text:#7db8e8;--warn-bg:#2e2400;--warn-border:#c49a00;--bad-bg:#2e1515;--bad-border:#c0392b;--empty:#555;--group-urban-bg:#1e3048;--group-urban-text:#7db8e8;--group-rural-bg:#2e2010;--group-rural-text:#d4956a;--shift0-bg:#2a2d32;--shift0-text:#6b7280;--shift1-bg:#1a3550;--shift1-text:#7ec8f0;--shift2-bg:#2e200e;--shift2-text:#e8a855;--weekend-bg:#2e1a1a;--weekend-td:#2a1e1e;--holiday-bg:#3a2e0a;--holiday-text:#e8c65a;--holiday-border:#c49a1a;--hours-ok-bg:#0e2e1a;--hours-ok-text:#4ccc80;--hours-bad-bg:#2e1212;--hours-bad-text:#f07070;--alt-row-bg:#202226;--shadow:0 2px 16px rgba(0,0,0,.5)}
+:root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--holiday-bg:#fdf3d0;--holiday-text:#8a6d1a;--holiday-border:#d4a017;--holiday-header-bg:#8a6510;--holiday-header-text:#fff;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--alt-row-bg:#f4f6f9;--shadow:0 2px 12px rgba(0,0,0,.08)}
+[data-theme="dark"]{--bg:#18191c;--card-bg:#222428;--text:#dde1e7;--text-muted:#8b929e;--heading:#f0f2f5;--ctrl-bg:#2a2d32;--border:#3a3d45;--border-light:#32353d;--accent:#4d9de0;--accent-dark:#3a8fd4;--header-bg:#1a1c20;--row-even:#262830;--hover-bg:#2e3440;--hover-first:#2a3548;--input-bg:#2a2d32;--sum-bg:#222428;--status-bg:#1e3048;--status-text:#7db8e8;--warn-bg:#2e2400;--warn-border:#c49a00;--bad-bg:#2e1515;--bad-border:#c0392b;--empty:#555;--group-urban-bg:#1e3048;--group-urban-text:#7db8e8;--group-rural-bg:#2e2010;--group-rural-text:#d4956a;--shift0-bg:#2a2d32;--shift0-text:#6b7280;--shift1-bg:#1a3550;--shift1-text:#7ec8f0;--shift2-bg:#2e200e;--shift2-text:#e8a855;--weekend-bg:#2e1a1a;--weekend-td:#2a1e1e;--holiday-bg:#3a2e0a;--holiday-text:#e8c65a;--holiday-border:#c49a1a;--holiday-header-bg:#5c4610;--holiday-header-text:#ffd966;--hours-ok-bg:#0e2e1a;--hours-ok-text:#4ccc80;--hours-bad-bg:#2e1212;--hours-bad-text:#f07070;--alt-row-bg:#202226;--shadow:0 2px 16px rgba(0,0,0,.5)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;padding:20px;transition:background .3s,color .3s;overflow-y:scroll}
 #app{max-width:1800px;margin:0 auto;background:var(--card-bg);border-radius:12px;box-shadow:var(--shadow);padding:24px 20px;overflow:hidden;transition:background .3s}
@@ -68,10 +68,9 @@ td select:hover{filter:brightness(0.93)}
 th.th-weekend{background:var(--weekend-bg)}
 th.th-weekend:first-child{background:var(--weekend-bg)}
 td.td-weekend{background:var(--weekend-td)!important}
-th.th-holiday{background:var(--holiday-bg);color:var(--holiday-text)}
-th.th-holiday:first-child{background:var(--holiday-bg);color:var(--holiday-text)}
-th.th-holiday small{color:var(--holiday-text)}
-td.td-holiday{box-shadow:inset 0 0 0 2px var(--holiday-border)}
+th.th-holiday{background:var(--holiday-header-bg);color:var(--holiday-header-text)}
+th.th-holiday:first-child{background:var(--holiday-header-bg);color:var(--holiday-header-text)}
+th.th-holiday small{color:var(--holiday-header-text)}
 td.shift-0{background:var(--shift0-bg);color:var(--shift0-text)}
 td.shift-1{background:var(--shift1-bg);color:var(--shift1-text)}
 td.shift-2{background:var(--shift2-bg);color:var(--shift2-text)}
@@ -257,8 +256,7 @@ td.emp-name-cell:hover{text-decoration:underline}
   td.shift-8{background:#d5f5e3!important;color:#1a7a3a!important}
   .crew-indicator{display:block;font-size:7pt;color:#555!important;font-weight:600;text-align:center;line-height:1.2}
   td.td-weekend{background:#fce4e4!important}
-  th.th-holiday{background:#fdf3d0!important;color:#8a6d1a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  td.td-holiday{box-shadow:inset 0 0 0 1.5pt #d4a017!important}
+  th.th-holiday{background:#8a6510!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   td.hours,td.hours-cell{font-weight:700;font-size:8pt;text-align:center;padding:2px}
   td.hours.under,td.hours-cell.under{background:#fde8e8!important;color:#c0392b!important}
   td.hours.over,td.hours-cell.over{background:#fde8e8!important;color:#c0392b!important}
@@ -715,7 +713,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.09.14';
-const COMMIT_COUNT = 90;
+const COMMIT_COUNT = 91;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
@@ -2085,7 +2083,7 @@ function renderTable() {
         if (v === null || v === undefined) v = 0;
         const weekend = (dow === 0 || dow === 6);
         const displayV = (weekend && (v === 5 || v === 6 || v === 7 || v === 8)) ? 0 : v;
-        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
+        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si <= 8; si++) {
           if (weekend && (si === 3 || si === 4 || si === 7)) continue;
@@ -2122,7 +2120,7 @@ function renderTable() {
         if (v === null || v === undefined) v = 0;
         const weekend = (dow === 0 || dow === 6);
         const displayV = (weekend && (v === 5 || v === 6 || v === 7 || v === 8)) ? 0 : v;
-        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
+        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si <= 8; si++) {
           if (weekend && (si === 3 || si === 4 || si === 7)) continue;
