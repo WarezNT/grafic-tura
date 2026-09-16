@@ -16,8 +16,8 @@
 <meta name="twitter:description" content="Aplicație pentru generarea graficelor de tură — Urban/Rural, T1/T2/T1A/T2A/8h.">
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
 <style>
-:root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--alt-row-bg:#f4f6f9;--shadow:0 2px 12px rgba(0,0,0,.08)}
-[data-theme="dark"]{--bg:#18191c;--card-bg:#222428;--text:#dde1e7;--text-muted:#8b929e;--heading:#f0f2f5;--ctrl-bg:#2a2d32;--border:#3a3d45;--border-light:#32353d;--accent:#4d9de0;--accent-dark:#3a8fd4;--header-bg:#1a1c20;--row-even:#262830;--hover-bg:#2e3440;--hover-first:#2a3548;--input-bg:#2a2d32;--sum-bg:#222428;--status-bg:#1e3048;--status-text:#7db8e8;--warn-bg:#2e2400;--warn-border:#c49a00;--bad-bg:#2e1515;--bad-border:#c0392b;--empty:#555;--group-urban-bg:#1e3048;--group-urban-text:#7db8e8;--group-rural-bg:#2e2010;--group-rural-text:#d4956a;--shift0-bg:#2a2d32;--shift0-text:#6b7280;--shift1-bg:#1a3550;--shift1-text:#7ec8f0;--shift2-bg:#2e200e;--shift2-text:#e8a855;--weekend-bg:#2e1a1a;--weekend-td:#2a1e1e;--hours-ok-bg:#0e2e1a;--hours-ok-text:#4ccc80;--hours-bad-bg:#2e1212;--hours-bad-text:#f07070;--alt-row-bg:#202226;--shadow:0 2px 16px rgba(0,0,0,.5)}
+:root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--holiday-bg:#fdf3d0;--holiday-text:#8a6d1a;--holiday-border:#d4a017;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--alt-row-bg:#f4f6f9;--shadow:0 2px 12px rgba(0,0,0,.08)}
+[data-theme="dark"]{--bg:#18191c;--card-bg:#222428;--text:#dde1e7;--text-muted:#8b929e;--heading:#f0f2f5;--ctrl-bg:#2a2d32;--border:#3a3d45;--border-light:#32353d;--accent:#4d9de0;--accent-dark:#3a8fd4;--header-bg:#1a1c20;--row-even:#262830;--hover-bg:#2e3440;--hover-first:#2a3548;--input-bg:#2a2d32;--sum-bg:#222428;--status-bg:#1e3048;--status-text:#7db8e8;--warn-bg:#2e2400;--warn-border:#c49a00;--bad-bg:#2e1515;--bad-border:#c0392b;--empty:#555;--group-urban-bg:#1e3048;--group-urban-text:#7db8e8;--group-rural-bg:#2e2010;--group-rural-text:#d4956a;--shift0-bg:#2a2d32;--shift0-text:#6b7280;--shift1-bg:#1a3550;--shift1-text:#7ec8f0;--shift2-bg:#2e200e;--shift2-text:#e8a855;--weekend-bg:#2e1a1a;--weekend-td:#2a1e1e;--holiday-bg:#3a2e0a;--holiday-text:#e8c65a;--holiday-border:#c49a1a;--hours-ok-bg:#0e2e1a;--hours-ok-text:#4ccc80;--hours-bad-bg:#2e1212;--hours-bad-text:#f07070;--alt-row-bg:#202226;--shadow:0 2px 16px rgba(0,0,0,.5)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;padding:20px;transition:background .3s,color .3s;overflow-y:scroll}
 #app{max-width:1800px;margin:0 auto;background:var(--card-bg);border-radius:12px;box-shadow:var(--shadow);padding:24px 20px;overflow:hidden;transition:background .3s}
@@ -68,6 +68,10 @@ td select:hover{filter:brightness(0.93)}
 th.th-weekend{background:var(--weekend-bg)}
 th.th-weekend:first-child{background:var(--weekend-bg)}
 td.td-weekend{background:var(--weekend-td)!important}
+th.th-holiday{background:var(--holiday-bg)}
+th.th-holiday:first-child{background:var(--holiday-bg)}
+th.th-holiday small{color:var(--holiday-text)}
+td.td-holiday{box-shadow:inset 0 0 0 2px var(--holiday-border)}
 td.shift-0{background:var(--shift0-bg);color:var(--shift0-text)}
 td.shift-1{background:var(--shift1-bg);color:var(--shift1-text)}
 td.shift-2{background:var(--shift2-bg);color:var(--shift2-text)}
@@ -253,6 +257,8 @@ td.emp-name-cell:hover{text-decoration:underline}
   td.shift-8{background:#d5f5e3!important;color:#1a7a3a!important}
   .crew-indicator{display:block;font-size:7pt;color:#555!important;font-weight:600;text-align:center;line-height:1.2}
   td.td-weekend{background:#fce4e4!important}
+  th.th-holiday{background:#fdf3d0!important;color:#8a6d1a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  td.td-holiday{box-shadow:inset 0 0 0 1.5pt #d4a017!important}
   td.hours,td.hours-cell{font-weight:700;font-size:8pt;text-align:center;padding:2px}
   td.hours.under,td.hours-cell.under{background:#fde8e8!important;color:#c0392b!important}
   td.hours.over,td.hours-cell.over{background:#fde8e8!important;color:#c0392b!important}
@@ -413,6 +419,7 @@ td.emp-name-cell:hover{text-decoration:underline}
       <tbody id="table-body"></tbody>
     </table>
     <div id="table-legend" style="padding:16px 0 4px;font-size:11px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
+    <div id="holiday-list" style="padding:0 0 8px;font-size:11px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
     <div id="empty-msg" class="empty-msg"></div>
   </div>
   <div id="db-status" style="font-size:11px;color:#999;margin:4px 0 8px;text-align:right" class="no-print">💾 IndexedDB: inițializare...</div>
@@ -707,12 +714,23 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.09.13';
-const COMMIT_COUNT = 88;
+const APP_VERSION = 'V2026.09.14';
+const COMMIT_COUNT = 89;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.09.14': {
+    title: 'Sărbători legale pe grafic — calendar extins nelimitat',
+    items: [
+      { icon: '🎉', text: 'Zilele de sărbătoare legală din România (Anul Nou, Boboteaza, Paște, Ziua Muncii, Rusalii, Sf. Maria, Crăciun etc.) apar acum evidențiate direct pe grafic — coloana zilei respective, indiferent de tură sau weekend' },
+      { icon: '📋', text: 'Listă nouă sub tabel, mereu vizibilă — sărbătorile lunii afișate curent, cu data și numele fiecăreia' },
+      { icon: '📅', text: 'Calendarul de zile lucrătoare (folosit pt. normă) nu mai e limitat la 2025-2028 — calculat acum pentru orice an, inclusiv Paștele ortodox (dată mobilă, calculată automat, nu mai necesită actualizare manuală)' },
+      { icon: '🔧', text: 'Corectat: normă subestimată pentru Ianuarie 2027, Ianuarie 2028 și Iunie 2027 — tabelul vechi omitea Boboteaza/Sf. Ioan Botezătorul din calcul pentru acei ani' },
+      { icon: '📊', text: 'Export Excel: coloana zilei de sărbătoare e marcată la fel ca pe ecran' },
+      { icon: 'ℹ️', text: 'Sărbătorile sunt strict informative — nu influențează în niciun fel alocarea automată a echipajelor' }
+    ]
+  },
   'V2026.09.13': {
     title: 'Curățenie repo',
     items: [
@@ -2012,14 +2030,22 @@ function renderTable() {
   const labels = SHIFT_NAMES;
   const groups = GROUPS;
   const colspan = dim + 5;
+  // Sărbători legale ale lunii curente — Map<ziua, nume>, calculat o dată per randare, folosit
+  // atât pentru marcajul pe coloane cât și pentru lista de sub tabel (renderHolidayList). Doar
+  // informativ — nu influențează în niciun fel alocarea automată a echipajelor.
+  const prefix = y + '-' + pad(m);
+  const monthHolidays = getLegalHolidays(y).filter(h => h.date.startsWith(prefix));
+  const holidayByDay = new Map(monthHolidays.map(h => [parseInt(h.date.slice(-2), 10), h.name]));
 
   let hhtml = '<tr><th style="min-width:180px;white-space:nowrap">Nume Prenume</th><th style="text-align:left;padding-left:4px;width:62px;min-width:62px;max-width:62px;overflow:hidden">Funcția</th>';
   for (let d = 1; d <= dim; d++) {
     const dt = new Date(y, m - 1, d);
     const dow = dt.getDay();
      const dayName = ['D','L','M','M','J','V','S'][dow];
-    const wc = (dow === 0 || dow === 6) ? ' class="day-col th-weekend"' : ' class="day-col"';
-    hhtml += '<th' + wc + '>' + d + '<br><small>' + dayName + '</small></th>';
+    const holidayName = holidayByDay.get(d);
+    const cls = ['day-col', dow === 0 || dow === 6 ? 'th-weekend' : '', holidayName ? 'th-holiday' : ''].filter(Boolean).join(' ');
+    const tip = holidayName ? ' data-tooltip="' + escAttr(holidayName) + '"' : '';
+    hhtml += '<th class="' + cls + '"' + tip + '>' + d + '<br><small>' + dayName + '</small></th>';
   }
   hhtml += '<th style="min-width:48px;width:48px">Lucrate</th><th style="min-width:36px;width:36px;line-height:1.2">CO<br>CM</th><th style="min-width:44px;width:44px">Normă</th></tr>';
   thead.innerHTML = hhtml;
@@ -2028,10 +2054,12 @@ function renderTable() {
     tbody.innerHTML = '';
     emptyEl.innerHTML = 'Adaugă electricieni și generează graficul.';
     renderLegend();
+    renderHolidayList(monthHolidays, y, m);
     return;
   }
   emptyEl.innerHTML = '';
   renderLegend();
+  renderHolidayList(monthHolidays, y, m);
 
   const wdInfo = workingDays(y, m);
   const expected = wdInfo !== null ? wdInfo * 8 : null;
@@ -2057,7 +2085,7 @@ function renderTable() {
         if (v === null || v === undefined) v = 0;
         const weekend = (dow === 0 || dow === 6);
         const displayV = (weekend && (v === 5 || v === 6 || v === 7 || v === 8)) ? 0 : v;
-        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
+        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si <= 8; si++) {
           if (weekend && (si === 3 || si === 4 || si === 7)) continue;
@@ -2094,7 +2122,7 @@ function renderTable() {
         if (v === null || v === undefined) v = 0;
         const weekend = (dow === 0 || dow === 6);
         const displayV = (weekend && (v === 5 || v === 6 || v === 7 || v === 8)) ? 0 : v;
-        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
+        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si <= 8; si++) {
           if (weekend && (si === 3 || si === 4 || si === 7)) continue;
@@ -2126,6 +2154,19 @@ function renderLegend() {
     + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>';
 }
 
+// Listă informativă — sărbătorile legale ale lunii afișate curent, mereu vizibilă sub tabel
+// (nu doar la hover pe coloană). Nu afectează alocarea echipajelor în niciun fel; se
+// actualizează automat la orice navigare lună/an, pentru că renderTable() o apelează la fiecare
+// randare, cu lista deja filtrată pe luna curentă.
+function renderHolidayList(monthHolidays, y, m) {
+  const el = document.getElementById('holiday-list');
+  if (!el) return;
+  if (!monthHolidays.length) { el.innerHTML = ''; return; }
+  el.innerHTML = '<span style="font-weight:700;color:var(--text-muted);margin-right:4px">🎉 Sărbători legale — ' + getMonthName(m) + ' ' + y + ':</span>'
+    + monthHolidays.map(h => '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--holiday-bg);color:var(--holiday-text)" data-tooltip="' + escAttr(h.name) + '">'
+      + parseInt(h.date.slice(-2), 10) + ' ' + getMonthName(m).slice(0, 3) + ' — ' + esc(h.name) + '</span>').join(' ');
+}
+
 function onShiftChange(dk, empId, sel) {
   const v = parseInt(sel.value);
   const existing = getShift(dk, empId);
@@ -2153,21 +2194,69 @@ function onShiftChange(dk, empId, sel) {
   renderSummary();
 }
 
-function workingDays(y, m) {
-  const holidays = {
-    2025:[18,20,21,20,21,20,23,20,22,23,20,20],
-    2026:[18,20,22,20,20,21,23,21,22,22,20,21],
-    2027:[20,20,23,21,20,21,22,22,22,21,21,22],
-    2028:[20,21,23,18,22,20,21,22,21,22,21,18]
-  };
-  return (holidays[y] && holidays[y][m-1]) || null;
+// Paștele ortodox — algoritmul Meeus (calendar iulian), convertit la gregorian (+13 zile,
+// valabil pt. anii 1900-2099). Verificat împotriva calendarelor publice pentru 2025-2030 —
+// coincide exact, an de an (Vinerea Mare/Paște/Rusalii calculate din el, mai jos).
+function orthodoxEaster(y) {
+  const a = y % 4, b = y % 7, c = y % 19;
+  const d = (19 * c + 15) % 30;
+  const e = (2 * a + 4 * b - d + 34) % 7;
+  const month = Math.floor((d + e + 114) / 31);
+  const day = ((d + e + 114) % 31) + 1;
+  const dt = new Date(y, month - 1, day);
+  dt.setDate(dt.getDate() + 13);
+  return dt;
 }
 
-// Norma așteptată pt. o lună. `null` dacă anul e în afara tabelului de sărbători legale (2025-
-//2028) — înainte, consumatorii foloseau un fallback INVENTAT (184h), afișat ca normă reală în
-// carduri/sumar, în timp ce coloana „Normă" din tabel arăta corect „—" — aceeași informație,
-// contradictorie în două locuri (bug găsit la audit). NU calculăm sărbători pt. ani noi (calendar
-// ortodox, risc/efort mult mai mare) — doar eliminăm contradicția, tratând explicit „necunoscut".
+// Sărbători legale fixe (Codul Muncii, Art. 139) — verificate pe surse publice curente
+// (inclusiv Boboteaza/Sf. Ioan/Unirea Principatelor, adăugate legal în ultimii ani — un tabel
+// mai vechi din aplicație le omitea pentru unele luni viitoare, subestimând norma).
+const FIXED_HOLIDAYS = [
+  ['01-01', 'Anul Nou'], ['01-02', 'Anul Nou'], ['01-06', 'Boboteaza'],
+  ['01-07', 'Sf. Ioan Botezătorul'], ['01-24', 'Unirea Principatelor Române'],
+  ['05-01', 'Ziua Muncii'], ['06-01', 'Ziua Copilului'], ['08-15', 'Adormirea Maicii Domnului'],
+  ['11-30', 'Sf. Andrei'], ['12-01', 'Ziua Națională'], ['12-25', 'Crăciunul'], ['12-26', 'Crăciunul']
+];
+
+// Toate zilele de sărbătoare legală ale unui an — fixe + mobile (calculate din Paștele
+// ortodox). Funcționează pt. orice an rezonabil (nu doar 2025-2030) — nu mai necesită
+// întreținere manuală an de an, ca vechiul tabel hardcodat.
+function getLegalHolidays(y) {
+  if (y < 1900 || y > 2099) return [];
+  const addDays = (dt, n) => { const r = new Date(dt); r.setDate(r.getDate() + n); return r; };
+  const mk = (dt, name) => ({ date: y + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate()), name });
+  const easter = orthodoxEaster(y);
+  const list = FIXED_HOLIDAYS.map(([md, name]) => ({ date: y + '-' + md, name }));
+  list.push(mk(addDays(easter, -2), 'Vinerea Mare'));
+  list.push(mk(easter, 'Paștele'));
+  list.push(mk(addDays(easter, 1), 'A doua zi de Paște'));
+  list.push(mk(addDays(easter, 49), 'Rusaliile'));
+  list.push(mk(addDays(easter, 50), 'A doua zi de Rusalii'));
+  list.sort((a, b) => a.date.localeCompare(b.date));
+  return list;
+}
+
+function workingDays(y, m) {
+  const dim = daysInMonth(y, m);
+  const prefix = y + '-' + pad(m);
+  const holidaySet = new Set(getLegalHolidays(y).filter(h => h.date.startsWith(prefix)).map(h => h.date));
+  if (holidaySet.size === 0 && getLegalHolidays(y).length === 0) return null; // y în afara 1900-2099
+  let wd = 0;
+  for (let d = 1; d <= dim; d++) {
+    const dow = new Date(y, m - 1, d).getDay();
+    if (dow === 0 || dow === 6) continue;
+    if (holidaySet.has(dateKey(y, m, d))) continue;
+    wd++;
+  }
+  return wd;
+}
+
+// Norma așteptată pt. o lună. `null` doar dacă anul e în afara intervalului 1900-2099 (gardă
+// a algoritmului Paștelui — selectorul de an al aplicației merge 2020-2040, deci în practică
+// nu se atinge). Înainte, consumatorii foloseau un fallback INVENTAT (184h) pt. anii în afara
+// unui tabel hardcodat 2025-2028, afișat ca normă reală în carduri/sumar, în timp ce coloana
+// „Normă" din tabel arăta corect „—" — aceeași informație, contradictorie în două locuri
+// (găsit la audit). Acum practic mereu un număr real, calculat corect.
 function expectedHours(y, m) {
   const wd = workingDays(y, m);
   return wd !== null ? wd * 8 : null;
@@ -2673,16 +2762,17 @@ function exportExcel() {
     ws.getRow(4).height = 6;
     // Headers
     const HDR = 5; ws.getRow(HDR).height = 28;
-    const setHdr = (r, c, v, wknd) => {
+    const setHdr = (r, c, v, wknd, holiday) => {
       const cl = ws.getCell(r, c);
-      cl.value = v; cl.font = fnt('FFFFFF', true, 9);
-      cl.fill = fill(wknd ? '4A2C2C' : '2C3E50');
+      cl.value = v; cl.font = fnt(holiday ? '8A6D1A' : 'FFFFFF', true, 9);
+      cl.fill = fill(holiday ? 'FDF3D0' : (wknd ? '4A2C2C' : '2C3E50'));
       cl.alignment = aln('center','middle', true);
     };
     setHdr(HDR, 1, 'Nume Prenume'); setHdr(HDR, 2, 'Funcția'); setHdr(HDR, 3, 'Echipaj');
+    const yearHolidays = new Set(getLegalHolidays(y).map(h => h.date));
     for (let d = 1; d <= dim; d++) {
       const dow = new Date(y, m-1, d).getDay();
-      setHdr(HDR, firstDay + d, d + '\n' + DAY_NAMES[dow], dow===0||dow===6);
+      setHdr(HDR, firstDay + d, d + '\n' + DAY_NAMES[dow], dow===0||dow===6, yearHolidays.has(dateKey(y,m,d)));
     }
     setHdr(HDR, colLucrate+1, 'Lucrate'); setHdr(HDR, colCOCM+1, 'CO/CM'); setHdr(HDR, colNorma+1, 'Normă');
     // Rows
