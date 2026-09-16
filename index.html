@@ -584,6 +584,13 @@ td.emp-name-cell:hover{text-decoration:underline}
             <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>
           </div>
         </div>
+        <div class="help-section">
+          <div class="help-section-title">🎉 Sărbători legale</div>
+          <p>Zilele de sărbătoare legală din România (Anul Nou, Boboteaza, Paște, Ziua Muncii, Rusalii, Sf. Maria, Crăciun etc.) sunt calculate automat pentru orice an — inclusiv datele mobile (Paște, Rusalii), verificate anual.</p>
+          <p>Coloana zilei respective e evidențiată pe grafic (antet colorat + chenar pe celule), cu numele sărbătorii la hover. Sub tabel apare mereu o listă cu sărbătorile lunii afișate curent.</p>
+          <p><strong>Strict informativ</strong> — nu influențează în niciun fel alocarea automată a echipajelor.</p>
+          <p>Câte ture a lucrat efectiv fiecare electrician în zile de sărbătoare apar în secțiunea <strong>Statistici</strong> (coloana „🎉 Sărb.") și pe cardul fiecăruia.</p>
+        </div>
       </div>
 
       <!-- TAB: Editare -->
@@ -608,7 +615,7 @@ td.emp-name-cell:hover{text-decoration:underline}
             <li><strong>Carduri electricieni</strong> — vizualizare rapidă cu ore lucrate, procent din normă și distribuție ture</li>
             <li><strong>Statistici ture</strong> — tabel detaliat cu T1/T2/T1A/T2A/8h/CO/CM, ore lucrate și diferența față de norma lunară</li>
           </ul>
-          <p>Norma lunară se calculează din zilele lucrătoare ale lunii (include sărbători legale pentru 2025–2028).</p>
+          <p>Norma lunară se calculează din zilele lucrătoare ale lunii, excluzând sărbătorile legale — calculat pentru orice an, nu doar un interval fix.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">🌙 Mod întunecat</div>
@@ -714,12 +721,19 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.09.16';
-const COMMIT_COUNT = 93;
+const APP_VERSION = 'V2026.09.17';
+const COMMIT_COUNT = 94;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.09.17': {
+    title: 'Manual actualizat + sărbători în legenda Excel',
+    items: [
+      { icon: '📖', text: 'Manual: secțiune nouă „Sărbători legale" (tab Generare) — explică marcajul pe grafic, lista lunară și coloana din Statistici; corectată o frază învechită care mai spunea „2025-2028"' },
+      { icon: '📊', text: 'Export Excel: legenda de la finalul foii afișează acum și sărbătorile lunii (dată + nume) — lipseau complet, deși coloanele erau deja marcate pe grafic' }
+    ]
+  },
   'V2026.09.16': {
     title: 'Sărbători și în Excel — grafic + coloană statistici',
     items: [
@@ -2907,6 +2921,18 @@ function exportExcel() {
     ws.mergeCells(R,1,R,2);
     var li=[['T1 / T1A  06-14','D6EAF8','1A5276'],['T2 / T2A  14-22','FDEBD0','935116'],['8h  08-16','F0F4F8','2C3E50'],['INST  Instruire','D5F5E3','1A7A3A'],['CO  Concediu','E8D5F5','6C3483'],['CM  Medical','E8E8E8','555555'],['L  Liber','F0F0F0','666666']];
     for(var i=0,ci=3;i<li.length;i++,ci+=3){ws.mergeCells(R,ci,R,ci+2);var cw=ws.getCell(R,ci);cw.value=li[i][0];cw.font=fnt(li[i][2],true,9);cw.fill=fill(li[i][1]);cw.alignment=aln('center','middle');}
+    // Sărbătorile legale ale lunii — lipseau complet din legenda Excel (bug raportat: „zilele
+    // nu apar în legendă"), deși coloanele respective erau deja marcate pe grafic (chenar auriu).
+    const monthHolidaysXls = getLegalHolidays(y).filter(h => h.date.startsWith(y+'-'+pad(m)));
+    if (monthHolidaysXls.length) {
+      R++;
+      ws.getRow(R).height = 18;
+      const hl = ws.getCell(R, 1); hl.value = '🎉 Sărbători ' + mn + ':'; hl.font = fnt('8A6510', true, 9);
+      ws.mergeCells(R, 1, R, 2);
+      const hv = ws.getCell(R, 3); hv.value = monthHolidaysXls.map(h => parseInt(h.date.slice(-2),10) + ' — ' + h.name).join('   •   ');
+      hv.font = fnt('8A6510', false, 9); hv.fill = fill('FDF3D0'); hv.alignment = aln('left', 'middle', true);
+      ws.mergeCells(R, 3, R, totalCols);
+    }
     R += 2;
     const org2 = getOrg();
     const sefCoreXls = 'Aprobat Șef CORE' + (org2.judet ? ' ' + org2.judet : '');
