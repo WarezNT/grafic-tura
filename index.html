@@ -68,8 +68,8 @@ td select:hover{filter:brightness(0.93)}
 th.th-weekend{background:var(--weekend-bg)}
 th.th-weekend:first-child{background:var(--weekend-bg)}
 td.td-weekend{background:var(--weekend-td)!important}
-th.th-holiday{background:var(--holiday-bg)}
-th.th-holiday:first-child{background:var(--holiday-bg)}
+th.th-holiday{background:var(--holiday-bg);color:var(--holiday-text)}
+th.th-holiday:first-child{background:var(--holiday-bg);color:var(--holiday-text)}
 th.th-holiday small{color:var(--holiday-text)}
 td.td-holiday{box-shadow:inset 0 0 0 2px var(--holiday-border)}
 td.shift-0{background:var(--shift0-bg);color:var(--shift0-text)}
@@ -715,7 +715,7 @@ const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
 const APP_VERSION = 'V2026.09.14';
-const COMMIT_COUNT = 89;
+const COMMIT_COUNT = 90;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
