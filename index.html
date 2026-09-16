@@ -717,12 +717,23 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.06.8';
-const COMMIT_COUNT = 82;
+const APP_VERSION = 'V2026.06.9';
+const COMMIT_COUNT = 83;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.06.9': {
+    title: 'Audit: corecții critice generare + import + securitate',
+    items: [
+      { icon: '🔴', text: 'Dublă alocare aceeași persoană (T1↔T2) în aceeași zi, care lăsa ture neumplute în modurile 1/2 — fixat la sursă' },
+      { icon: '🟠', text: '„✕ Curăță" nu mai lasă generarea „agățată" — butoanele de generare dispar corect, nu se mai poate scrie o zi orfană' },
+      { icon: '🟠', text: 'Import fișier de lună: nu mai poate șterge accidental toate celelalte luni/electricieni/echipaje (fișiere vechi fără câmpul „type" erau tratate greșit ca backup complet)' },
+      { icon: '🟠', text: 'Import fișier de lună fără grafic valid e respins cu eroare, în loc să golească luna țintă raportând „succes"' },
+      { icon: '🟠', text: 'Import fișier de lună: avertisment dacă fișierul conține electricieni cu alt nume dar același id ca cei locali (risc de tură atribuită persoanei greșite)' },
+      { icon: '🔒', text: 'Securitate: setările organizației (Șef FOL, Responsabil Tehnic, Aprobat, Județ) sunt acum escapate — eliminat un risc de cod injectat prin fișier JSON partajat' }
+    ]
+  },
   'V2026.06.8': {
     title: 'Preview link generic, fără nume de formație',
     items: [
@@ -1188,11 +1199,18 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
   }
 
   function assignShift(crewsArr, count, shiftVal, sortField, softPrefer, hardBlock) {
+    // Doar echipaje ÎNCĂ complet neasignate azi — verificat direct în state.schedule (sursa de
+    // adevăr), nu prin lista `remaining` întoarsă de apelul anterior. `remaining` exclude doar
+    // echipajele plasate INTEGRAL (`result`); un echipaj din care fallback-ul individual a tras
+    // UN singur membru (mai jos) rămâne totuși în `remaining` cu ambii membri — la tura URMĂTOARE
+    // din aceeași zi putea fi plasat din nou integral, suprascriind membrul deja asignat (bug găsit
+    // la audit: persoana "sare" din T1 în T2, tura inițială rămâne neacoperită).
+    const unassignedToday = crewsArr.filter(c => c.every(e => state.schedule[dk][String(e.id)] === undefined));
     // Hard block: regulă reală de siguranță (T2 ieri → nu T1/T1A azi) — niciun echipaj/individ
     // care o încalcă nu poate fi folosit pt. acest slot, nici măcar ca rezervă de completare.
     const candidates = (hardBlock && hardBlock.length)
-      ? crewsArr.filter(c => c.every(e => stats[e.id].yesterday === null || !hardBlock.includes(stats[e.id].yesterday)))
-      : crewsArr;
+      ? unassignedToday.filter(c => c.every(e => stats[e.id].yesterday === null || !hardBlock.includes(stats[e.id].yesterday)))
+      : unassignedToday;
     // Fairness (ore acumulate) e ÎNTOTDEAUNA criteriul principal — softPrefer (evită repetarea
     // aceleiași ture ieri, doar variație) intervine STRICT ca departajare la egalitate de ore,
     // niciodată nu suprascrie fairness-ul. Înainte, softPrefer înlocuia complet lista de
@@ -1475,7 +1493,12 @@ function clearSchedule() {
   keysToDelete.forEach(k => delete state.schedule[k]);
   const prefix = y + '-' + pad(m);
   Object.keys(genCOCM).filter(k => k.startsWith(prefix)).forEach(k => delete genCOCM[k]);
+  // Reset atât pe state.gen* CÂT ȘI pe variabilele de modul — saveState() de mai jos suprascrie
+  // necondiționat state.gen* cu variabilele de modul, deci un reset doar pe state.* era anulat
+  // instant (bug găsit la audit: după Curăță, butoanele de generare rămâneau active, iar un
+  // "Ziua →" scria o zi orfană într-o lună altfel goală).
   state.genDay = 0; state.genStats = null; state.genYear = 0; state.genMonth = 0; state.genDim = 0;
+  genDay = 0; genStats = null; genYear = 0; genMonth = 0; genDim = 0;
   updateButtons();
   saveState();
   render();
@@ -1603,28 +1626,7 @@ function startGeneration() {
   state.currentYear = year;
   groups.forEach(g => { state.config[g] = cfgs[g]; });
   genDim = dim;
-  // rebuild genStats from existing data
-  genStats = {};
-  emps.forEach(e => { genStats[e.id] = { total: 0, t1: 0, t2: 0, t1a: 0, t2a: 0, c8: 0, inst: 0, yesterday: null, consec: 0 }; });
-  for (let d = 1; d < firstEmpty; d++) {
-    const dk = dateKey(year, month, d);
-    if (state.schedule[dk]) {
-      for (const eid in state.schedule[dk]) {
-        const v = state.schedule[dk][eid];
-        const s = genStats[parseInt(eid)];
-        if (!s) continue;
-        if (v === 1) { s.t1++; s.total++; }
-        else if (v === 2) { s.t2++; s.total++; }
-        else if (v === 3) { s.t1a++; s.total++; }
-        else if (v === 4) { s.t2a++; s.total++; }
-        else if (v === 7) { s.c8++; s.total++; }
-        else if (v === 8) { s.inst++; s.total++; }
-        if (v > 0) s.yesterday = v;
-        // Track consecutive working days (T1=1, T2=2, T1A=3, T2A=4, 8h=7, INST=8)
-        if (v >= 1 && v <= 4 || v === 7 || v === 8) { s.consec++; } else { s.consec = 0; }
-      }
-    }
-  }
+  genStats = rebuildGenStats(year, month, firstEmpty);
   // Seed yesterday/consec from previous month's last day for month transition
   let prevMonth = month - 1, prevYear = year;
   if (prevMonth === 0) { prevMonth = 12; prevYear = year - 1; }
@@ -1730,25 +1732,44 @@ function generateDay(day) {
   saveState();
 }
 
-function subtractDayStats(dk) {
-  if (!state.schedule[dk]) return;
-  for (const eid in state.schedule[dk]) {
-    const v = state.schedule[dk][eid];
-    const s = genStats[parseInt(eid)];
-    if (!s) continue;
-    if (v === 1) { s.t1--; s.total--; }
-    else if (v === 2) { s.t2--; s.total--; }
-    else if (v === 3) { s.t1a--; s.total--; }
-    else if (v === 4) { s.t2a--; s.total--; }
-    else if (v === 7) { s.c8--; s.total--; }
-    else if (v === 8) { s.inst--; s.total--; }
+// Reconstruiește genStats DIRECT din state.schedule (sursa de adevăr), pentru zilele
+// 1..uptoDayExclusive-1 ale lunii date. Unică sursă folosită de startGeneration/prevDay/
+// generateNextDay/generateAll — înainte exista logica DUPLICATĂ, ușor divergentă (varianta din
+// startGeneration seta `yesterday` doar dacă `v>0`, lăsând-o stale pe zilele L; varianta din
+// prevDay era corectă). Iterează TOȚI angajații curenți (nu doar cheile prezente în ziua
+// respectivă), ca o zi lipsă/incompletă să reseteze corect `consec`, nu doar s-o sară.
+function rebuildGenStats(year, month, uptoDayExclusive) {
+  const gs = {};
+  state.employees.forEach(e => { gs[e.id] = { total: 0, t1: 0, t2: 0, t1a: 0, t2a: 0, c8: 0, inst: 0, yesterday: null, consec: 0 }; });
+  for (let d = 1; d < uptoDayExclusive; d++) {
+    const dk = dateKey(year, month, d);
+    const dayData = state.schedule[dk] || {};
+    state.employees.forEach(e => {
+      const v = dayData[String(e.id)];
+      const s = gs[e.id];
+      if (v === 1) { s.t1++; s.total++; }
+      else if (v === 2) { s.t2++; s.total++; }
+      else if (v === 3) { s.t1a++; s.total++; }
+      else if (v === 4) { s.t2a++; s.total++; }
+      else if (v === 7) { s.c8++; s.total++; }
+      else if (v === 8) { s.inst++; s.total++; }
+      s.yesterday = v !== undefined ? v : null;
+      if (v >= 1 && v <= 4 || v === 7 || v === 8) { s.consec++; } else { s.consec = 0; }
+    });
   }
+  return gs;
 }
 
 function generateNextDay() {
   if (genDay < 1 || genDay > genDim) return;
   const day = genDay;
-  subtractDayStats(dateKey(genYear, genMonth, day));
+  // Resincronizează genStats din date reale înainte de a genera — dacă ziua curentă a fost deja
+  // regenerată (ex. imediat după prevDay(), care lasă genDay pe ziua tocmai refăcută), vechiul
+  // subtractDayStats() nu reseta `consec`/`yesterday` (doar orele), ducând la dublă-numărare a
+  // zilelor consecutive lucrate la fiecare ciclu ←/→ — regula MAX_CONSEC ajungea încălcată
+  // silențios (bug găsit la audit, confirmat cu teste automate — echipa ajungea la 5+ zile
+  // consecutive deși limita e 4).
+  genStats = rebuildGenStats(genYear, genMonth, day);
   generateDay(genDay);
   genDay++;
   if (genDay > genDim) {
@@ -1767,8 +1788,8 @@ function generateAll() {
   const from = genDay;
   document.getElementById('btn-next-day').style.display = 'none';
   document.getElementById('btn-generate-all').style.display = 'none';
+  genStats = rebuildGenStats(genYear, genMonth, from);
   for (let d = from; d <= genDim; d++) {
-    subtractDayStats(dateKey(genYear, genMonth, d));
     generateDay(d);
     genDay = d + 1;
   }
@@ -1781,27 +1802,7 @@ function generateAll() {
 function prevDay() {
   if (genDay <= 1) return;
   genDay--;
-  // rebuild stats from scratch for days 1..genDay-1 (everything before current day)
-  genStats = {};
-  state.employees.forEach(e => { genStats[e.id] = { total: 0, t1: 0, t2: 0, t1a: 0, t2a: 0, c8: 0, inst: 0, yesterday: null, consec: 0 }; });
-  for (let d = 1; d < genDay; d++) {
-    const dk = dateKey(genYear, genMonth, d);
-    if (state.schedule[dk]) {
-      for (const eid in state.schedule[dk]) {
-        const v = state.schedule[dk][eid];
-        const s = genStats[parseInt(eid)];
-        if (!s) continue;
-        if (v === 1) { s.t1++; s.total++; }
-        else if (v === 2) { s.t2++; s.total++; }
-        else if (v === 3) { s.t1a++; s.total++; }
-        else if (v === 4) { s.t2a++; s.total++; }
-        else if (v === 7) { s.c8++; s.total++; }
-        else if (v === 8) { s.inst++; s.total++; }
-        s.yesterday = v;
-        if (v >= 1 && v <= 4 || v === 7 || v === 8) { s.consec++; } else { s.consec = 0; }
-      }
-    }
-  }
+  genStats = rebuildGenStats(genYear, genMonth, genDay);
   generateDay(genDay);
   updateButtons();
   setStatus('Regenerată ziua ' + genDay + '/' + genDim + '.', 'info');
@@ -2399,9 +2400,33 @@ function importEmployeesJSON(event) {
 function applyJSON(text) {
   try {
     const data = JSON.parse(text);
-    if (data.type === 'month') {
+    // Detecția de tip nu se poate baza STRICT pe data.type==='month' — fișiere vechi legitime
+    // (dinainte de introducerea câmpului type, ex. exporturi cu {employees,config,schedule,
+    // currentMonth,currentYear}) nu au deloc type și cădeau pe ramura "backup complet" (state =
+    // data), ștergând toate celelalte luni + echipaje custom + org (bug găsit la audit). Doar
+    // backup-urile REALE (exportFullJSON) au genStats/genDay ca chei top-level — exportMonthJSON
+    // nu le include niciodată — deci prezența lor e semnalul de încredere pt. "backup complet".
+    const looksLikeFullBackup = data.type === 'full' || 'genStats' in data || 'genDay' in data;
+    const looksLikeMonth = data.type === 'month' || (!looksLikeFullBackup && data.schedule && typeof data.schedule === 'object' && Array.isArray(data.employees));
+    if (looksLikeMonth) {
+      // Suportă și numele vechi de câmpuri (currentYear/currentMonth) din fișierele legacy fără type.
+      const year = data.year ?? data.currentYear;
+      const month = data.month ?? data.currentMonth;
+      if (!year || !month) { setStatus('Fișier invalid — lipsește luna/anul.', 'err'); return; }
+      // Fără schedule valid, ștergerea de mai jos ar goli luna țintă și tot ar raporta succes
+      // (bug găsit la audit: for...in undefined nu aruncă eroare, doar nu adaugă nimic).
+      if (!data.schedule || typeof data.schedule !== 'object') { setStatus('Fișier invalid — lipsește graficul (schedule).', 'err'); return; }
+      // Coliziune de id: dacă fișierul are un electrician cu ACELAȘI id dar NUME diferit față de
+      // cineva local, turele din fișier i s-ar aplica silențios persoanei greșite (bug găsit la
+      // audit — id-urile pornesc de la 1 în orice instalare nouă, coliziunea e foarte plauzibilă
+      // exact în fluxul publicitar al aplicației: "trimite doar luna curentă cuiva").
+      if (Array.isArray(data.employees)) {
+        const localById = new Map(state.employees.map(e => [e.id, e.name]));
+        const conflicts = data.employees.filter(e => localById.has(e.id) && localById.get(e.id) !== e.name).map(e => e.name + ' (local: ' + localById.get(e.id) + ')');
+        if (conflicts.length && !confirm('Fișierul conține electricieni cu alt nume dar același id ca cei locali:\n' + conflicts.join(', ') + '\nTurele lor din fișier ar putea ajunge pe persoana greșită. Continuați?')) return;
+      }
       // Month-save: overwrite only schedule for the specified year+month
-      const prefix = data.year + '-' + pad(data.month);
+      const prefix = year + '-' + pad(month);
       for (const dk in state.schedule) {
         if (dk.startsWith(prefix)) delete state.schedule[dk];
       }
@@ -2423,19 +2448,19 @@ function applyJSON(text) {
       // config NU se atinge la import de lună — e o setare curentă, nu ține de luna importată.
       // org lives in ORG_KEY — only migrate from file if ORG_KEY is empty
       if (data.org && data.org.sefFOL && !loadOrg()) saveOrg(data.org);
-      state.currentMonth = data.month;
-      state.currentYear = data.year;
-      document.getElementById('sel-month').value = data.month;
-      document.getElementById('sel-year').value = data.year;
+      state.currentMonth = month;
+      state.currentYear = year;
+      document.getElementById('sel-month').value = month;
+      document.getElementById('sel-year').value = year;
       genDay = 0; genStats = null; genYear = 0; genMonth = 0; genDim = 0;
       migrateState(state);
       saveState();
       render();
       updateButtons();
-      setStatus('Luna ' + getMonthName(data.month) + ' ' + data.year + ' încărcată din fișier.', 'success');
+      setStatus('Luna ' + getMonthName(month) + ' ' + year + ' încărcată din fișier.', 'success');
       return;
     }
-    // Full backup or old format (no type field)
+    // Full backup (data.type==='full' sau conține genStats/genDay top-level)
     if (!data.employees || !Array.isArray(data.employees)) {
       setStatus('Fișier JSON invalid.', 'err');
       return;
@@ -2834,13 +2859,16 @@ function applyOrgToDOM() {
   const subtitle = document.getElementById('org-subtitle');
   if (subtitle) subtitle.textContent = [org.formatia, 'Delgaz Grid S.A'].filter(Boolean).join(' — ');
   document.title = 'Grafic de tură' + (org.formatia ? ' — ' + org.formatia : '') + ' - Delgaz Grid S.A';
+  // esc() (deja folosit pt. nume electricieni în renderTable) — org.* poate veni dintr-un fișier
+  // JSON importat de la altcineva; fără escape, innerHTML nesigur = XSS stocat la reload (bug
+  // găsit la audit: applyJSON poate seta ORG_KEY din data.org la import de lună).
   const sigSef = document.getElementById('sig-sef');
-  if (sigSef) sigSef.innerHTML = 'Șef FOL EM<br>' + (org.sefFOL || '—');
+  if (sigSef) sigSef.innerHTML = 'Șef FOL EM<br>' + esc(org.sefFOL || '—');
   const sigResp = document.getElementById('sig-resp');
-  if (sigResp) sigResp.innerHTML = 'Responsabil Tehnic<br>' + (org.responsabilTehnic || '—');
+  if (sigResp) sigResp.innerHTML = 'Responsabil Tehnic<br>' + esc(org.responsabilTehnic || '—');
   const sigAprobat = document.getElementById('sig-aprobat');
-  const sefCoreLabel = 'Șef CORE' + (org.judet ? ' ' + org.judet : '');
-  if (sigAprobat) sigAprobat.innerHTML = 'Aprobat<br>' + sefCoreLabel + '<br>' + (org.aprobat || '—');
+  const sefCoreLabel = 'Șef CORE' + (org.judet ? ' ' + esc(org.judet) : '');
+  if (sigAprobat) sigAprobat.innerHTML = 'Aprobat<br>' + sefCoreLabel + '<br>' + esc(org.aprobat || '—');
 }
 
 function openOrgModal() {
