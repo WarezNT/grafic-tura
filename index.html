@@ -714,12 +714,19 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.09.15';
-const COMMIT_COUNT = 92;
+const APP_VERSION = 'V2026.09.16';
+const COMMIT_COUNT = 93;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.09.16': {
+    title: 'Sărbători și în Excel — grafic + coloană statistici',
+    items: [
+      { icon: '📊', text: 'Export Excel: coloanele zilelor de sărbătoare sunt marcate cu chenar auriu pe grafic, la fel ca pe ecran — nu doar antetul, uitasem inițial celulele' },
+      { icon: '📊', text: 'Export Excel: coloană nouă „Sărb." — câte ture a lucrat fiecare electrician în zile de sărbătoare legală, alături de Lucrate/CO-CM/Normă' }
+    ]
+  },
   'V2026.09.15': {
     title: 'Sărbători: chenar pe celule + ture în statistici',
     items: [
@@ -2763,14 +2770,14 @@ function exportExcel() {
   const fnt = (fg, bold, sz, italic) => ({ color:{ argb: argb(fg) }, bold:!!bold, size: sz||10, italic:!!italic });
   const aln = (h, v, wrap) => ({ horizontal: h||'center', vertical: v||'middle', wrapText:!!wrap });
   const firstDay = 3, lastDay = firstDay + dim - 1;
-  const colLucrate = lastDay + 1, colCOCM = lastDay + 2, colNorma = lastDay + 3;
+  const colLucrate = lastDay + 1, colCOCM = lastDay + 2, colHoliday = lastDay + 3, colNorma = lastDay + 4;
   const totalCols = colNorma + 1;
   (async () => {
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet(mn + ' ' + y, { pageSetup:{ paperSize:13, orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0 } });
     ws.getColumn(1).width = 22; ws.getColumn(2).width = 11; ws.getColumn(3).width = 7;
     for (let d = 1; d <= dim; d++) ws.getColumn(firstDay + d).width = 4.5;
-    ws.getColumn(colLucrate+1).width = 9; ws.getColumn(colCOCM+1).width = 7; ws.getColumn(colNorma+1).width = 7;
+    ws.getColumn(colLucrate+1).width = 9; ws.getColumn(colCOCM+1).width = 7; ws.getColumn(colHoliday+1).width = 7; ws.getColumn(colNorma+1).width = 7;
     // Logo
     const logoId = wb.addImage({ base64: LOGO_B64, extension: 'png' });
     ws.addImage(logoId, { tl:{ col:0, row:0 }, ext:{ width:160, height:52 } });
@@ -2805,7 +2812,7 @@ function exportExcel() {
       const dow = new Date(y, m-1, d).getDay();
       setHdr(HDR, firstDay + d, d + '\n' + DAY_NAMES[dow], dow===0||dow===6, yearHolidays.has(dateKey(y,m,d)));
     }
-    setHdr(HDR, colLucrate+1, 'Lucrate'); setHdr(HDR, colCOCM+1, 'CO/CM'); setHdr(HDR, colNorma+1, 'Normă');
+    setHdr(HDR, colLucrate+1, 'Lucrate'); setHdr(HDR, colCOCM+1, 'CO/CM'); setHdr(HDR, colHoliday+1, 'Sărb.'); setHdr(HDR, colNorma+1, 'Normă');
     // Rows
     let R = HDR + 1;
     GROUPS.forEach(g => {
@@ -2841,9 +2848,13 @@ function exportExcel() {
           var crewForDay=getCrewForDay(emp,dk);var defCrew=emp.crew||'';
           dc.value=SHIFT_NAMES[sv]+(sv>0&&sv!==5&&sv!==6&&sv!==8&&crewForDay&&crewForDay!==defCrew?' ('+crewForDay+')':'');
           dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
+          // Chenar auriu pe celulele din zilele de sărbătoare — mirror al td.td-holiday din grafic
+          if (yearHolidays.has(dk)) { const hb = { style:'thick', color:{argb:'FFD4A017'} }; dc.border = { top:hb, bottom:hb, left:hb, right:hb }; }
         }
         const lc=ws.getCell(R,colLucrate+1); lc.value=st.hours; lc.font=fnt(hFg,true,9); lc.fill=fill(hBg); lc.alignment=aln('center','middle');
         const cc=ws.getCell(R,colCOCM+1); cc.value=(st.co+st.cm)*8; cc.font=fnt('6C3483',false,9); cc.fill=fill('F5EEF8'); cc.alignment=aln('center','middle');
+        const holCount1 = holidayShiftsCount(emp.id, y, m);
+        const hcc=ws.getCell(R,colHoliday+1); hcc.value=holCount1||0; hcc.font=fnt(holCount1?'8A6510':'AAAAAA', !!holCount1, 9); hcc.fill=fill(holCount1?'FDF3D0':'F8F9FB'); hcc.alignment=aln('center','middle');
         const nc=ws.getCell(R,colNorma+1); nc.value=expected!==null?expected:'—'; nc.font=fnt('7F8C8D',false,9); nc.fill=fill('F8F9FB'); nc.alignment=aln('center','middle');
         R++;
       });
@@ -2874,14 +2885,18 @@ function exportExcel() {
           // Lipsea maparea de weekend (CO/CM/INST -> L) pe care bucla principală de mai sus deja
           // o aplică — un angajat Forțat 8h cu CO/CM/INST manual pe weekend apărea colorat/
           // etichetat ca atare în Excel, în loc de L (bug găsit la audit).
-          const v = getShift(dateKey(y,m,d), emp.id), rawSv = v!==null?v:0;
+          const dk2 = dateKey(y,m,d);
+          const v = getShift(dk2, emp.id), rawSv = v!==null?v:0;
           const sv = (isW && (rawSv===5||rawSv===6||rawSv===8)) ? 0 : rawSv;
           const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
           const dc = ws.getCell(R, firstDay+d);
           dc.value=SHIFT_NAMES[sv]; dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
+          if (yearHolidays.has(dk2)) { const hb = { style:'thick', color:{argb:'FFD4A017'} }; dc.border = { top:hb, bottom:hb, left:hb, right:hb }; }
         }
         const lc=ws.getCell(R,colLucrate+1); lc.value=st.hours; lc.font=fnt(hFg,true,9); lc.fill=fill(hBg); lc.alignment=aln('center','middle');
         const cc=ws.getCell(R,colCOCM+1); cc.value=(st.co+st.cm)*8; cc.font=fnt('6C3483',false,9); cc.fill=fill('F5EEF8'); cc.alignment=aln('center','middle');
+        const holCount2 = holidayShiftsCount(emp.id, y, m);
+        const hcc2=ws.getCell(R,colHoliday+1); hcc2.value=holCount2||0; hcc2.font=fnt(holCount2?'8A6510':'AAAAAA', !!holCount2, 9); hcc2.fill=fill(holCount2?'FDF3D0':'F8F9FB'); hcc2.alignment=aln('center','middle');
         const nc=ws.getCell(R,colNorma+1); nc.value=expected!==null?expected:'—'; nc.font=fnt('7F8C8D',false,9); nc.fill=fill('F8F9FB'); nc.alignment=aln('center','middle');
         R++;
       });
