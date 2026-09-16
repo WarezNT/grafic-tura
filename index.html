@@ -332,7 +332,7 @@ td.emp-name-cell:hover{text-decoration:underline}
         <label class="ctrl-label ta-field" id="cfg-urban-t1a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T1A (variantă T1, doar L–V) — folosită doar de modurile care o susțin">T1A<input type="number" id="cfg-urban-t1a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
         <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2 (14:00–22:00) — se alocă automat în toate modurile">T2<input type="number" id="cfg-urban-t2" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
         <label class="ctrl-label ta-field" id="cfg-urban-t2a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2A (variantă T2, doar L–V) — folosită doar de modurile care o susțin">T2A<input type="number" id="cfg-urban-t2a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Program normal 8h (08:00–16:00, doar L–V) — pentru electricienii cu Forțat 8h">8h<input type="number" id="cfg-urban-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label c8-field" id="cfg-urban-c8-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Program normal 8h (08:00–16:00, doar L–V) — folosit doar de modurile care o susțin (1, 2), plus pentru electricienii cu Forțat 8h">8h<input type="number" id="cfg-urban-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
       </span>
       <span class="ctrl-group-label ctrl-rural-label" style="font-size:11px;font-weight:700;white-space:nowrap" data-tooltip="Configurare pentru grupul Rural — câți electricieni pe fiecare tură">Rural:</span>
       <span class="ctrl-group-wrap ctrl-rural-wrap" style="display:flex;gap:3px;align-items:center;padding:3px 7px;border-radius:6px">
@@ -340,7 +340,7 @@ td.emp-name-cell:hover{text-decoration:underline}
         <label class="ctrl-label ta-field" id="cfg-rural-t1a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T1A (variantă T1, doar L–V) — folosită doar de modurile care o susțin">T1A<input type="number" id="cfg-rural-t1a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
         <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2 (14:00–22:00) — se alocă automat în toate modurile">T2<input type="number" id="cfg-rural-t2" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
         <label class="ctrl-label ta-field" id="cfg-rural-t2a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2A (variantă T2, doar L–V) — folosită doar de modurile care o susțin">T2A<input type="number" id="cfg-rural-t2a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
-        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Program normal 8h (08:00–16:00, doar L–V) — pentru electricienii cu Forțat 8h">8h<input type="number" id="cfg-rural-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label c8-field" id="cfg-rural-c8-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Program normal 8h (08:00–16:00, doar L–V) — folosit doar de modurile care o susțin (1, 2), plus pentru electricienii cu Forțat 8h">8h<input type="number" id="cfg-rural-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
       </span>
       <label class="ctrl-label" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;white-space:nowrap" data-tooltip="Strategia de generare a graficului — schimbă complet cum sunt alocate turele">Mod
         <select id="gen-mode" onchange="state.genMode=this.value;saveState();updateModeFieldVisibility()" style="font-size:11px;padding:3px 5px">
@@ -717,12 +717,22 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.06.9';
-const COMMIT_COUNT = 83;
+const APP_VERSION = 'V2026.06.10';
+const COMMIT_COUNT = 84;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.06.10': {
+    title: 'Audit runda 2: normă corectă + câmp 8h + export Excel',
+    items: [
+      { icon: '🟡', text: 'Câmpul „8h" configurat în modul „2) Zilnic T1/T2" acum chiar se alocă (era ignorat silențios); rămâne ascuns doar în modurile de rotație, unde nu e implementat' },
+      { icon: '🟡', text: 'Culoarea orelor lucrate (verde/roșu) e acum aceeași în tabel și în sumar — înainte tabelul folosea un prag fix 150-184h, indiferent de norma reală a lunii afișate' },
+      { icon: '🟡', text: 'CO/CM aprobate se scad acum din norma așteptată — un angajat cu concediu nu mai apare fals „sub normă" (card roșu) pentru zilele în care a fost în concediu' },
+      { icon: '🟡', text: 'Pentru ani în afara tabelului de sărbători legale (2025-2028), nu se mai afișează o normă inventată (184h) — apare „normă necunoscută" consecvent, în loc de cifre contradictorii între tabel și sumar' },
+      { icon: '🟡', text: 'Export Excel: rândurile „Program 8 ore" aplică acum corect maparea de weekend (CO/CM/INST → L), la fel ca restul tabelului' }
+    ]
+  },
   'V2026.06.9': {
     title: 'Audit: corecții critice generare + import + securitate',
     items: [
@@ -1284,6 +1294,11 @@ function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, s
     // înainte se aplica DOAR aici, lăsând T1/T2 complet neprotejate de regula săptămânală).
     r = assignShift(remaining, t1ac, 3, 't1a', false, [2]); remaining = r.remaining;
     r = assignShift(remaining, t2ac, 4, 't2a', false); remaining = r.remaining;
+  }
+  // c8 (8h) e independent de T1A/T2A — nu ar trebui legat de `skipTA`. Înainte era alocat DOAR în
+  // modul „full", deși câmpul de configurare rămâne vizibil (și editabil) și în „t12" (nu are
+  // clasa .ta-field) — userul îl configura, aplicația îl ignora silențios (bug găsit la audit).
+  if (!weekend) {
     r = assignShift(remaining, c8c, 7, 'c8', false); remaining = r.remaining;
   }
 }
@@ -1952,6 +1967,7 @@ function renderTable() {
   renderLegend();
 
   const wdInfo = workingDays(y, m);
+  const expected = wdInfo !== null ? wdInfo * 8 : null;
   let bhtml = '';
   groups.forEach(g => {
     const gEmps = emps.filter(e => (e.category || 'urban') === g && !e.forced8);
@@ -1960,9 +1976,7 @@ function renderTable() {
     gEmps.sort((a,b) => (a.crew||'').localeCompare(b.crew||''));
     gEmps.forEach(emp => {
       const st = getEmployeeStats(emp.id);
-      let cls = 'hours ok';
-      if (st.hours < 150) cls = 'hours under';
-      else if (st.hours > 184) cls = 'hours over';
+      const cls = hoursCellClass(st.hours, expected, st);
       const fnLabel = FUNC_NAMES[emp.functia || 'emitent'];
       const fnCls = 'fn-' + (emp.functia || 'emitent');
       let crewLabel = '';
@@ -2001,9 +2015,7 @@ function renderTable() {
     bhtml += '<tr class="group-header group-f8"><td colspan="' + colspan + '">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
     f8Emps.forEach(emp => {
       const st = getEmployeeStats(emp.id);
-      let cls = 'hours ok';
-      if (st.hours < 150) cls = 'hours under';
-      else if (st.hours > 184) cls = 'hours over';
+      const cls = hoursCellClass(st.hours, expected, st);
       const fnLabel = FUNC_NAMES[emp.functia || 'emitent'];
       const fnCls = 'fn-' + (emp.functia || 'emitent');
       bhtml += '<tr><td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + ' <span class="forced-badge">F</span></td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + '</td>';
@@ -2067,10 +2079,8 @@ function onShiftChange(dk, empId, sel) {
   const cells = row.cells;
   const hourCell = cells[cells.length - 3];
   const cocmCell = cells[cells.length - 2];
-  let cls = 'hours ok hours-cell';
-  if (st.hours < 150) cls = 'hours under hours-cell';
-  else if (st.hours > 184) cls = 'hours over hours-cell';
-  hourCell.className = cls;
+  const expected = expectedHours(state.currentYear, state.currentMonth);
+  hourCell.className = hoursCellClass(st.hours, expected, st) + ' hours-cell';
   hourCell.textContent = st.hours + 'h';
   cocmCell.textContent = ((st.co + st.cm) * 8) + 'h';
   renderSummary();
@@ -2085,6 +2095,46 @@ function workingDays(y, m) {
   };
   return (holidays[y] && holidays[y][m-1]) || null;
 }
+
+// Norma așteptată pt. o lună. `null` dacă anul e în afara tabelului de sărbători legale (2025-
+//2028) — înainte, consumatorii foloseau un fallback INVENTAT (184h), afișat ca normă reală în
+// carduri/sumar, în timp ce coloana „Normă" din tabel arăta corect „—" — aceeași informație,
+// contradictorie în două locuri (bug găsit la audit). NU calculăm sărbători pt. ani noi (calendar
+// ortodox, risc/efort mult mai mare) — doar eliminăm contradicția, tratând explicit „necunoscut".
+function expectedHours(y, m) {
+  const wd = workingDays(y, m);
+  return wd !== null ? wd * 8 : null;
+}
+
+// CO/CM aprobate reduc legitim norma așteptată — un angajat cu concediu nu ar trebui să apară
+// „sub normă" doar pentru zilele în care a fost în concediu (bug găsit la audit: cineva cu 4 zile
+// CO + restul lucrat corect apărea cu „-32h", card roșu, deși nu are nicio problemă reală).
+function effectiveExpected(expected, st) {
+  return expected === null ? null : Math.max(0, expected - (st.co + st.cm) * 8);
+}
+
+// Un singur loc care decide culoarea/verdictul — folosit ȘI de tabel ȘI de sumar (înainte,
+// tabelul folosea praguri ABSOLUTE fixe 150h/184h indiferent de luna afișată, iar sumarul compara
+// cu norma reală a lunii ± 16h — aceeași valoare putea ieși „ok" verde în tabel și „warn" galben
+// în sumar pt. o lună cu normă diferită de 184h, ex. Februarie; bug găsit la audit).
+function classifyHours(hours, effExpected) {
+  if (effExpected === null) return 'unknown';
+  if (hours === effExpected) return 'ok';
+  if (hours > effExpected) return 'over';
+  if (hours >= effExpected - 16) return 'warn';
+  return 'under';
+}
+
+// Tabelul are stiluri doar pt. under/over/ok (td.hours.*) — 'warn' (aproape de normă) folosește
+// tot stilul 'under', ca să nu introducem o paletă nouă doar pt. tabel; 'unknown' rămâne fără
+// clasă suplimentară (neutru), în loc să pretindă fals "ok" (verde) când norma nu e cunoscută.
+function hoursCellClass(hours, expected, st) {
+  const v = classifyHours(hours, effectiveExpected(expected, st));
+  if (v === 'unknown') return 'hours';
+  if (v === 'warn') return 'hours under';
+  return 'hours ' + v;
+}
+
 let summaryCardsOpen = true;
 let summaryTableOpen = false;
 
@@ -2102,7 +2152,7 @@ function renderSummary() {
   const container = document.getElementById('summary');
   if (state.employees.length === 0) { container.innerHTML = ''; return; }
   const wd = workingDays(state.currentYear, state.currentMonth);
-  const expected = wd !== null ? wd * 8 : 184;
+  const expected = expectedHours(state.currentYear, state.currentMonth);
   const mn = getMonthName(state.currentMonth);
   const sectionStyle = 'display:flex;align-items:center;gap:8px;margin:14px 0 6px;cursor:pointer;user-select:none';
   const btnStyle = 'background:none;border:none;font-size:12px;cursor:pointer;color:var(--text-muted);padding:2px 6px;border-radius:4px;border:1px solid var(--border)';
@@ -2121,13 +2171,12 @@ function renderSummary() {
   state.employees.forEach(emp => {
     const st = getEmployeeStats(emp.id);
     const cat = emp.category || 'urban';
-    const pct = Math.min(100, Math.round((st.hours / expected) * 100));
+    const effExpected = effectiveExpected(expected, st);
+    const verdict = classifyHours(st.hours, effExpected);
+    const pct = effExpected !== null ? Math.min(100, Math.round((st.hours / effExpected) * 100)) : null;
     let cardCls = 'emp-card';
-    let barCls = 'ok';
-    if (st.hours === expected) { barCls = 'ok'; }
-    else if (st.hours > expected) { barCls = 'bad'; cardCls += ' bad'; }
-    else if (st.hours >= expected - 16) { barCls = 'warn'; cardCls += ' warn'; }
-    else { barCls = 'bad'; cardCls += ' bad'; }
+    if (verdict === 'warn') cardCls += ' warn';
+    else if (verdict === 'over' || verdict === 'under') cardCls += ' bad';
     const pills = [];
     if (st.t1)  pills.push('<span class="shift-pill pill-t1">T1 ×' + st.t1 + '</span>');
     if (st.t2)  pills.push('<span class="shift-pill pill-t2">T2 ×' + st.t2 + '</span>');
@@ -2139,7 +2188,7 @@ function renderSummary() {
     if (st.cm)  pills.push('<span class="shift-pill pill-cm">CM ×' + st.cm + '</span>');
     html += '<div class="' + cardCls + '">'
       + '<div class="emp-card-header"><span class="cat-badge cat-' + cat + '" style="margin-left:0">' + catShort(cat) + '</span><span class="emp-card-name">' + esc(emp.name) + (emp.forced8 ? ' <span class="forced-badge">F</span>' : '') + '</span></div>'
-      + '<div class="emp-card-hours"><strong>' + st.hours + 'h</strong> / ' + expected + 'h (' + pct + '%)</div>'
+      + '<div class="emp-card-hours"><strong>' + st.hours + 'h</strong>' + (effExpected !== null ? ' / ' + effExpected + 'h (' + pct + '%)' : ' — normă necunoscută') + '</div>'
       + '<div class="shift-pills">' + (pills.length ? pills.join('') : '<span style="color:var(--empty);font-size:11px">—</span>') + '</div>'
       + '</div>';
   });
@@ -2174,13 +2223,15 @@ function renderSummary() {
     html += '<tr class="stat-group-header"><td colspan="15">' + (g==='urban'?'Urban':'Rural') + ' — ' + gEmps.length + ' electricieni</td></tr>';
     gEmps.forEach(emp => {
       const st = getEmployeeStats(emp.id);
-      const diff = st.hours - expected;
-      const diffStr = diff === 0 ? '=' : (diff > 0 ? '+'+diff+'h' : diff+'h');
-      let rowCls = 'stat-row-ok';
-      let hoursCls = 'stat-hours-ok';
-      if (diff > 0) { rowCls = 'stat-row-bad'; hoursCls = 'stat-hours-bad'; }
-      else if (diff < -16) { rowCls = 'stat-row-bad'; hoursCls = 'stat-hours-bad'; }
-      else if (diff < 0) { rowCls = 'stat-row-warn'; hoursCls = 'stat-hours-warn'; }
+      // effExpected scade orele de CO/CM din normă (bug audit: un angajat cu concediu aprobat
+      // apărea "-32h" roșu, deși nu are nicio problemă reală) — un singur helper (classifyHours),
+      // aceleași reguli ca în tabel și în carduri.
+      const effExpected = effectiveExpected(expected, st);
+      const diff = effExpected !== null ? st.hours - effExpected : null;
+      const diffStr = diff === null ? '—' : (diff === 0 ? '=' : (diff > 0 ? '+'+diff+'h' : diff+'h'));
+      const verdict = classifyHours(st.hours, effExpected);
+      const rowCls = verdict === 'over' || verdict === 'under' ? 'stat-row-bad' : verdict === 'warn' ? 'stat-row-warn' : 'stat-row-ok';
+      const hoursCls = verdict === 'over' || verdict === 'under' ? 'stat-hours-bad' : verdict === 'warn' ? 'stat-hours-warn' : 'stat-hours-ok';
       const cocmH = (st.co + st.cm) * 8;
       html += '<tr class="' + rowCls + '">'
         + '<td>' + esc(emp.name) + '</td>'
@@ -2196,7 +2247,7 @@ function renderSummary() {
         + '<td>' + (st.cm||'—') + '</td>'
         + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
         + '<td style="color:var(--text-muted)">' + cocmH + 'h</td>'
-        + '<td style="color:var(--text-muted)">' + expected + 'h</td>'
+        + '<td style="color:var(--text-muted)">' + (effExpected !== null ? effExpected + 'h' : '—') + '</td>'
         + '<td class="' + hoursCls + '">' + diffStr + '</td>'
         + '</tr>';
     });
@@ -2206,13 +2257,12 @@ function renderSummary() {
     html += '<tr class="stat-group-header"><td colspan="15">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
     f8Emps.forEach(emp => {
       const st = getEmployeeStats(emp.id);
-      const diff = st.hours - expected;
-      const diffStr = diff === 0 ? '=' : (diff > 0 ? '+'+diff+'h' : diff+'h');
-      let rowCls = 'stat-row-ok';
-      let hoursCls = 'stat-hours-ok';
-      if (diff > 0) { rowCls = 'stat-row-bad'; hoursCls = 'stat-hours-bad'; }
-      else if (diff < -16) { rowCls = 'stat-row-bad'; hoursCls = 'stat-hours-bad'; }
-      else if (diff < 0) { rowCls = 'stat-row-warn'; hoursCls = 'stat-hours-warn'; }
+      const effExpected = effectiveExpected(expected, st);
+      const diff = effExpected !== null ? st.hours - effExpected : null;
+      const diffStr = diff === null ? '—' : (diff === 0 ? '=' : (diff > 0 ? '+'+diff+'h' : diff+'h'));
+      const verdict = classifyHours(st.hours, effExpected);
+      const rowCls = verdict === 'over' || verdict === 'under' ? 'stat-row-bad' : verdict === 'warn' ? 'stat-row-warn' : 'stat-row-ok';
+      const hoursCls = verdict === 'over' || verdict === 'under' ? 'stat-hours-bad' : verdict === 'warn' ? 'stat-hours-warn' : 'stat-hours-ok';
       const cocmH = (st.co + st.cm) * 8;
       html += '<tr class="' + rowCls + '">'
         + '<td>' + esc(emp.name) + '</td>'
@@ -2228,7 +2278,7 @@ function renderSummary() {
         + '<td>' + (st.cm||'—') + '</td>'
         + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
         + '<td style="color:var(--text-muted)">' + cocmH + 'h</td>'
-        + '<td style="color:var(--text-muted)">' + expected + 'h</td>'
+        + '<td style="color:var(--text-muted)">' + (effExpected !== null ? effExpected + 'h' : '—') + '</td>'
         + '<td class="' + hoursCls + '">' + diffStr + '</td>'
         + '</tr>';
     });
@@ -2502,7 +2552,7 @@ function exportExcel() {
   const mn = getMonthName(m);
   if (emps.length === 0) { setStatus('Niciun electrician de exportat.', 'warn'); return; }
   const wd = workingDays(y, m);
-  const expected = wd !== null ? wd * 8 : 184;
+  const expected = expectedHours(y, m);
   const DAY_NAMES = ['D','L','M','M','J','V','S'];
   const shiftFill = {
     0:{bg:'F0F0F0',fg:'666666'}, 1:{bg:'D6EAF8',fg:'1A5276'}, 2:{bg:'FDEBD0',fg:'935116'},
@@ -2538,7 +2588,7 @@ function exportExcel() {
     ws.mergeCells(2, 4, 2, totalCols);
     // Norm
     ws.getRow(3).height = 14;
-    const nc0 = ws.getCell(3, 1); nc0.value = mn + ' ' + y + ' — ' + (wd||'?') + ' zile lucrătoare = ' + expected + 'h normă/electrician';
+    const nc0 = ws.getCell(3, 1); nc0.value = mn + ' ' + y + ' — ' + (wd||'?') + ' zile lucrătoare = ' + (expected!==null?expected+'h':'? h') + ' normă/electrician';
     nc0.font = fnt('555555', false, 9); nc0.alignment = aln('left','middle');
     ws.mergeCells(3, 1, 3, totalCols);
     ws.getRow(4).height = 6;
@@ -2573,9 +2623,10 @@ function exportExcel() {
       ws.mergeCells(R, 1, R, totalCols); R++;
       gEmps.forEach(emp => {
         const st = getEmployeeStats(emp.id);
-        const diff = st.hours - expected;
-        const hBg = diff===0?'E8F8F0':diff>0?'FDE8E8':diff>=-16?'FFF8E1':'FDE8E8';
-        const hFg = diff===0?'1A7A3A':diff>0?'C0392B':diff>=-16?'B7770D':'C0392B';
+        const effExpected = effectiveExpected(expected, st);
+        const diff = effExpected !== null ? st.hours - effExpected : 0;
+        const hBg = effExpected===null?'F8F9FB':diff===0?'E8F8F0':diff>0?'FDE8E8':diff>=-16?'FFF8E1':'FDE8E8';
+        const hFg = effExpected===null?'555555':diff===0?'1A7A3A':diff>0?'C0392B':diff>=-16?'B7770D':'C0392B';
         ws.getRow(R).height = 15;
         const c1=ws.getCell(R,1); c1.value=emp.name; c1.font=fnt('1A1A2E',true,9); c1.fill=fill('FFFFFF'); c1.alignment=aln('left','middle');
         const c2=ws.getCell(R,2); c2.value=FUNC_NAMES[emp.functia||'emitent']; c2.font=fnt('444444',false,8); c2.fill=fill('F8F9FB'); c2.alignment=aln('center','middle');
@@ -2593,7 +2644,7 @@ function exportExcel() {
         }
         const lc=ws.getCell(R,colLucrate+1); lc.value=st.hours; lc.font=fnt(hFg,true,9); lc.fill=fill(hBg); lc.alignment=aln('center','middle');
         const cc=ws.getCell(R,colCOCM+1); cc.value=(st.co+st.cm)*8; cc.font=fnt('6C3483',false,9); cc.fill=fill('F5EEF8'); cc.alignment=aln('center','middle');
-        const nc=ws.getCell(R,colNorma+1); nc.value=expected; nc.font=fnt('7F8C8D',false,9); nc.fill=fill('F8F9FB'); nc.alignment=aln('center','middle');
+        const nc=ws.getCell(R,colNorma+1); nc.value=expected!==null?expected:'—'; nc.font=fnt('7F8C8D',false,9); nc.fill=fill('F8F9FB'); nc.alignment=aln('center','middle');
         R++;
       });
     });
@@ -2610,23 +2661,28 @@ function exportExcel() {
       ws.mergeCells(R, 1, R, totalCols); R++;
       f8Emps.forEach(emp => {
         const st = getEmployeeStats(emp.id);
-        const diff = st.hours - expected;
-        const hBg = diff===0?'E8F8F0':diff>0?'FDE8E8':diff>=-16?'FFF8E1':'FDE8E8';
-        const hFg = diff===0?'1A7A3A':diff>0?'C0392B':diff>=-16?'B7770D':'C0392B';
+        const effExpected = effectiveExpected(expected, st);
+        const diff = effExpected !== null ? st.hours - effExpected : 0;
+        const hBg = effExpected===null?'F8F9FB':diff===0?'E8F8F0':diff>0?'FDE8E8':diff>=-16?'FFF8E1':'FDE8E8';
+        const hFg = effExpected===null?'555555':diff===0?'1A7A3A':diff>0?'C0392B':diff>=-16?'B7770D':'C0392B';
         ws.getRow(R).height = 15;
         const c1=ws.getCell(R,1); c1.value=emp.name; c1.font=fnt('1A1A2E',true,9); c1.fill=fill('FFFFFF'); c1.alignment=aln('left','middle');
         const c2=ws.getCell(R,2); c2.value=FUNC_NAMES[emp.functia||'emitent']; c2.font=fnt('444444',false,8); c2.fill=fill('F8F9FB'); c2.alignment=aln('center','middle');
         const c3=ws.getCell(R,3); c3.value='—'; c3.font=fnt('888888',false,8); c3.fill=fill('F8F9FB'); c3.alignment=aln('center','middle');
         for (let d = 1; d <= dim; d++) {
           const dow = new Date(y,m-1,d).getDay(), isW = dow===0||dow===6;
-          const v = getShift(dateKey(y,m,d), emp.id), sv = v!==null?v:0;
+          // Lipsea maparea de weekend (CO/CM/INST -> L) pe care bucla principală de mai sus deja
+          // o aplică — un angajat Forțat 8h cu CO/CM/INST manual pe weekend apărea colorat/
+          // etichetat ca atare în Excel, în loc de L (bug găsit la audit).
+          const v = getShift(dateKey(y,m,d), emp.id), rawSv = v!==null?v:0;
+          const sv = (isW && (rawSv===5||rawSv===6||rawSv===8)) ? 0 : rawSv;
           const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
           const dc = ws.getCell(R, firstDay+d);
           dc.value=SHIFT_NAMES[sv]; dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
         }
         const lc=ws.getCell(R,colLucrate+1); lc.value=st.hours; lc.font=fnt(hFg,true,9); lc.fill=fill(hBg); lc.alignment=aln('center','middle');
         const cc=ws.getCell(R,colCOCM+1); cc.value=(st.co+st.cm)*8; cc.font=fnt('6C3483',false,9); cc.fill=fill('F5EEF8'); cc.alignment=aln('center','middle');
-        const nc=ws.getCell(R,colNorma+1); nc.value=expected; nc.font=fnt('7F8C8D',false,9); nc.fill=fill('F8F9FB'); nc.alignment=aln('center','middle');
+        const nc=ws.getCell(R,colNorma+1); nc.value=expected!==null?expected:'—'; nc.font=fnt('7F8C8D',false,9); nc.fill=fill('F8F9FB'); nc.alignment=aln('center','middle');
         R++;
       });
     }
@@ -2937,6 +2993,11 @@ function updateModeFieldVisibility() {
   // de algoritm (raman doar pt editare manuala pe celule), iar in "rotation3" nu exista deloc.
   const usesTA = state.genMode === 'full' || state.genMode === 'rotation';
   document.querySelectorAll('.ta-field').forEach(el => { el.style.display = usesTA ? '' : 'none'; });
+  // c8 (8h) e alocat automat doar in full/t12 (assignCategoryShifts) — modurile de rotatie
+  // (3/4) nu au deloc logica de c8, ascunde campul acolo ca sa nu para configurabil fara efect
+  // (bug audit: campul ramanea vizibil peste tot, dar t12 il ignora silentios pana la fixul de mai sus).
+  const usesC8 = state.genMode === 'full' || state.genMode === 't12';
+  document.querySelectorAll('.c8-field').forEach(el => { el.style.display = usesC8 ? '' : 'none'; });
 }
 function toggleDarkMode() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
