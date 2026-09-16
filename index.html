@@ -717,12 +717,19 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.06.10';
-const COMMIT_COUNT = 84;
+const APP_VERSION = 'V2026.06.11';
+const COMMIT_COUNT = 85;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.06.11': {
+    title: 'Audit runda 3: rotație cu T1A/T2A=0 nu mai pierde zile lucrătoare',
+    items: [
+      { icon: '⚖️', text: 'Modul „Rotație 8 zile" cu T1A/T2A=0 (configurația implicită) pierdea ~56h/lună/persoană — faza care cerea T1A/T2A rămânea liberă (L) chiar și în zilele lucrătoare, cu T1/T2 configurate și capacitate disponibilă. Acum se redirecționează automat la echivalentul principal (T1A→T1, T2A→T2), în fiecare zi, nu doar weekend' },
+      { icon: '✅', text: 'Verificat pe 1-5 echipaje, Urban și Rural, ambele moduri de rotație — nicio încălcare de regulă (max 4 zile consecutive, gap T2→T1, max 5 zile/săptămână) introdusă de acest fix' }
+    ]
+  },
   'V2026.06.10': {
     title: 'Audit runda 2: normă corectă + câmp 8h + export Excel',
     items: [
@@ -1405,15 +1412,19 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   // suficient n<=CYCLE_LEN (idx unic nu garantează valoare unică: ROTATION poate avea aceeași
   // tură pe poziții diferite, ex. T1 la poz. 0 ȘI 4 în ciclul de 8 zile). Verifică direct: există
   // vreo zi în care două idx din [0,n) cer aceeași tură reală (L exclus, nu produce conflict)?
-  // IMPORTANT: verifică și varianta cu weekendFallback aplicat (T1A→T1, T2A→T2) — o poziție din
-  // ciclu poate cădea pe orice zi a săptămânii de-a lungul lunii, deci fallback-ul de weekend
-  // poate crea coliziuni noi (ex. T1 la poz. 0 ȘI 1 dacă poz. 1 era T1A) pe care varianta de bază
-  // nu le arată. Verificată doar dacă formația chiar folosește T1A/T2A (altfel fallback-ul nu se
-  // activează niciodată, deci nu produce nicio coliziune suplimentară).
+  // IMPORTANT: verifică și varianta cu phaseFallback aplicat (T1A→T1, T2A→T2) — o poziție din
+  // ciclu poate cădea pe orice zi a săptămânii de-a lungul lunii, deci fallback-ul poate crea
+  // coliziuni noi (ex. T1 la poz. 0 ȘI 1 dacă poz. 1 era T1A) pe care varianta de bază nu le
+  // arată. `remapPossible` e adevărat ori de câte ori fallback-ul de mai jos ar putea remapa
+  // vreodată poziția respectivă (fie pt. că T1A e folosit activ — remap doar în weekend — fie
+  // pt. că T1A e dezactivat complet dar T1 are capacitate — remap ÎN FIECARE zi, nu doar weekend);
+  // verificarea conservativă (worst-case) e sigură chiar dacă remap-ul nu se întâmplă chiar în
+  // fiecare zi din lună — la fel ca înainte, doar cu condiția de declanșare extinsă.
   function hasCollision(n, cat) {
     const c = cfgs[cat] || {};
-    const usesT1A = (c.t1a || 0) > 0, usesT2A = (c.t2a || 0) > 0;
-    const remapped = ROTATION.map(v => (v === 3 && usesT1A) ? 1 : (v === 4 && usesT2A) ? 2 : v);
+    const remapPossibleT1A = (c.t1a || 0) > 0 || (c.t1 || 0) > 0;
+    const remapPossibleT2A = (c.t2a || 0) > 0 || (c.t2 || 0) > 0;
+    const remapped = ROTATION.map(v => (v === 3 && remapPossibleT1A) ? 1 : (v === 4 && remapPossibleT2A) ? 2 : v);
     function check(arr) {
       for (let D = 0; D < CYCLE_LEN; D++) {
         const seen = new Set();
@@ -1429,15 +1440,28 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
     return check(ROTATION) || check(remapped);
   }
 
-  // În weekend, T1A/T2A sunt blocate (limită 0) — un echipaj a cărui fază cade pe T1A/T2A tocmai
-  // sâmbăta/duminica ar pierde ziua complet (L, fără recuperare). Dacă formația chiar folosește T1A/T2A
-  // în timpul săptămânii (config > 0), faza cade pe echivalentul principal (T1A→T1, T2A→T2) în weekend
-  // și concurează normal pentru acel slot — altfel (T1A/T2A dezactivate complet) rămâne L, ca înainte.
-  const weekendFallback = (sv, cat) => {
-    if (!weekend) return sv;
+  // Două motive DISTINCTE pt. care o fază T1A/T2A nu poate rămâne T1A/T2A, tratate separat:
+  // 1. Formația NU folosește deloc T1A/T2A (config = 0) — atunci acea tură pur și simplu nu
+  //    există în programul real al formației, indiferent de zi. Faza cade mereu pe echivalentul
+  //    principal (T1A→T1), în FIECARE zi (nu doar weekend) — altfel echipajul pierde o zi
+  //    lucrătoare întreagă de fiecare dată când ciclul îi cere o tură care nu există (bug găsit
+  //    la audit: cu T1A/T2A=0 — configurația implicită a aplicației — modul „Rotație 8 zile"
+  //    pierdea ~56h/lună/persoană, cu T1/T2 configurate și capacitate liberă).
+  // 2. Formația FOLOSEȘTE T1A/T2A în timpul săptămânii (config > 0), dar tura e blocată STRUCTURAL
+  //    doar sâmbătă/duminică (regulă de business, independentă de config) — faza cade pe
+  //    echivalentul principal DOAR în weekend, ca înainte.
+  // În ambele cazuri, fallback-ul nu inventează cerere unde nu exista una reală: dacă și T1A ȘI T1
+  // sunt 0, rămâne L (nimic de redirecționat spre).
+  const phaseFallback = (sv, cat) => {
     const c = cfgs[cat] || {};
-    if (sv === 3 && (c.t1a || 0) > 0) return 1;
-    if (sv === 4 && (c.t2a || 0) > 0) return 2;
+    if (sv === 3) {
+      if ((c.t1a || 0) === 0) return (c.t1 || 0) > 0 ? 1 : sv;
+      if (weekend) return 1;
+    }
+    if (sv === 4) {
+      if ((c.t2a || 0) === 0) return (c.t2 || 0) > 0 ? 2 : sv;
+      if (weekend) return 2;
+    }
     return sv;
   };
 
@@ -1461,7 +1485,7 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
     const catBlock = blockFor(n, cat);
     catCrews.forEach((crew, i) => {
       const idx = n > 0 ? (i + catBlock) % n : i;
-      crewWants.push({ crew, sv: weekendFallback(ROTATION[(idx + absDay) % CYCLE_LEN], cat) });
+      crewWants.push({ crew, sv: phaseFallback(ROTATION[(idx + absDay) % CYCLE_LEN], cat) });
     });
   });
   crewWants.sort((a, b) => hoursOf(a.crew) - hoursOf(b.crew) || a.crew[0].id - b.crew[0].id);
@@ -1488,7 +1512,7 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
     const catBlock = blockFor(n, cat);
     catIndiv.forEach((emp, i) => {
       const idx = n > 0 ? (i + catBlock) % n : i;
-      indivWants.push({ emp, sv: weekendFallback(ROTATION[(idx + absDay) % CYCLE_LEN], cat) });
+      indivWants.push({ emp, sv: phaseFallback(ROTATION[(idx + absDay) % CYCLE_LEN], cat) });
     });
   });
   indivWants.sort((a, b) => hoursOf([a.emp]) - hoursOf([b.emp]) || a.emp.id - b.emp.id);
