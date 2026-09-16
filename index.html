@@ -721,12 +721,18 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.09.17';
-const COMMIT_COUNT = 94;
+const APP_VERSION = 'V2026.09.18';
+const COMMIT_COUNT = 95;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.09.18': {
+    title: 'Fix: antet sărbătoare în Excel era tot pastel',
+    items: [
+      { icon: '🔧', text: 'Antetul coloanelor de sărbătoare din Excel rămăsese pe auriul pastel vechi (nu fusese actualizat când am întărit culoarea pe ecran) — acum auriu-bronz saturat + text alb, verificat pe fișierul real exportat' }
+    ]
+  },
   'V2026.09.17': {
     title: 'Manual actualizat + sărbători în legenda Excel',
     items: [
@@ -2814,10 +2820,13 @@ function exportExcel() {
     ws.getRow(4).height = 6;
     // Headers
     const HDR = 5; ws.getRow(HDR).height = 28;
+    // Antetul de sărbătoare folosea auriul pastel vechi (FDF3D0), rămas neactualizat când am
+    // întărit culoarea pe web/print (era prea „spălăcit" — feedback direct pe fișierul real
+    // exportat). Acum fundal auriu-bronz saturat + text alb, ca weekend-ul (4A2C2C+alb).
     const setHdr = (r, c, v, wknd, holiday) => {
       const cl = ws.getCell(r, c);
-      cl.value = v; cl.font = fnt(holiday ? '8A6D1A' : 'FFFFFF', true, 9);
-      cl.fill = fill(holiday ? 'FDF3D0' : (wknd ? '4A2C2C' : '2C3E50'));
+      cl.value = v; cl.font = fnt('FFFFFF', true, 9);
+      cl.fill = fill(holiday ? '8A6510' : (wknd ? '4A2C2C' : '2C3E50'));
       cl.alignment = aln('center','middle', true);
     };
     setHdr(HDR, 1, 'Nume Prenume'); setHdr(HDR, 2, 'Funcția'); setHdr(HDR, 3, 'Echipaj');
