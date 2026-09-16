@@ -71,6 +71,7 @@ td.td-weekend{background:var(--weekend-td)!important}
 th.th-holiday{background:var(--holiday-header-bg);color:var(--holiday-header-text)}
 th.th-holiday:first-child{background:var(--holiday-header-bg);color:var(--holiday-header-text)}
 th.th-holiday small{color:var(--holiday-header-text)}
+td.td-holiday{box-shadow:inset 0 0 0 2px var(--holiday-border)}
 td.shift-0{background:var(--shift0-bg);color:var(--shift0-text)}
 td.shift-1{background:var(--shift1-bg);color:var(--shift1-text)}
 td.shift-2{background:var(--shift2-bg);color:var(--shift2-text)}
@@ -257,6 +258,7 @@ td.emp-name-cell:hover{text-decoration:underline}
   .crew-indicator{display:block;font-size:7pt;color:#555!important;font-weight:600;text-align:center;line-height:1.2}
   td.td-weekend{background:#fce4e4!important}
   th.th-holiday{background:#8a6510!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  td.td-holiday{box-shadow:inset 0 0 0 1.5pt #d4a017!important}
   td.hours,td.hours-cell{font-weight:700;font-size:8pt;text-align:center;padding:2px}
   td.hours.under,td.hours-cell.under{background:#fde8e8!important;color:#c0392b!important}
   td.hours.over,td.hours-cell.over{background:#fde8e8!important;color:#c0392b!important}
@@ -712,12 +714,19 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.09.14';
-const COMMIT_COUNT = 91;
+const APP_VERSION = 'V2026.09.15';
+const COMMIT_COUNT = 92;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.09.15': {
+    title: 'Sărbători: chenar pe celule + ture în statistici',
+    items: [
+      { icon: '🖍️', text: 'Chenarul auriu pe celulele din coloanele de sărbătoare a rămas (ajută la citit turele repede), doar antetul e colorat mai puternic' },
+      { icon: '📊', text: 'Nou: coloană „🎉 Sărb." în Statistici ture + pastilă pe cardul fiecărui electrician — câte ture a lucrat efectiv în zile de sărbătoare legală, în luna curentă' }
+    ]
+  },
   'V2026.09.14': {
     title: 'Sărbători legale pe grafic — calendar extins nelimitat',
     items: [
@@ -2083,7 +2092,7 @@ function renderTable() {
         if (v === null || v === undefined) v = 0;
         const weekend = (dow === 0 || dow === 6);
         const displayV = (weekend && (v === 5 || v === 6 || v === 7 || v === 8)) ? 0 : v;
-        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
+        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si <= 8; si++) {
           if (weekend && (si === 3 || si === 4 || si === 7)) continue;
@@ -2120,7 +2129,7 @@ function renderTable() {
         if (v === null || v === undefined) v = 0;
         const weekend = (dow === 0 || dow === 6);
         const displayV = (weekend && (v === 5 || v === 6 || v === 7 || v === 8)) ? 0 : v;
-        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : ''].filter(Boolean).join(' ');
+        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
         bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si <= 8; si++) {
           if (weekend && (si === 3 || si === 4 || si === 7)) continue;
@@ -2234,6 +2243,23 @@ function getLegalHolidays(y) {
   return list;
 }
 
+// Câte ture a lucrat efectiv un angajat în zile de sărbătoare legală, într-o lună — informativ,
+// pentru statistici (cerere: oamenii trebuie să poată vedea câte ture au avut în sărbători).
+function holidayShiftsCount(empId, y, m) {
+  const dim = daysInMonth(y, m);
+  const prefix = y + '-' + pad(m);
+  const holidaySet = new Set(getLegalHolidays(y).filter(h => h.date.startsWith(prefix)).map(h => h.date));
+  if (holidaySet.size === 0) return 0;
+  let count = 0;
+  for (let d = 1; d <= dim; d++) {
+    const dk = dateKey(y, m, d);
+    if (!holidaySet.has(dk)) continue;
+    const v = state.schedule[dk] ? state.schedule[dk][String(empId)] : undefined;
+    if ((v >= 1 && v <= 4) || v === 7 || v === 8) count++;
+  }
+  return count;
+}
+
 function workingDays(y, m) {
   const dim = daysInMonth(y, m);
   const prefix = y + '-' + pad(m);
@@ -2340,6 +2366,8 @@ function renderSummary() {
     if (st.inst) pills.push('<span class="shift-pill" style="padding:2px 6px;font-size:10px;border-radius:4px;background:#d5f5e3;color:#1a7a3a;font-weight:600">INST ×' + st.inst + '</span>');
     if (st.co)  pills.push('<span class="shift-pill pill-co">CO ×' + st.co + '</span>');
     if (st.cm)  pills.push('<span class="shift-pill pill-cm">CM ×' + st.cm + '</span>');
+    const holCount = holidayShiftsCount(emp.id, state.currentYear, state.currentMonth);
+    if (holCount) pills.push('<span class="shift-pill" style="background:var(--holiday-bg);color:var(--holiday-text)">🎉 Sărb. ×' + holCount + '</span>');
     html += '<div class="' + cardCls + '">'
       + '<div class="emp-card-header"><span class="cat-badge cat-' + cat + '" style="margin-left:0">' + catShort(cat) + '</span><span class="emp-card-name">' + esc(emp.name) + (emp.forced8 ? ' <span class="forced-badge">F</span>' : '') + '</span></div>'
       + '<div class="emp-card-hours"><strong>' + st.hours + 'h</strong>' + (effExpected !== null ? ' / ' + effExpected + 'h (' + pct + '%)' : ' — normă necunoscută') + '</div>'
@@ -2366,6 +2394,7 @@ function renderSummary() {
     + '<th title="Instruire">INST</th>'
     + '<th title="Concediu Odihnă (zile lucrătoare)">CO</th>'
     + '<th title="Concediu Medical (zile lucrătoare)">CM</th>'
+    + '<th title="Ture lucrate în zile de sărbătoare legală">🎉 Sărb.</th>'
     + '<th title="Ore lucrate efectiv">Lucrate</th>'
     + '<th title="Ore CO+CM">CO/CM</th>'
     + '<th title="Normă lunară">Normă</th>'
@@ -2374,7 +2403,7 @@ function renderSummary() {
   groups.forEach(g => {
     const gEmps = state.employees.filter(e => (e.category||'urban') === g && !e.forced8);
     if (!gEmps.length) return;
-    html += '<tr class="stat-group-header"><td colspan="15">' + (g==='urban'?'Urban':'Rural') + ' — ' + gEmps.length + ' electricieni</td></tr>';
+    html += '<tr class="stat-group-header"><td colspan="16">' + (g==='urban'?'Urban':'Rural') + ' — ' + gEmps.length + ' electricieni</td></tr>';
     gEmps.forEach(emp => {
       const st = getEmployeeStats(emp.id);
       // effExpected scade orele de CO/CM din normă (bug audit: un angajat cu concediu aprobat
@@ -2387,6 +2416,7 @@ function renderSummary() {
       const rowCls = verdict === 'over' || verdict === 'under' ? 'stat-row-bad' : verdict === 'warn' ? 'stat-row-warn' : 'stat-row-ok';
       const hoursCls = verdict === 'over' || verdict === 'under' ? 'stat-hours-bad' : verdict === 'warn' ? 'stat-hours-warn' : 'stat-hours-ok';
       const cocmH = (st.co + st.cm) * 8;
+      const holCount = holidayShiftsCount(emp.id, state.currentYear, state.currentMonth);
       html += '<tr class="' + rowCls + '">'
         + '<td>' + esc(emp.name) + '</td>'
         + '<td><span class="fn-' + (emp.functia||'emitent') + '" style="font-size:11px;padding:1px 6px;border-radius:4px;font-weight:600">' + fnLabel(emp) + '</span></td>'
@@ -2399,6 +2429,7 @@ function renderSummary() {
         + '<td>' + (st.inst||'—') + '</td>'
         + '<td>' + (st.co||'—') + '</td>'
         + '<td>' + (st.cm||'—') + '</td>'
+        + '<td' + (holCount ? ' style="color:var(--holiday-text);font-weight:700"' : '') + '>' + (holCount||'—') + '</td>'
         + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
         + '<td style="color:var(--text-muted)">' + cocmH + 'h</td>'
         + '<td style="color:var(--text-muted)">' + (effExpected !== null ? effExpected + 'h' : '—') + '</td>'
@@ -2408,7 +2439,7 @@ function renderSummary() {
   });
   const f8Emps = state.employees.filter(e => e.forced8);
   if (f8Emps.length) {
-    html += '<tr class="stat-group-header"><td colspan="15">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
+    html += '<tr class="stat-group-header"><td colspan="16">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
     f8Emps.forEach(emp => {
       const st = getEmployeeStats(emp.id);
       const effExpected = effectiveExpected(expected, st);
@@ -2418,6 +2449,7 @@ function renderSummary() {
       const rowCls = verdict === 'over' || verdict === 'under' ? 'stat-row-bad' : verdict === 'warn' ? 'stat-row-warn' : 'stat-row-ok';
       const hoursCls = verdict === 'over' || verdict === 'under' ? 'stat-hours-bad' : verdict === 'warn' ? 'stat-hours-warn' : 'stat-hours-ok';
       const cocmH = (st.co + st.cm) * 8;
+      const holCount = holidayShiftsCount(emp.id, state.currentYear, state.currentMonth);
       html += '<tr class="' + rowCls + '">'
         + '<td>' + esc(emp.name) + '</td>'
         + '<td><span class="fn-' + (emp.functia||'emitent') + '" style="font-size:11px;padding:1px 6px;border-radius:4px;font-weight:600">' + fnLabel(emp) + '</span></td>'
@@ -2430,6 +2462,7 @@ function renderSummary() {
         + '<td>' + (st.inst||'—') + '</td>'
         + '<td>' + (st.co||'—') + '</td>'
         + '<td>' + (st.cm||'—') + '</td>'
+        + '<td' + (holCount ? ' style="color:var(--holiday-text);font-weight:700"' : '') + '>' + (holCount||'—') + '</td>'
         + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
         + '<td style="color:var(--text-muted)">' + cocmH + 'h</td>'
         + '<td style="color:var(--text-muted)">' + (effExpected !== null ? effExpected + 'h' : '—') + '</td>'
