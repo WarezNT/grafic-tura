@@ -30,6 +30,12 @@ când `localStorage[VERSION_KEY] !== APP_VERSION` — **cheile trebuie să fie i
 (am avut odată un typo: `CHANGELOG['V2026.06.16']` vs `APP_VERSION='V2026.06.1'` → popup
 nu apărea niciodată, fail silențios pentru că `CHANGELOG[APP_VERSION]` era `undefined`).
 
+**`MM` = luna calendaristică REALĂ curentă** (verifică data de azi, nu presupune din ultima
+versiune văzută în cod) — `N` se resetează la `1` la fiecare schimbare de lună, altfel crește
+cu 1 la fiecare bump din aceeași lună. (Corectat pe 2026-09-16: `MM` rămăsese blocat pe `06`
+timp de mai multe sesiuni, deși eram deja în septembrie — bump-urile anterioare doar
+incrementaseră `N` fără să actualizeze luna.)
+
 `COMMIT_COUNT` (afișat în footer lângă versiune) se auto-actualizează la fiecare commit
 via git hook `.githooks/pre-commit` (activat prin `git config core.hooksPath .githooks`
 — setare LOCALĂ, trebuie rulată o dată pe orice clone nou).
