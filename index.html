@@ -721,12 +721,18 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.09.18';
-const COMMIT_COUNT = 95;
+const APP_VERSION = 'V2026.09.19';
+const COMMIT_COUNT = 96;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.09.19': {
+    title: 'Tooltipuri în Analiză moduri',
+    items: [
+      { icon: '💬', text: 'Tabelul din „Analiză moduri" are acum tooltip pe fiecare coloană (Echipaje active/zi, Utilizare, Zile cu toate echipajele, Ore min–max, Spread, Conflicte) — explică ce înseamnă fiecare valoare, la trecerea cu cursorul' }
+    ]
+  },
   'V2026.09.18': {
     title: 'Fix: antet sărbătoare în Excel era tot pastel',
     items: [
@@ -3136,18 +3142,26 @@ function renderAnalyzeModal(perMode, year, month) {
     const gc = cat === 'urban' ? { bg: 'D6EAF8', fg: '1A5276' } : { bg: 'FDEBD0', fg: '935116' };
     html += '<div style="margin-bottom:18px">';
     html += '<div style="font-weight:700;font-size:13px;margin-bottom:6px;color:var(--heading)">' + (cat === 'urban' ? 'Urban' : 'Rural') + ' — ' + rows[0].stats.fullCrewCount + ' echipaje complete' + (rows[0].stats.soloCount ? ' + ' + rows[0].stats.soloCount + ' individuali' : '') + '</div>';
-    html += '<table class="stat-table"><thead><tr><th>Mod</th><th>Echipaje active/zi</th><th>Utilizare</th><th>Zile cu toate echipajele</th><th>Ore min–max</th><th>Spread</th><th>Conflicte</th></tr></thead><tbody>';
+    html += '<table class="stat-table"><thead><tr>';
+    html += '<th data-tooltip="Modul de generare simulat — vezi manualul pentru detalii despre fiecare algoritm">Mod</th>';
+    html += '<th data-tooltip="Media echipajelor/persoanelor care lucrează efectiv pe zi (media pe toată luna) — cu cât mai mare, cu atât capacitatea e mai bine folosită">Echipaje active/zi</th>';
+    html += '<th data-tooltip="% din zile-echipaj disponibile (excluzând echipajele integral în CO/CM) în care cel puțin un membru a lucrat efectiv">Utilizare</th>';
+    html += '<th data-tooltip="Numărul de zile din lună în care TOATE echipajele disponibile au fost active simultan, din totalul zilelor lunii">Zile cu toate echipajele</th>';
+    html += '<th data-tooltip="Orele lucrate cele mai mici, respectiv cele mai mari, dintre toți electricienii categoriei, la finalul lunii simulate">Ore min–max</th>';
+    html += '<th data-tooltip="Diferența dintre orele maxime și minime (max − min) — cu cât mai mic, cu atât distribuția e mai echitabilă între electricieni">Spread</th>';
+    html += '<th data-tooltip="Număr de reguli încălcate: peste 4 zile consecutive lucrate, peste 5 zile/săptămână, sau gap T2→T1/T1A nerespectat">Conflicte</th>';
+    html += '</tr></thead><tbody>';
     rows.forEach(r => {
       const s = r.stats;
       const isBest = r.key === best.key;
       html += '<tr class="' + (isBest ? 'stat-row-ok' : '') + '" style="' + (isBest ? 'outline:2px solid var(--accent);outline-offset:-2px' : '') + '">';
       html += '<td style="text-align:left;white-space:normal;overflow:visible;text-overflow:clip">' + esc(r.label) + (isBest ? ' <span class="shift-pill pill-t1" style="margin-left:4px">recomandat</span>' : '') + '</td>';
-      html += '<td>' + s.avgPerDay.toFixed(2) + '</td>';
-      html += '<td class="' + (s.utilPct >= 70 ? 'stat-hours-ok' : s.utilPct >= 50 ? 'stat-hours-warn' : 'stat-hours-bad') + '">' + s.utilPct.toFixed(1) + '%</td>';
-      html += '<td>' + s.fullUtilDays + '/' + s.dim + '</td>';
-      html += '<td>' + s.minH + 'h – ' + s.maxH + 'h</td>';
-      html += '<td>' + s.spread + 'h</td>';
-      html += '<td class="' + (s.violations ? 'stat-hours-bad' : 'stat-hours-ok') + '">' + (s.violations || '—') + '</td>';
+      html += '<td data-tooltip="' + s.avgPerDay.toFixed(2) + ' echipaje/persoane active în medie pe zi, din ' + s.fullCrewCount + (s.soloCount ? ' echipaje + ' + s.soloCount + ' individuali' : ' echipaje') + '">' + s.avgPerDay.toFixed(2) + '</td>';
+      html += '<td class="' + (s.utilPct >= 70 ? 'stat-hours-ok' : s.utilPct >= 50 ? 'stat-hours-warn' : 'stat-hours-bad') + '" data-tooltip="' + s.utilPct.toFixed(1) + '% din zilele-echipaj disponibile au avut activitate — ≥70% bine, 50–70% acceptabil, sub 50% slab">' + s.utilPct.toFixed(1) + '%</td>';
+      html += '<td data-tooltip="' + s.fullUtilDays + ' din ' + s.dim + ' zile ale lunii au avut toate echipajele disponibile active simultan">' + s.fullUtilDays + '/' + s.dim + '</td>';
+      html += '<td data-tooltip="Electricianul cu cele mai puține ore a lucrat ' + s.minH + 'h, cel cu cele mai multe ' + s.maxH + 'h, la finalul lunii simulate">' + s.minH + 'h – ' + s.maxH + 'h</td>';
+      html += '<td data-tooltip="Diferență de ' + s.spread + 'h între cel mai încărcat și cel mai puțin încărcat electrician — cu cât mai mic, cu atât mai echitabil">' + s.spread + 'h</td>';
+      html += '<td class="' + (s.violations ? 'stat-hours-bad' : 'stat-hours-ok') + '" data-tooltip="' + (s.violations ? s.violations + ' încălcări de reguli (consecutive/săptămânal/gap T2→T1)' : 'Nicio încălcare de regulă detectată') + '">' + (s.violations || '—') + '</td>';
       html += '</tr>';
     });
     html += '</tbody></table></div>';
