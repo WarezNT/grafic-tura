@@ -13,3 +13,4 @@ delgaz.png
 
 # Harness local de teste/audit (Node, nu face parte din aplicație)
 .audit/
+AUDIT.md
