@@ -241,6 +241,11 @@ automată de 8h/`c8` pentru cazul (rar) în care cineva rămâne fără nicio pe
 manual `8h` din dropdown pentru acea persoană. Nu re-investiga sau propune fix pentru asta
 fără să fie cerut din nou.
 
+**Echipaj de 3 și „afinități" între electricieni — RESPINSE explicit de user (2026-09-23)**:
+echipaj de 3 persoane nu e permis, iar un solo rămas fără pereche (ex. 6 electricieni, 1 în CO,
+partenerul lui rămâne singur) se alocă MANUAL de responsabil. Nu propune atașare automată
+solo→pereche și nu propune afinități (1-3 colegi preferați) fără cerere explicită.
+
 8. **Capacitate asimetrică T1≠T2 prost umplută în `rotation`/`rotation3`** — când un echipaj
    pierdea competiția pentru tura dorită (coliziune), rămânea pur și simplu neasignat, fără
    nicio încercare de redirecționare spre CEALALTĂ tură (T1↔T2) dacă acolo mai era loc.
