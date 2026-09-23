@@ -347,7 +347,7 @@ td.emp-name-cell:hover{text-decoration:underline}
       <button class="btn btn-outline btn-sm" id="btn-prev-day" onclick="prevDay()" style="display:none" data-tooltip="Întoarce cu o zi înapoi, pentru a regenera ultima zi dacă rezultatul nu e satisfăcător">←</button>
       <button class="btn btn-outline btn-sm" id="btn-next-day" onclick="generateNextDay()" style="display:none" data-tooltip="Generează doar ziua curentă și avansează — verificare pas cu pas">Ziua →</button>
       <button class="btn btn-success btn-sm" id="btn-generate-all" onclick="generateAll()" style="display:none" data-tooltip="Generează dintr-odată toate zilele rămase din lună">Generare totală →</button>
-      <button class="btn btn-warning btn-sm" onclick="clearSchedule()" data-tooltip="Șterge tot graficul generat pentru luna curentă (electricienii rămân)">✕ Curăță</button>
+      <button class="btn btn-warning btn-sm" onclick="clearSchedule()" data-tooltip="Șterge turele generate pentru luna curentă; CO, CM și Instruire introduse se păstrează (electricienii rămân)">✕ Curăță</button>
       <button class="btn btn-success btn-sm" onclick="openAddEmployeeModal()" data-tooltip="Adaugă un electrician nou în formație">+ Electrician</button>
     </div>
   </div>
@@ -721,12 +721,19 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.09.19';
-const COMMIT_COUNT = 97;
+const APP_VERSION = 'V2026.09.20';
+const COMMIT_COUNT = 98;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.09.20': {
+    title: 'Curăță păstrează CO / CM / Instruire',
+    items: [
+      { icon: '🧹', text: '„✕ Curăță" șterge acum doar turele generate — CO, CM și Instruire deja introduse rămân în grafic' },
+      { icon: '🔧', text: 'Instruirea introdusă manual nu mai este ștearsă nici la regenerarea zilelor (înainte se păstrau doar CO/CM)' }
+    ]
+  },
   'V2026.09.19': {
     title: 'Tooltipuri în Analiză moduri',
     items: [
@@ -1626,10 +1633,12 @@ function clearSchedule() {
   });
   if (keysToDelete.length === 0) return;
   const mn = ['','Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'][m];
-  if (!confirm('Ștergeți graficul pentru ' + mn + ' ' + y + '?')) return;
-  keysToDelete.forEach(k => delete state.schedule[k]);
-  const prefix = y + '-' + pad(m);
-  Object.keys(genCOCM).filter(k => k.startsWith(prefix)).forEach(k => delete genCOCM[k]);
+  if (!confirm('Ștergeți turele generate pentru ' + mn + ' ' + y + '? (CO, CM și Instruire introduse se păstrează.)')) return;
+  keysToDelete.forEach(k => {
+    const day = state.schedule[k];
+    for (const eid in day) { if (![5, 6, 8].includes(day[eid])) delete day[eid]; }
+    if (Object.keys(day).length === 0) delete state.schedule[k];
+  });
   // Reset atât pe state.gen* CÂT ȘI pe variabilele de modul — saveState() de mai jos suprascrie
   // necondiționat state.gen* cu variabilele de modul, deci un reset doar pe state.* era anulat
   // instant (bug găsit la audit: după Curăță, butoanele de generare rămâneau active, iar un
@@ -1639,7 +1648,7 @@ function clearSchedule() {
   updateButtons();
   saveState();
   render();
-  setStatus('Grafic ' + mn + ' ' + y + ' șters.', 'info');
+  setStatus('Ture generate ' + mn + ' ' + y + ' șterse (CO/CM/Instruire păstrate).', 'info');
 }
 
 function prevMonth() {
@@ -1812,7 +1821,7 @@ function generateDay(day) {
   if (state.schedule[dk]) {
     for (const eid in state.schedule[dk]) {
       const v = state.schedule[dk][eid];
-      if ((v === 5 || v === 6) && !(eid in preserved)) preserved[eid] = v;
+      if ((v === 5 || v === 6 || v === 8) && !(eid in preserved)) preserved[eid] = v;
     }
   }
   // extend CO/CM to weekend days if adjacent weekday has CO
