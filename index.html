@@ -187,6 +187,20 @@ td.hours.ok{background:var(--hours-ok-bg);color:var(--hours-ok-text)}
 .help-section p:last-child{margin-bottom:0}
 .help-list{margin:6px 0 6px 18px;color:var(--text)}
 .help-list li{margin-bottom:3px}
+.help-hero{background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;border-radius:10px;padding:18px 20px;margin-bottom:16px}
+.help-hero-title{font-size:19px;font-weight:800;margin-bottom:5px;letter-spacing:.2px}
+.help-hero-sub{font-size:12.5px;line-height:1.6;opacity:.96}
+.help-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.help-chip{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.38);color:#fff;font-size:11px;font-weight:600;padding:3px 11px;border-radius:20px;white-space:nowrap}
+.help-feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:8px;margin-top:4px}
+.help-feat{display:flex;gap:9px;align-items:flex-start;background:var(--card-bg);border:1px solid var(--border-light);border-radius:8px;padding:9px 11px}
+.help-feat-ico{font-size:18px;line-height:1.1;flex-shrink:0}
+.help-feat-t{font-size:12px;font-weight:700;color:var(--heading);margin-bottom:1px}
+.help-feat-d{font-size:11px;color:var(--text-muted);line-height:1.45}
+.help-steps{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+.help-step{display:flex;gap:11px;align-items:flex-start}
+.help-step-n{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.help-step-t{font-size:12.5px;line-height:1.55;padding-top:2px;color:var(--text)}
 [data-tooltip]{position:relative}
 [data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 8px);left:0;transform:none;background:#1a1a2e;color:#fff;font-size:11px;font-weight:400;padding:7px 11px;border-radius:7px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999;max-width:260px;white-space:normal;line-height:1.5;box-shadow:0 3px 12px rgba(0,0,0,.25);width:max-content}
 [data-tooltip]::before{content:'';position:absolute;bottom:calc(100% + 3px);left:16px;border:5px solid transparent;border-top-color:#1a1a2e;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999}
@@ -514,16 +528,40 @@ td.emp-name-cell:hover{text-decoration:underline}
 
       <!-- TAB: Început rapid -->
       <div id="help-tab-start" class="help-tab-panel">
+        <div class="help-hero">
+          <div class="help-hero-title">Grafic de Tură</div>
+          <div class="help-hero-sub">Planifică turele echipelor Urban și Rural în câteva secunde — generare automată, concedii și instruiri, statistici și export.</div>
+          <div class="help-chips">
+            <span class="help-chip">📴 Funcționează offline</span>
+            <span class="help-chip">🎯 Generare automată</span>
+            <span class="help-chip">🔄 Rotații configurabile</span>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-section-title">✨ Ce poate face aplicația</div>
+          <div class="help-feat-grid">
+            <div class="help-feat"><span class="help-feat-ico">🏭</span><div><div class="help-feat-t">Urban &amp; Rural</div><div class="help-feat-d">Două grupe cu cerințe de ture independente.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">👥</span><div><div class="help-feat-t">Echipaje</div><div class="help-feat-d">Membrii unui echipaj lucrează împreună; schimbare de echipaj pe dată.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🔀</span><div><div class="help-feat-t">4 moduri de generare</div><div class="help-feat-d">Complet, doar T1/T2, rotație 8 zile, rotație 3 zile.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🏖️</span><div><div class="help-feat-t">CO / CM / Instruire</div><div class="help-feat-d">Păstrate la regenerare, excluse automat din weekend.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🧮</span><div><div class="help-feat-t">Normă &amp; validare</div><div class="help-feat-d">Calcul automat cu sărbători legale și verificarea orelor.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">📊</span><div><div class="help-feat-t">Statistici</div><div class="help-feat-d">Ore pe angajat, carduri, comparație cu norma lunară.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">💾</span><div><div class="help-feat-t">Salvare &amp; backup</div><div class="help-feat-d">Automat în browser + backup JSON portabil.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">📤</span><div><div class="help-feat-t">Export</div><div class="help-feat-d">Excel stilizat, Print/PDF (A3) și JSON.</div></div></div>
+          </div>
+        </div>
+
         <div class="help-section">
           <div class="help-section-title">🚀 Cei 6 pași pentru un grafic nou</div>
-          <ol class="help-list">
-            <li><strong>Completează setările organizației</strong> (⚙️ din colțul dreapta-sus) — apar în antet, semnături, print și Excel.</li>
-            <li><strong>Adaugă electricienii</strong> cu <em>+ Electrician</em>: nume, mediu (Urban/Rural), funcție, echipaj.</li>
-            <li><strong>Alege luna și anul</strong> (săgețile ‹ › sau selectoarele).</li>
-            <li><strong>Setează cerința</strong> pentru fiecare grup (Urban / Rural): câți electricieni pe T1, T2 etc., apoi alege <strong>Modul</strong> de generare.</li>
-            <li><strong>Introdu concediile</strong> (CO / CM) și instruirile <em>înainte</em> de generare — algoritmul le respectă.</li>
-            <li>Apasă <em>▶ Generare</em>, apoi <em>Generare totală →</em> (sau <em>Ziua →</em> pas cu pas). Ajustează manual celulele, verifică <em>Statisticile</em>, apoi exportă (Excel / Print / JSON).</li>
-          </ol>
+          <div class="help-steps">
+            <div class="help-step"><span class="help-step-n">1</span><span class="help-step-t"><strong>Completează setările organizației</strong> (⚙️ din colțul dreapta-sus) — apar în antet, semnături, print și Excel.</span></div>
+            <div class="help-step"><span class="help-step-n">2</span><span class="help-step-t"><strong>Adaugă electricienii</strong> cu <em>+ Electrician</em>: nume, mediu (Urban/Rural), funcție, echipaj.</span></div>
+            <div class="help-step"><span class="help-step-n">3</span><span class="help-step-t"><strong>Alege luna și anul</strong> (săgețile ‹ › sau selectoarele).</span></div>
+            <div class="help-step"><span class="help-step-n">4</span><span class="help-step-t"><strong>Setează cerința</strong> pentru fiecare grup (Urban / Rural): câți electricieni pe T1, T2 etc., apoi alege <strong>Modul</strong> de generare.</span></div>
+            <div class="help-step"><span class="help-step-n">5</span><span class="help-step-t"><strong>Introdu concediile</strong> (CO / CM) și instruirile <em>înainte</em> de generare — algoritmul le respectă.</span></div>
+            <div class="help-step"><span class="help-step-n">6</span><span class="help-step-t">Apasă <em>▶ Generare</em>, apoi <em>Generare totală →</em> (sau <em>Ziua →</em> pas cu pas). Ajustează manual celulele, verifică <em>Statisticile</em>, apoi exportă (Excel / Print / JSON).</span></div>
+          </div>
         </div>
         <div class="help-section">
           <div class="help-section-title">🧭 Ce găsești pe ecran</div>
@@ -834,12 +872,19 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.09.21';
+const APP_VERSION = 'V2026.09.22';
 const COMMIT_COUNT = 99;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.09.22': {
+    title: 'Manual: Început rapid modernizat',
+    items: [
+      { icon: '✨', text: 'Tab-ul „Început rapid" are acum o prezentare vizuală: bandă de titlu și o listă cu ce poate face aplicația, pe carduri' },
+      { icon: '🚀', text: 'Cei 6 pași pentru un grafic nou sunt afișați ca pași numerotați, mai ușor de urmărit' }
+    ]
+  },
   'V2026.09.21': {
     title: 'Manual complet rescris',
     items: [
