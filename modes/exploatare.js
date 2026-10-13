@@ -73,7 +73,101 @@ const MODE = {
     const emps = Array.isArray(data.employees) ? data.employees : [];
     return data.module === 'dispecer' || emps.some(e => e && e.category === 'dispecer');
   },
-  foreignMessage: 'Fișierul provine din aplicația Dispecer — nu poate fi încărcat în Exploatare.'
+  foreignMessage: 'Fișierul provine din aplicația Dispecer — nu poate fi încărcat în Exploatare.',
+  // ── generare ──
+  beginGeneration(emps) {
+    const groups = GROUPS;
+    const cfgs = {};
+    groups.forEach(g => { cfgs[g] = readConfig(g); });
+    for (let gi = 0; gi < groups.length; gi++) {
+      const g = groups[gi];
+      const ge = emps.filter(e => e.category === g);
+      const c = cfgs[g];
+      if (c.t1 + c.t1a + c.t2 + c.t2a + c.c8 > ge.length) {
+        if (!confirm(catLabel(g) + ': nr. pe tură (' + (c.t1 + c.t1a + c.t2 + c.t2a + c.c8) + ') depășește totalul (' + ge.length + '). Unii nu vor avea zile libere. Continuați?')) return false;
+      }
+    }
+    return { cfgs };
+  },
+  commitGeneration(ctx) { GROUPS.forEach(g => { state.config[g] = ctx.cfgs[g]; }); },
+  initGenStats(year, month, firstEmpty, emps) {
+    genStats = rebuildGenStats(year, month, firstEmpty);
+    // Seed yesterday/consec from previous month's last day for month transition
+    let prevMonth = month - 1, prevYear = year;
+    if (prevMonth === 0) { prevMonth = 12; prevYear = year - 1; }
+    const prevDim = daysInMonth(prevYear, prevMonth);
+    const prevDk = dateKey(prevYear, prevMonth, prevDim);
+    if (state.schedule[prevDk]) {
+      emps.forEach(e => {
+        const s = genStats[e.id];
+        if (!s) return;
+        const prevV = state.schedule[prevDk][String(e.id)];
+        if (prevV !== undefined && prevV !== null) {
+          if (s.yesterday === null) s.yesterday = prevV;
+          if (s.consec === 0 && (prevV >= 1 && prevV <= 4 || prevV === 7 || prevV === 8)) {
+            let c = 1;
+            for (let d = prevDim - 1; d >= 1; d--) {
+              const pd = dateKey(prevYear, prevMonth, d);
+              const pv = state.schedule[pd]?.[String(e.id)];
+              if (pv >= 1 && pv <= 4 || pv === 7 || pv === 8) c++; else break;
+            }
+            s.consec = c;
+          }
+        }
+      });
+    }
+    return genStats;
+  },
+  // Resincronizează genStats din date reale înainte de a genera — dacă ziua curentă a fost deja
+  // regenerată (ex. imediat după prevDay(), care lasă genDay pe ziua tocmai refăcută), vechiul
+  // subtractDayStats() nu reseta `consec`/`yesterday` (doar orele), ducând la dublă-numărare a
+  // zilelor consecutive lucrate la fiecare ciclu ←/→ — regula MAX_CONSEC ajungea încălcată
+  // silențios (bug găsit la audit, confirmat cu teste automate — echipa ajungea la 5+ zile
+  // consecutive deși limita e 4).
+  resyncGenStats(year, month, uptoDay) { return rebuildGenStats(year, month, uptoDay); },
+  assignDay({ dk, day, weekend, emps, hasCOCM, assigned }) {
+    const groups = GROUPS;
+    const cfgs = {};
+    groups.forEach(g => { cfgs[g] = readConfig(g); });
+    if (state.genMode === 'rotation') {
+      assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 3, 2, 0, 1, 4, 2, 0]);
+    } else if (state.genMode === 'rotation3') {
+      assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 2, 0]);
+    } else {
+      groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day, state.genMode !== 'full'));
+    }
+    if (!weekend) {
+      // Forced 8h employees ALWAYS get shift 8 (value 7), never T1/T2/T1A/T2A
+      emps.filter(e => e.forced8 && !hasCOCM.includes(String(e.id)) && !(state.schedule[dk][String(e.id)] > 0)).forEach(e => {
+        state.schedule[dk][String(e.id)] = 7;
+        if (!assigned.includes(e.id)) assigned.push(e.id);
+      });
+    } else {
+      // On weekends, forced8 employees get free day (L)
+      emps.filter(e => e.forced8 && !hasCOCM.includes(String(e.id)) && !assigned.includes(e.id)).forEach(e => {
+        state.schedule[dk][String(e.id)] = 0;
+        if (!assigned.includes(e.id)) assigned.push(e.id);
+      });
+    }
+  },
+  afterDay({ dk, emps }) {
+    emps.forEach(e => {
+      const v = state.schedule[dk][String(e.id)];
+      genStats[e.id].yesterday = v;
+      if (v === 1) { genStats[e.id].t1++; genStats[e.id].total++; }
+      else if (v === 2) { genStats[e.id].t2++; genStats[e.id].total++; }
+      else if (v === 3) { genStats[e.id].t1a++; genStats[e.id].total++; }
+      else if (v === 4) { genStats[e.id].t2a++; genStats[e.id].total++; }
+      else if (v === 7) { genStats[e.id].c8++; genStats[e.id].total++; }
+      else if (v === 8) { genStats[e.id].inst++; genStats[e.id].total++; }
+      // Update consecutive working days count
+      if (v >= 1 && v <= 4 || v === 7 || v === 8) { genStats[e.id].consec++; } else { genStats[e.id].consec = 0; }
+    });
+  },
+  decorateStats(st) {
+    st.t1 = st.counts[1] || 0; st.t2 = st.counts[2] || 0; st.t1a = st.counts[3] || 0; st.t2a = st.counts[4] || 0;
+    st.c8 = st.counts[7] || 0; st.inst = st.counts[8] || 0;
+  },
 };
 
 const CHANGELOG = {
@@ -289,6 +383,8 @@ const GROUPS = ['urban', 'rural'];
 
 const SHIFT_NAMES = ['L', 'T1', 'T2', 'T1A', 'T2A', 'CO', 'CM', '8', 'INST'];
 
+const SHIFT_HOURS = [0, 8, 8, 8, 8, 0, 0, 8, 8];   // ore pe valoarea turei (T1/T2/T1A/T2A/8/INST = 8h)
+
 const FUNC_NAMES = { emitent: 'Emitent', admitent: 'Admitent', electrician: 'Electrician', seftura: 'Șef tură' };
 
 const PREDEFINED_CREWS = ['U1','U2','U3','U4','U5','R1','R2','R3','R4','R5'];
@@ -436,28 +532,6 @@ function addCustomCrewFromAdd() {
 function readConfig(g) {
   const el = id => document.getElementById('cfg-' + g + '-' + id);
   return { t1: Math.max(0, parseInt(el('t1').value) || 0), t1a: Math.max(0, parseInt(el('t1a').value) || 0), t2: Math.max(0, parseInt(el('t2').value) || 0), t2a: Math.max(0, parseInt(el('t2a').value) || 0), c8: Math.max(0, parseInt(el('c8').value) || 0) };
-}
-
-function getEmployeeStats(empId) {
-  let t1 = 0, t2 = 0, t1a = 0, t2a = 0, co = 0, cm = 0, c8 = 0, inst = 0;
-  const prefix = state.currentYear + '-' + pad(state.currentMonth);
-  for (const dk in state.schedule) {
-    if (!dk.startsWith(prefix)) continue;
-    const v = state.schedule[dk][String(empId)];
-    const parts = dk.split('-');
-    const dow = new Date(+parts[0], +parts[1]-1, +parts[2]).getDay();
-    const isWeekend = dow === 0 || dow === 6;
-    if (v === 1) t1++;
-    else if (v === 2) t2++;
-    else if (v === 3) t1a++;
-    else if (v === 4) t2a++;
-    else if (v === 5 && !isWeekend) co++;
-    else if (v === 6 && !isWeekend) cm++;
-    else if (v === 7 && !isWeekend) c8++;
-    else if (v === 8 && !isWeekend) inst++;
-  }
-  const worked = t1 + t2 + t1a + t2a + c8 + inst;
-  return { t1, t2, t1a, t2a, co, cm, c8, inst, total: worked + co, hours: worked * 8 };
 }
 
 function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, skipTA) {
@@ -816,188 +890,6 @@ function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) 
   indivWants.forEach(w => spillover([w.emp], w.sv));
 }
 
-function startGeneration() {
-  const year = parseInt(document.getElementById('sel-year').value);
-  const month = parseInt(document.getElementById('sel-month').value);
-  const groups = GROUPS;
-  const cfgs = {};
-  groups.forEach(g => { cfgs[g] = readConfig(g); });
-  const emps = state.employees;
-  if (emps.length === 0) { setStatus('Adaugă cel puțin un electrician.', 'warn'); return; }
-  for (let gi = 0; gi < groups.length; gi++) {
-    const g = groups[gi];
-    const ge = emps.filter(e => e.category === g);
-    const c = cfgs[g];
-    if (c.t1 + c.t1a + c.t2 + c.t2a + c.c8 > ge.length) {
-      if (!confirm(catLabel(g) + ': nr. pe tură (' + (c.t1 + c.t1a + c.t2 + c.t2a + c.c8) + ') depășește totalul (' + ge.length + '). Unii nu vor avea zile libere. Continuați?')) return;
-    }
-  }
-  if (Object.keys(state.schedule).length > 0) {
-    if (!confirm('Continuați generarea din următoarea zi liberă? (Zilele deja generate se păstrează.)')) return;
-  }
-  // save CO/CM — merge with existing preserved CO
-  for (const dk in state.schedule) {
-    for (const eid in state.schedule[dk]) {
-      const v = state.schedule[dk][eid];
-      if (v === 5 || v === 6) {
-        if (!genCOCM[dk]) genCOCM[dk] = {};
-        genCOCM[dk][eid] = v;
-      }
-    }
-  }
-  // preserve existing generated days — find first day not yet fully generated.
-  // generateDay() always writes an entry (chiar și 0/L) pentru FIECARE electrician — deci o zi
-  // deja generată are câte o intrare per electrician, indiferent dacă rezultatul a fost o zi cu
-  // toată lumea pe L (capacitate 0, sau toți blocați de MAX_CONSEC/cap săptămânal). Verificarea
-  // veche ("există vreo tură lucrată") trata greșit o astfel de zi ca negenerată și o rescria
-  // silențios la fiecare click pe Generare (bug găsit la audit).
-  const dim = daysInMonth(year, month);
-  let firstEmpty = dim + 1;
-  for (let d = 1; d <= dim; d++) {
-    const dk = dateKey(year, month, d);
-    const dayData = state.schedule[dk];
-    if (!dayData || Object.keys(dayData).length < emps.length) {
-      firstEmpty = d;
-      break;
-    }
-  }
-  // restore CO from genCOCM on days that have none yet — NU crea obiect gol pt. zile fără CO de
-  // restaurat: umplea silențios toate cele ~30 zile ale lunii cu `{}`, ceea ce făcea ca
-  // `Object.keys(state.schedule).length > 0` (mai sus) să fie mereu adevărat la orice click
-  // ulterior pe „Generare", chiar dacă nimic nu fusese de fapt generat — confirmarea „Continuați
-  // generarea?" apărea mereu, inutil (bug găsit la audit).
-  for (let d = 1; d <= dim; d++) {
-    const dk = dateKey(year, month, d);
-    if (genCOCM[dk]) {
-      if (!state.schedule[dk]) state.schedule[dk] = {};
-      for (const eid in genCOCM[dk]) {
-        if (!(eid in state.schedule[dk])) { state.schedule[dk][eid] = genCOCM[dk][eid]; }
-      }
-    }
-  }
-  // weekend extension: if a weekday has CO, adjacent Sat/Sun also get it
-  for (let d = 1; d <= dim; d++) {
-    const dk = dateKey(year, month, d);
-    const dow = new Date(year, month - 1, d).getDay();
-    if (dow === 6) {
-      const fk = dateKey(year, month, d - 1);
-      if (genCOCM[fk]) { for (const eid in genCOCM[fk]) { if (!state.schedule[dk]) state.schedule[dk] = {}; if (!(eid in (state.schedule[dk]||{}))) state.schedule[dk][eid] = genCOCM[fk][eid]; } }
-    } else if (dow === 0) {
-      const fk = dateKey(year, month, d - 2);
-      const mk = dateKey(year, month, d + 1);
-      [fk, mk].forEach(k => { if (genCOCM[k]) { for (const eid in genCOCM[k]) { if (!state.schedule[dk]) state.schedule[dk] = {}; if (!(eid in (state.schedule[dk]||{}))) state.schedule[dk][eid] = genCOCM[k][eid]; } } });
-    }
-  }
-  state.currentMonth = month;
-  state.currentYear = year;
-  groups.forEach(g => { state.config[g] = cfgs[g]; });
-  genDim = dim;
-  genStats = rebuildGenStats(year, month, firstEmpty);
-  // Seed yesterday/consec from previous month's last day for month transition
-  let prevMonth = month - 1, prevYear = year;
-  if (prevMonth === 0) { prevMonth = 12; prevYear = year - 1; }
-  const prevDim = daysInMonth(prevYear, prevMonth);
-  const prevDk = dateKey(prevYear, prevMonth, prevDim);
-  if (state.schedule[prevDk]) {
-    emps.forEach(e => {
-      const s = genStats[e.id];
-      if (!s) return;
-      const prevV = state.schedule[prevDk][String(e.id)];
-      if (prevV !== undefined && prevV !== null) {
-        if (s.yesterday === null) s.yesterday = prevV;
-        if (s.consec === 0 && (prevV >= 1 && prevV <= 4 || prevV === 7 || prevV === 8)) {
-          let c = 1;
-          for (let d = prevDim - 1; d >= 1; d--) {
-            const pd = dateKey(prevYear, prevMonth, d);
-            const pv = state.schedule[pd]?.[String(e.id)];
-            if (pv >= 1 && pv <= 4 || pv === 7 || pv === 8) c++; else break;
-          }
-          s.consec = c;
-        }
-      }
-    });
-  }
-  genDay = firstEmpty;
-  genYear = year;
-  genMonth = month;
-  updateButtons();
-  if (firstEmpty > dim) {
-    setStatus('Toate zilele sunt deja generate.', 'info');
-  } else {
-    setStatus('Generare pornită. Ziua ' + firstEmpty + '/' + genDim + '. Apasă „Ziua următoare" sau „Generare grafic totală"', 'info');
-  }
-  render();
-}
-
-function generateDay(day) {
-  if (day < 1 || day > genDim) return;
-  const year = genYear, month = genMonth;
-  const dk = dateKey(year, month, day);
-  // preserve CO/CM from both saved snapshot and any manual edits
-  const preserved = {...(genCOCM[dk] || {})};
-  if (state.schedule[dk]) {
-    for (const eid in state.schedule[dk]) {
-      const v = state.schedule[dk][eid];
-      if ((v === 5 || v === 6 || v === 8) && !(eid in preserved)) preserved[eid] = v;
-    }
-  }
-  // extend CO/CM to weekend days if adjacent weekday has CO
-  const dt = new Date(year, month - 1, day);
-  const weekend = dt.getDay() === 0 || dt.getDay() === 6;
-  if (weekend) {
-    const dow = dt.getDay();
-    const adjKeys = [];
-    if (dow === 6) adjKeys.push(dateKey(year, month, day - 1));
-    else if (dow === 0) { adjKeys.push(dateKey(year, month, day - 2)); adjKeys.push(dateKey(year, month, day + 1)); }
-    adjKeys.forEach(k => {
-      if (genCOCM[k]) { for (const eid in genCOCM[k]) { if (!(eid in preserved)) preserved[eid] = genCOCM[k][eid]; } }
-      if (state.schedule && state.schedule[k]) { for (const eid in state.schedule[k]) { const v2 = state.schedule[k][eid]; if ((v2 === 5 || v2 === 6) && !(eid in preserved)) preserved[eid] = v2; } }
-    });
-  }
-  state.schedule[dk] = {};
-  for (const eid in preserved) state.schedule[dk][eid] = preserved[eid];
-  const hasCOCM = Object.keys(preserved);
-  const assigned = hasCOCM.map(Number);
-  const emps = state.employees;
-  const groups = GROUPS;
-  const cfgs = {};
-  groups.forEach(g => { cfgs[g] = readConfig(g); });
-  if (state.genMode === 'rotation') {
-    assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 3, 2, 0, 1, 4, 2, 0]);
-  } else if (state.genMode === 'rotation3') {
-    assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 2, 0]);
-  } else {
-    groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day, state.genMode !== 'full'));
-  }
-  if (!weekend) {
-    // Forced 8h employees ALWAYS get shift 8 (value 7), never T1/T2/T1A/T2A
-    emps.filter(e => e.forced8 && !hasCOCM.includes(String(e.id)) && !(state.schedule[dk][String(e.id)] > 0)).forEach(e => {
-      state.schedule[dk][String(e.id)] = 7;
-      if (!assigned.includes(e.id)) assigned.push(e.id);
-    });
-  } else {
-    // On weekends, forced8 employees get free day (L)
-    emps.filter(e => e.forced8 && !hasCOCM.includes(String(e.id)) && !assigned.includes(e.id)).forEach(e => {
-      state.schedule[dk][String(e.id)] = 0;
-      if (!assigned.includes(e.id)) assigned.push(e.id);
-    });
-  }
-  emps.forEach(e => {
-    if (!assigned.includes(e.id)) state.schedule[dk][String(e.id)] = 0;
-    const v = state.schedule[dk][String(e.id)];
-    genStats[e.id].yesterday = v;
-    if (v === 1) { genStats[e.id].t1++; genStats[e.id].total++; }
-    else if (v === 2) { genStats[e.id].t2++; genStats[e.id].total++; }
-    else if (v === 3) { genStats[e.id].t1a++; genStats[e.id].total++; }
-    else if (v === 4) { genStats[e.id].t2a++; genStats[e.id].total++; }
-    else if (v === 7) { genStats[e.id].c8++; genStats[e.id].total++; }
-    else if (v === 8) { genStats[e.id].inst++; genStats[e.id].total++; }
-    // Update consecutive working days count
-    if (v >= 1 && v <= 4 || v === 7 || v === 8) { genStats[e.id].consec++; } else { genStats[e.id].consec = 0; }
-  });
-  saveState();
-}
-
 // Reconstruiește genStats DIRECT din state.schedule (sursa de adevăr), pentru zilele
 // 1..uptoDayExclusive-1 ale lunii date. Unică sursă folosită de startGeneration/prevDay/
 // generateNextDay/generateAll — înainte exista logica DUPLICATĂ, ușor divergentă (varianta din
@@ -1024,55 +916,6 @@ function rebuildGenStats(year, month, uptoDayExclusive) {
     });
   }
   return gs;
-}
-
-function generateNextDay() {
-  if (genDay < 1 || genDay > genDim) return;
-  const day = genDay;
-  // Resincronizează genStats din date reale înainte de a genera — dacă ziua curentă a fost deja
-  // regenerată (ex. imediat după prevDay(), care lasă genDay pe ziua tocmai refăcută), vechiul
-  // subtractDayStats() nu reseta `consec`/`yesterday` (doar orele), ducând la dublă-numărare a
-  // zilelor consecutive lucrate la fiecare ciclu ←/→ — regula MAX_CONSEC ajungea încălcată
-  // silențios (bug găsit la audit, confirmat cu teste automate — echipa ajungea la 5+ zile
-  // consecutive deși limita e 4).
-  genStats = rebuildGenStats(genYear, genMonth, day);
-  generateDay(genDay);
-  genDay++;
-  if (genDay > genDim) {
-    genDay = genDim;
-    updateButtons();
-    setStatus('Grafic generat complet pentru ' + getMonthName(genMonth) + ' ' + genYear + '.', 'success');
-  } else {
-    updateButtons();
-    setStatus('Generată ziua ' + day + '/' + genDim + '. Apasă „Ziua ' + genDay + ' →"', 'info');
-  }
-  render();
-}
-
-function generateAll() {
-  if (!genStats || genDay < 1 || genDay > genDim) return;
-  const from = genDay;
-  document.getElementById('btn-next-day').style.display = 'none';
-  document.getElementById('btn-generate-all').style.display = 'none';
-  genStats = rebuildGenStats(genYear, genMonth, from);
-  for (let d = from; d <= genDim; d++) {
-    generateDay(d);
-    genDay = d + 1;
-  }
-  genDay = genDim;
-  updateButtons();
-  setStatus('Generare grafic totală completă: zilele ' + from + '–' + genDim + ' generate.', 'success');
-  render();
-}
-
-function prevDay() {
-  if (genDay <= 1) return;
-  genDay--;
-  genStats = rebuildGenStats(genYear, genMonth, genDay);
-  generateDay(genDay);
-  updateButtons();
-  setStatus('Regenerată ziua ' + genDay + '/' + genDim + '.', 'info');
-  render();
 }
 
 function catLabel(c) { return { urban: 'Urban', rural: 'Rural' }[c] || c; }
