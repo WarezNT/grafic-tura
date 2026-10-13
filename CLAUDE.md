@@ -4,6 +4,23 @@ Aplicație single-file (`index.html`, ~200KB, fără build step). Deploy prin Gi
 direct din `main`. Editare directă a fișierului, testare în browser (local file:// sau preview),
 apoi commit + push.
 
+## Două aplicații: Exploatare (`index.html`) și Dispecer (`dispecer.html`)
+
+`dispecer.html` e o aplicație SEPARATĂ, single-file, pentru graficul dispecerilor (ture T1 4h,
+T2 6h, T3 6h, T4 8h, ciclu T3→T2→T1→T4→L, acoperire 24h). Detalii complete în `DISPECER.md`.
+- Selector „Modul" în antetul ambelor: redirect între `index.html` ↔ `dispecer.html`.
+- Chei de storage separate: `graficTura_dispecer`, `graficTura_dispecer_org`,
+  `graficTura_dispecer_version`, IndexedDB `GraficTuraDispecerDB` / `main_dispecer`.
+- Are propriul `APP_VERSION`/`CHANGELOG` (V2026.10.x) și `COMMIT_COUNT` (hook-ul pre-commit le
+  actualizează pe ambele fișiere).
+- A pornit ca o copie a `index.html`; codul de echipaje/rotații/Urban-Rural a fost ELIMINAT
+  (V2026.10.2). Fix-urile din secțiunile de mai jos pentru Exploatare NU se aplică acolo — nu le
+  porta. Invers, orice fix de infrastructură comună (print, import, org, Excel) trebuie făcut
+  manual în ambele fișiere.
+- Importul refuză fișierele din cealaltă aplicație (`looksLikeExploatare`).
+- De testat prin `http://` (ex. `python -m http.server`), nu `file://` / `data:` — acolo
+  localStorage/IndexedDB sunt blocate și apar bannere false „Date corupte".
+
 ## Persistență date
 
 Trei chei de storage, INDEPENDENTE una de alta — nu se suprascriu reciproc:

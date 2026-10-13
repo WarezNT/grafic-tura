@@ -25,7 +25,7 @@ Fiecare aplicație are propriile chei, ca să nu se amestece datele:
 | State principal | `graficTura` | `graficTura_dispecer` |
 | Organizație | `graficTura_org` | `graficTura_dispecer_org` |
 | Versiune văzută | `graficTura_version` | `graficTura_dispecer_version` |
-| IndexedDB | `GraficTuraDB` / `main` | `GraficTuraDispecerDB` / `main` |
+| IndexedDB | `GraficTuraDB` / `main` | `GraficTuraDispecerDB` / `main_dispecer` |
 
 Organizația (formație, șef, responsabil) este **distinctă** între cele două aplicații.
 
@@ -97,7 +97,11 @@ Grupe Urban/Rural, ture T1A/T2A/8h/INST, „Forțat 8h", echipaje, cele 4 moduri
 - [x] `dispecer.html` — aplicație completă (ture, ciclu, acoperire, tabel, statistici, export, manual)
 - [x] Persistență separată + organizație distinctă
 - [x] Manual rescris pentru Dispecer
-- [ ] Verificare finală în browser (încărcare, generare, export, redirect, dark mode)
+- [x] Verificare în browser (2026-10-13, pe server local `http://`): generare 7 dispeceri Oct–Dec,
+      continuitate între luni, CO pe interval, sărbători (30 Nov, 1 Dec...), import, export Excel
+- [x] Curățenie cod moștenit din Exploatare (V2026.10.2): echipaje, Urban/Rural, rotații,
+      „Analiză moduri", coloana „Funcția", forced8, CSS și texte; `dispecer.html` 3260 → ~2230 linii
+- [ ] Redistribuire automată când CO/CM lasă o tură neacoperită (decizie deschisă — acum rămâne manual)
 
 ## 9. Note tehnice
 
@@ -105,3 +109,17 @@ Grupe Urban/Rural, ture T1A/T2A/8h/INST, „Forțat 8h", echipaje, cele 4 moduri
 - Print/PDF folosește mereu tema deschisă (indiferent de dark mode) — la fel ca Exploatare.
 - Codurile speciale (AUT/EXM/PND/IN) din exemplul inițial NU au fost implementate (la cerere);
   pot fi adăugate ulterior ca CO/CM (manuale).
+
+## 10. Import între module
+
+`applyJSON` și „Adaugă dispeceri din fișier" refuză fișierele care arată a fi din Exploatare
+(`category` urban/rural/8ore, `crew`, `forced8`, `config.urban/rural`, `module` ≠ `dispecer`) —
+valorile de tură 3/4 au alt sens acolo (T1A/T2A) și ar strica graficul.
+
+## 11. Limitări cunoscute
+
+- Cu mai puțini de 5 dispeceri, sau cu CO/CM, unele ture pot rămâne neacoperite într-o zi
+  (ciclul nu redistribuie; se corectează manual din dropdown).
+- Sărbătorile legale sunt afișate (antet colorat, listă, coloană în statistici/Excel) dar nu
+  modifică norma (24/7 — media ciclului, 4,8h/zi).
+- Norma CO/CM: 4,8h/zi (media ciclului), rotunjit la 0,1h.

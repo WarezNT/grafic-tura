@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%85%3C/text%3E%3C/svg%3E">
-<title>Grafic de tură - Delgaz Grid S.A</title>
+<title>Grafic dispecer - Delgaz Grid S.A</title>
 <!-- OG/Twitter statice, generice — document.title e suprascris la runtime cu numele formației
      din datele organizației (applyOrgToDOM), dar preview-urile de link (WhatsApp/Facebook/
      Telegram) trebuie să arate mereu un titlu generic, nu numele intern al vreunei formații. -->
-<meta property="og:title" content="Grafic de tură - Delgaz Grid S.A">
-<meta property="og:description" content="Aplicație pentru generarea graficelor de tură — Urban/Rural, T1/T2/T1A/T2A/8h.">
+<meta property="og:title" content="Grafic dispecer - Delgaz Grid S.A">
+<meta property="og:description" content="Aplicație pentru generarea graficului dispecerilor — ture T1/T2/T3/T4, acoperire 24h.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Grafic de tură - Delgaz Grid S.A">
-<meta name="twitter:description" content="Aplicație pentru generarea graficelor de tură — Urban/Rural, T1/T2/T1A/T2A/8h.">
+<meta name="twitter:title" content="Grafic dispecer - Delgaz Grid S.A">
+<meta name="twitter:description" content="Aplicație pentru generarea graficului dispecerilor — ture T1/T2/T3/T4, acoperire 24h.">
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
 <style>
 :root{--bg:#eef1f5;--card-bg:#fff;--text:#1a1a2e;--text-muted:#7f8c8d;--heading:#2c3e50;--ctrl-bg:#f8f9fb;--border:#d0d5dd;--border-light:#e8ecf0;--accent:#3498db;--accent-dark:#2980b9;--header-bg:#2c3e50;--row-even:#f8f9fb;--hover-bg:#f0f7ff;--hover-first:#e8f0fe;--input-bg:#fff;--sum-bg:#f8f9fb;--status-bg:#d6eaf8;--status-text:#1a5276;--warn-bg:#fff8e1;--warn-border:#f9e154;--bad-bg:#fde8e8;--bad-border:#e74c3c;--empty:#999;--group-urban-bg:#d6eaf8;--group-urban-text:#1a5276;--group-rural-bg:#fdebd0;--group-rural-text:#935116;--shift0-bg:#f0f0f0;--shift0-text:#666;--shift1-bg:#d6eaf8;--shift1-text:#1a5276;--shift2-bg:#fdebd0;--shift2-text:#935116;--weekend-bg:#4a2c2c;--weekend-td:#fce4e4;--holiday-bg:#fdf3d0;--holiday-text:#8a6d1a;--holiday-border:#d4a017;--holiday-header-bg:#8a6510;--holiday-header-text:#fff;--hours-ok-bg:#e8f8f0;--hours-ok-text:#1a7a3a;--hours-bad-bg:#fde8e8;--hours-bad-text:#c0392b;--alt-row-bg:#f4f6f9;--shadow:0 2px 12px rgba(0,0,0,.08)}
@@ -38,19 +38,8 @@ h1{font-size:22px;font-weight:700;color:var(--heading);margin-bottom:16px;displa
 .emp-header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 .emp-header input{flex:1;min-width:160px;font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;outline:none}
 .emp-header input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,152,219,.15)}
-.cat-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;line-height:1.4}
 .print-shift{display:none}
-.cat-urban{background:#d6eaf8;color:#1a5276}
-.fn-emitent{background:#f3e8ff;color:#7c3aed}
-.fn-admitent{background:#ffe4e6;color:#be123c}
-.fn-electrician{background:#fef3c7;color:#b45309}
-.fn-seftura{background:#dbeafe;color:#1d4ed8}
-.forced-badge{display:inline-block;background:#fbbf24;color:#78350f;font-size:10px;font-weight:700;width:16px;height:16px;line-height:16px;text-align:center;border-radius:3px;vertical-align:middle;margin-left:3px}
-.cat-rural{background:#fdebd0;color:#935116}
 tr.group-header td{padding:6px 10px;font-weight:700;font-size:13px;border-bottom:2px solid rgba(0,0,0,.1)}
-tr.group-header.group-urban td{background:#d6eaf8!important;color:#1a5276!important}
-tr.group-header.group-rural td{background:#fdebd0!important;color:#935116!important}
-tr.group-header.group-f8 td{background:#e2e8f0!important;color:#4a5568!important}
 .table-wrap{overflow:auto;border:1px solid #e0e4e8;border-radius:8px;margin-bottom:16px;min-height:200px}
 table{width:100%;border-collapse:separate;border-spacing:2px;font-size:13px;min-width:0;table-layout:fixed}
 thead{position:sticky;top:0;z-index:3}
@@ -79,37 +68,15 @@ td.shift-3{background:#aed6f1;color:#154360}
 td.shift-4{background:#fad7a0;color:#7e4d0e}
 td.shift-5{background:#e8d5f5;color:#6c3483}
 td.shift-6{background:#e8e8e8;color:#555}
-td.shift-7{background:#f0f4f8;color:#2c3e50}
-td.shift-8{background:#d5f5e3;color:#1a7a3a}
 [data-theme="dark"] td.shift-0{background:#252830;color:#7a8090}
 [data-theme="dark"] td.shift-3{background:#1a3d52;color:#7ad4f8}
 [data-theme="dark"] td.shift-4{background:#352610;color:#f0c060}
 [data-theme="dark"] td.shift-5{background:#2e1a48;color:#d090ff}
 [data-theme="dark"] td.shift-6{background:#2a2c38;color:#a0a8c0}
-[data-theme="dark"] td.shift-7{background:#1e2838;color:#a0bcd8}
-[data-theme="dark"] td.shift-8{background:#1a3a28;color:#6cdb9a}
 [data-theme="dark"] td.td-weekend{background:#2a2020!important}
-[data-theme="dark"] .fn-emitent{background:#2d1f4a;color:#c088f0}
-[data-theme="dark"] .fn-admitent{background:#3a1520;color:#f07090}
-[data-theme="dark"] .fn-electrician{background:#2e2200;color:#d4a030}
-[data-theme="dark"] .fn-seftura{background:#0f2240;color:#5ca8f0}
-[data-theme="dark"] .cat-urban{background:#1a3050;color:#7ab0e8}
-[data-theme="dark"] .cat-rural{background:#2e200a;color:#d49060}
-[data-theme="dark"] tr.group-header.group-urban td{background:#1a3050!important;color:#7ab0e8!important}
-[data-theme="dark"] tr.group-header.group-rural td{background:#2e200a!important;color:#d49060!important}
-[data-theme="dark"] tr.group-header.group-f8 td{background:#2d3748!important;color:#a0aec0!important}
 .ctrl-label{color:#555}
-.ctrl-urban-label{color:#1a5276}
-.ctrl-rural-label{color:#935116}
-.ctrl-urban-wrap{background:#eef4fa}
-.ctrl-rural-wrap{background:#fdf3ea}
 [data-theme="dark"] .ctrl-label{color:#b0bac8}
-[data-theme="dark"] .ctrl-urban-label{color:#7ab0e8}
-[data-theme="dark"] .ctrl-rural-label{color:#d49060}
-[data-theme="dark"] .ctrl-urban-wrap{background:#1a3050}
-[data-theme="dark"] .ctrl-rural-wrap{background:#2e200a}
 td.hours{font-weight:700;font-size:14px}
-.crew-indicator{display:block;font-size:10px;color:#555;font-weight:600;text-align:center;line-height:1.2}
 tbody tr:nth-child(even){background:var(--alt-row-bg)}
 tbody tr td:first-child{font-weight:700}
 td.hours.under{background:var(--hours-bad-bg);color:var(--hours-bad-text)}
@@ -143,14 +110,12 @@ td.hours.ok{background:var(--hours-ok-bg);color:var(--hours-ok-text)}
 .shift-pill{font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;white-space:nowrap}
 .pill-t1{background:var(--shift1-bg);color:var(--shift1-text)}
 .pill-t2{background:var(--shift2-bg);color:var(--shift2-text)}
-.pill-t1a{background:#aed6f1;color:#154360}
-.pill-t2a{background:#fad7a0;color:#7e4d0e}
-.pill-c8{background:#f0f4f8;color:#2c3e50}
+.pill-t3{background:#aed6f1;color:#154360}
+.pill-t4{background:#fad7a0;color:#7e4d0e}
 .pill-co{background:#e8d5f5;color:#6c3483}
 .pill-cm{background:#e8e8e8;color:#555}
-[data-theme="dark"] .pill-t1a{background:#1a3d52;color:#7ad4f8}
-[data-theme="dark"] .pill-t2a{background:#352610;color:#f0c060}
-[data-theme="dark"] .pill-c8{background:#1e2838;color:#a0bcd8}
+[data-theme="dark"] .pill-t3{background:#1a3d52;color:#7ad4f8}
+[data-theme="dark"] .pill-t4{background:#352610;color:#f0c060}
 [data-theme="dark"] .pill-co{background:#2e1a48;color:#d090ff}
 [data-theme="dark"] .pill-cm{background:#2a2c38;color:#a0a8c0}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:1000}
@@ -267,9 +232,6 @@ td.emp-name-cell:hover{text-decoration:underline}
   td.shift-4{background:#fad7a0!important;color:#7e4d0e!important}
   td.shift-5{background:#e8d5f5!important;color:#6c3483!important}
   td.shift-6{background:#e8e8e8!important;color:#555!important}
-  td.shift-7{background:#f0f4f8!important;color:#2c3e50!important}
-  td.shift-8{background:#d5f5e3!important;color:#1a7a3a!important}
-  .crew-indicator{display:block;font-size:7pt;color:#555!important;font-weight:600;text-align:center;line-height:1.2}
   td.td-weekend{background:#fce4e4!important}
   th.th-holiday{background:#8a6510!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   td.td-holiday{box-shadow:inset 0 0 0 1.5pt #d4a017!important}
@@ -278,9 +240,6 @@ td.emp-name-cell:hover{text-decoration:underline}
   td.hours.over,td.hours-cell.over{background:#fde8e8!important;color:#c0392b!important}
   td.hours.ok,td.hours-cell.ok{background:#e8f8f0!important;color:#1a7a3a!important}
   tr.group-header td{font-size:9pt;padding:3px 6px!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  tr.group-header.group-urban td{background:#d6eaf8!important;color:#1a5276!important}
-  tr.group-header.group-rural td{background:#fdebd0!important;color:#935116!important}
-  tr.group-header.group-f8 td{background:#e2e8f0!important;color:#4a5568!important}
   h1 img{height:80px!important;width:auto!important}
   h1{font-size:22px!important;margin-bottom:8px}
   h1 span>span:first-child{font-size:22px!important;font-weight:700!important}
@@ -300,7 +259,6 @@ td.emp-name-cell:hover{text-decoration:underline}
   #table-legend .shift-pill{font-size:7pt!important;padding:1px 4px!important}
   .emp-card.warn{background:#fffde7!important;border-color:#f9e154!important}
   .emp-card.bad{background:#fde8e8!important;border-color:#e74c3c!important}
-  .summary-grid .emp-card-header .cat-badge{font-size:8pt}
 }
 </style>
 </head>
@@ -345,11 +303,11 @@ td.emp-name-cell:hover{text-decoration:underline}
       <button class="btn btn-outline btn-sm" id="btn-next-day" onclick="generateNextDay()" style="display:none" data-tooltip="Generează doar ziua curentă și avansează — verificare pas cu pas">Ziua →</button>
       <button class="btn btn-success btn-sm" id="btn-generate-all" onclick="generateAll()" style="display:none" data-tooltip="Generează dintr-odată toate zilele rămase din lună">Generare totală →</button>
       <button class="btn btn-warning btn-sm" onclick="clearSchedule()" data-tooltip="Șterge turele generate pentru luna curentă; CO și CM introduse se păstrează (dispecerii rămân)">✕ Curăță</button>
-      <button class="btn btn-success btn-sm" id="add-emp-btn" onclick="openAddEmployeeModal()" data-tooltip="Adaugă un dispecer nou">+ Electrician</button>
+      <button class="btn btn-success btn-sm" id="add-emp-btn" onclick="openAddEmployeeModal()" data-tooltip="Adaugă un dispecer nou">+ Dispecer</button>
     </div>
   </div>
 
-  <!-- Modal adăugare electrician -->
+  <!-- Modal adăugare dispecer -->
   <div id="add-emp-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeAddEmployeeModal()">
     <div class="modal-content">
       <h3>Adaugă dispecer</h3>
@@ -366,7 +324,7 @@ td.emp-name-cell:hover{text-decoration:underline}
     <div class="modal-content">
       <h3>⚙️ Setări organizație</h3>
       <label>Formația / Unitatea
-        <input type="text" id="org-formatia" placeholder="ex: Formația Exploatare Măsură Piatra Neamț/Bicaz">
+        <input type="text" id="org-formatia" placeholder="ex: Formația Dispecerat Piatra Neamț">
       </label>
       <label>Șef FOL EM — Nume Prenume
         <input type="text" id="org-sef" placeholder="ex: Popescu Ion">
@@ -383,17 +341,6 @@ td.emp-name-cell:hover{text-decoration:underline}
       <div class="modal-buttons">
         <button class="btn btn-outline" onclick="closeOrgModal()">Anulează</button>
         <button class="btn btn-success" onclick="saveOrgSettings()">Salvează</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal analiză moduri -->
-  <div id="analyze-modal" class="modal-overlay no-print" style="display:none" onclick="if(event.target===this)closeAnalyzeModal()">
-    <div class="modal-content" style="max-width:900px;width:96%;max-height:86vh;overflow:auto">
-      <h3>📈 Analiză moduri — utilizare echipaje pe lună</h3>
-      <div id="analyze-body" style="font-size:13px"></div>
-      <div class="modal-buttons">
-        <button class="btn btn-outline" onclick="closeAnalyzeModal()">Închide</button>
       </div>
     </div>
   </div>
@@ -435,11 +382,11 @@ td.emp-name-cell:hover{text-decoration:underline}
     <div class="tb-group tb-dd-wrap">
       <button class="btn btn-outline btn-sm" onclick="toggleTbDropdown('dd-fisiere')" data-tooltip="Salvează sau încarcă grafice și date">💾 Fișiere ▾</button>
       <div class="tb-dd" id="dd-fisiere">
-        <button onclick="closeTbDropdowns();exportMonthJSON()" data-tooltip="Exportă DOAR luna afișată acum (grafic + electricieni + config) într-un fișier mic, ușor de trimis cuiva">💾 Descarcă doar luna curentă <span class="tb-dd-hint">JSON</span></button>
-        <button onclick="closeTbDropdowns();exportFullJSON()" data-tooltip="Exportă TOATE lunile salvate, toți electricienii și toate setările — backup complet al aplicației">💿 Descarcă tot (backup complet) <span class="tb-dd-hint">JSON</span></button>
+        <button onclick="closeTbDropdowns();exportMonthJSON()" data-tooltip="Exportă DOAR luna afișată acum (grafic + dispeceri) într-un fișier mic, ușor de trimis cuiva">💾 Descarcă doar luna curentă <span class="tb-dd-hint">JSON</span></button>
+        <button onclick="closeTbDropdowns();exportFullJSON()" data-tooltip="Exportă TOATE lunile salvate, toți dispecerii și toate setările — backup complet al aplicației">💿 Descarcă tot (backup complet) <span class="tb-dd-hint">JSON</span></button>
         <div class="tb-dd-sep"></div>
         <button onclick="closeTbDropdowns();loadJSON()" data-tooltip="Deschide un fișier JSON exportat de aici — recunoaște automat dacă e o lună sau un backup complet">📂 Încarcă fișier (lună sau backup)</button>
-        <button onclick="closeTbDropdowns();importEmployees()" data-tooltip="Adaugă electricieni dintr-un alt fișier JSON, fără să șteargă graficul sau electricienii existenți">👥 Adaugă electricieni din fișier</button>
+        <button onclick="closeTbDropdowns();importEmployees()" data-tooltip="Adaugă electricieni dintr-un alt fișier JSON, fără să șteargă graficul sau dispecerii existenți">👥 Adaugă dispeceri din fișier</button>
       </div>
     </div>
     <div class="tb-sep"></div>
@@ -447,11 +394,6 @@ td.emp-name-cell:hover{text-decoration:underline}
     <div class="tb-group">
       <button class="btn btn-outline btn-sm" onclick="exportExcel()" data-tooltip="Exportă graficul în format Excel (.xlsx) cu stiluri și logo">📊 Excel</button>
       <button class="btn btn-primary btn-sm" onclick="printSchedule()" data-tooltip="Printează graficul sau salvează ca PDF (Ctrl+P)">🖨️ Print / PDF</button>
-    </div>
-    <div class="tb-sep"></div>
-    <!-- Analiză moduri (doar Exploatare) -->
-    <div class="tb-group no-print" id="analyze-group" style="display:none">
-      <button class="btn btn-outline btn-sm" onclick="analyzeModes()" data-tooltip="Compară cele 4 moduri de generare pe baza echipajelor detectate automat și a configurației curente — care mod utilizează cel mai bine echipajele pe lună">📈 Analiză moduri</button>
     </div>
     <div class="tb-sep"></div>
     <!-- Ajutor + versiune -->
@@ -482,8 +424,6 @@ td.emp-name-cell:hover{text-decoration:underline}
     </div>
   </div>
 </div>
-
-<!-- bulk-toolbar removed (not implemented) -->
 
 <div id="help-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeHelp()">
   <div class="modal-content" style="max-width:760px;max-height:88vh;display:flex;flex-direction:column;padding-bottom:12px">
@@ -615,8 +555,8 @@ td.emp-name-cell:hover{text-decoration:underline}
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
             <span class="shift-pill pill-t1" style="padding:3px 10px;font-size:12px">T1 — 06:00–10:00 (4h)</span>
             <span class="shift-pill pill-t2" style="padding:3px 10px;font-size:12px">T2 — 10:00–16:00 (6h)</span>
-            <span class="shift-pill pill-t1a" style="padding:3px 10px;font-size:12px">T3 — 16:00–22:00 (6h)</span>
-            <span class="shift-pill pill-t2a" style="padding:3px 10px;font-size:12px">T4 — 22:00–06:00 (8h)</span>
+            <span class="shift-pill pill-t3" style="padding:3px 10px;font-size:12px">T3 — 16:00–22:00 (6h)</span>
+            <span class="shift-pill pill-t4" style="padding:3px 10px;font-size:12px">T4 — 22:00–06:00 (8h)</span>
             <span class="shift-pill pill-co" style="padding:3px 10px;font-size:12px">CO — Concediu Odihnă</span>
             <span class="shift-pill pill-cm" style="padding:3px 10px;font-size:12px">CM — Concediu Medical</span>
             <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>
@@ -715,11 +655,12 @@ td.emp-name-cell:hover{text-decoration:underline}
           <div class="help-section-title">📁 Meniul „💾 Fișiere”</div>
           <ul class="help-list">
             <li><em>💾 Descarcă doar luna curentă</em> — fișier JSON mic cu graficul lunii afișate, electricienii și configurația; ușor de trimis cuiva.</li>
-            <li><em>💿 Descarcă tot (backup complet)</em> — toate lunile, toți electricienii și toate setările.</li>
+            <li><em>💿 Descarcă tot (backup complet)</em> — toate lunile, toți dispecerii și toate setările.</li>
             <li><em>📂 Încarcă fișier (lună sau backup)</em> — recunoaște automat tipul fișierului.</li>
-            <li><em>👥 Adaugă electricieni din fișier</em> — adaugă doar electricienii lipsă (după nume), fără să atingă graficul.</li>
+            <li><em>👥 Adaugă dispeceri din fișier</em> — adaugă doar dispecerii lipsă (după nume), fără să atingă graficul.</li>
           </ul>
-          <p><strong>Import de lună:</strong> înlocuiește doar luna din fișier; celelalte luni rămân intacte. Electricienii lipsă se adaugă, dar lista existentă și configurația curentă <strong>nu</strong> se suprascriu. Dacă un id de electrician coincide cu unul local dar numele diferă, primești un avertisment (turele ar putea ajunge la persoana greșită).</p>
+          <p><strong>Import de lună:</strong> înlocuiește doar luna din fișier; celelalte luni rămân intacte. Dispecerii lipsă se adaugă, dar lista existentă <strong>nu</strong> se suprascrie. Dacă un id de dispecer coincide cu unul local dar numele diferă, primești un avertisment (turele ar putea ajunge la persoana greșită).</p>
+          <p><strong>Fișiere din Exploatare:</strong> fișierele exportate din aplicația Exploatare (electricieni, ture T1A/T2A/8h) sunt refuzate la import — au alt înțeles al turelor.</p>
           <p><strong>Import de backup complet:</strong> <strong>înlocuiește toată baza de date</strong> curentă. Datele organizației deja completate nu se suprascriu.</p>
           <p>Fișierele sunt compatibile între versiuni; câmpurile noi se completează automat la import. În browserele moderne, „Descarcă tot” rescrie același fișier ales anterior, fără să mai ceară locația.</p>
         </div>
@@ -774,12 +715,21 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura_dispecer';
 const VERSION_KEY = 'graficTura_dispecer_version';
 const ORG_KEY = 'graficTura_dispecer_org';
-const APP_VERSION = 'V2026.10.1';
-const COMMIT_COUNT = 99;
+const APP_VERSION = 'V2026.10.2';
+const COMMIT_COUNT = 104;
 const DB_NAME = 'GraficTuraDispecerDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.10.2': {
+    title: 'Curățenie și corecturi Dispecer',
+    items: [
+      { icon: '🧹', text: 'Eliminate din aplicație restul funcțiilor din Exploatare (echipaje, Urban/Rural, analiză moduri) — fișier mai mic și mai simplu' },
+      { icon: '🏷️', text: 'Titlul paginii și previzualizările de link spun acum „Grafic dispecer”; coloana „Funcția” (mereu „Electrician”) a dispărut din tabel' },
+      { icon: '🛡️', text: 'Fișierele exportate din aplicația Exploatare sunt refuzate la import, ca să nu strice graficul dispecerilor' },
+      { icon: '🔢', text: 'Orele de CO/CM se afișează corect rotunjite (ex. 14,4h) și la fel în tabel, în Excel și după modificarea unei celule' }
+    ]
+  },
   'V2026.10.1': {
     title: 'Aplicația Dispecer',
     items: [
@@ -792,69 +742,33 @@ const CHANGELOG = {
 const DB_STORE = 'state';
 let db = null;
 
-// ── Module (Exploatare / Dispecer) ────────────────────────────────────────
-const MODULE_DEFS = {
-  exploatare: {
-    label: 'Exploatare',
-    legendName: 'Exploatare — electricieni',
-    groups: ['urban', 'rural'],
-    groupNames: { urban: 'Urban', rural: 'Rural' },
-    shiftNames: ['L', 'T1', 'T2', 'T1A', 'T2A', 'CO', 'CM', '8', 'INST'],
-    shiftHours: [0, 8, 8, 8, 8, 0, 0, 8, 8],
-    weekendDropdownHide: [3, 4, 5, 6, 7, 8],
-    weekendDisplayL: [5, 6, 7, 8],
-    storageKey: 'graficTura',
-    dbKey: 'main'
-  },
-  dispecer: {
-    label: 'Dispecer',
-    legendName: 'Dispeceri',
-    groups: ['dispecer'],
-    groupNames: { dispecer: 'Dispeceri' },
-    shiftNames: ['L', 'T1', 'T2', 'T3', 'T4', 'CO', 'CM'],
-    shiftHours: [0, 4, 6, 6, 8, 0, 0],
-    weekendDropdownHide: [5, 6],
-    weekendDisplayL: [5, 6],
-    storageKey: 'graficTura_dispecer',
-    dbKey: 'main_dispecer'
-  }
-};
-let CURRENT_MODULE = 'dispecer';
-let GROUPS = MODULE_DEFS[CURRENT_MODULE].groups.slice();
-let SHIFT_NAMES = MODULE_DEFS[CURRENT_MODULE].shiftNames.slice();
-let SHIFT_HOURS = MODULE_DEFS[CURRENT_MODULE].shiftHours.slice();
-function moduleDef() { return MODULE_DEFS[CURRENT_MODULE]; }
+// ── Ture (Dispecer) ──────────────────────────────────────────────────────
+const SHIFT_NAMES = ['L', 'T1', 'T2', 'T3', 'T4', 'CO', 'CM'];
+const SHIFT_HOURS = [0, 4, 6, 6, 8, 0, 0];
+const WEEKEND_HIDE = [5, 6]; // CO/CM nu se oferă în dropdown pe S/D (se afișează ca L)
+const DB_KEY = 'main_dispecer';
+const CYCLE = [3, 2, 1, 4, 0]; // T3 → T2 → T1 → T4 → L
+const AVG_HOURS_PER_DAY = 24 / CYCLE.length; // 4,8h — media ciclului, folosită la normă și la CO/CM
 
 let stateLoadCorrupted = false;
 let state = loadState();
 let savedFileHandle = null;
+// genStats e doar marcajul „generare în curs" ({}): ciclul se calculează din data absolută,
+// nu din statistici acumulate.
 let genDay = state.genDay || 0, genStats = state.genStats || null, genCOCM = state.preservedCOCM || {}, genYear = state.genYear || 0, genMonth = state.genMonth || 0, genDim = state.genDim || 0;
-
-const FUNC_NAMES = { emitent: 'Emitent', admitent: 'Admitent', electrician: 'Electrician', seftura: 'Șef tură' };
-const PREDEFINED_CREWS = ['U1','U2','U3','U4','U5','R1','R2','R3','R4','R5'];
 
 function defaultState() {
   const now = new Date();
-  const base = {
-    module: CURRENT_MODULE,
-    customCrews: [],
+  return {
+    module: 'dispecer',
     schedule: {},
     preservedCOCM: {},
     genDay: 0, genStats: null, genYear: 0, genMonth: 0, genDim: 0,
     currentMonth: now.getMonth() + 1,
     currentYear: now.getFullYear(),
-    org: { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' }
+    org: { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' },
+    employees: [{ id: 1, name: 'Dispecer 1', category: 'dispecer' }]
   };
-  if (CURRENT_MODULE === 'dispecer') {
-    base.employees = [{ id: 1, name: 'Dispecer 1', category: 'dispecer', functia: 'electrician', crew: '', forced8: false, crewOverrides: {} }];
-    base.config = { dispecer: { t1: 1, t2: 1, t3: 1, t4: 1 } };
-    base.genMode = 'dispecer';
-  } else {
-    base.employees = [{ id: 1, name: 'Electrician 1', category: 'urban', functia: 'emitent', crew: '', forced8: false, crewOverrides: {} }];
-    base.config = { urban: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 }, rural: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 } };
-    base.genMode = 't12';
-  }
-  return base;
 }
 
 function openDB() {
@@ -890,7 +804,7 @@ function dbPut(key, value) {
 
 function loadState() {
   try {
-    const raw = localStorage.getItem(moduleDef().storageKey);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const s = JSON.parse(raw);
       if (s && s.employees && Array.isArray(s.employees)) {
@@ -908,103 +822,12 @@ function loadState() {
     // fără nicio urmă a ce s-a întâmplat — userul afla abia când observa că lipsesc date
     // (bug găsit la audit).
     try {
-      const raw = localStorage.getItem(moduleDef().storageKey);
-      if (raw) localStorage.setItem(moduleDef().storageKey + '_corrupt_backup', raw);
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) localStorage.setItem(STORAGE_KEY + '_corrupt_backup', raw);
     } catch (e2) {}
     stateLoadCorrupted = true;
   }
   return defaultState();
-}
-
-function getCrewForDay(emp, dk) {
-  if (!emp.crewOverrides || Object.keys(emp.crewOverrides).length === 0) return emp.crew || '';
-  const dates = Object.keys(emp.crewOverrides).filter(d => d <= dk).sort();
-  if (dates.length === 0) return emp.crew || '';
-  return emp.crewOverrides[dates[dates.length - 1]] || emp.crew || '';
-}
-
-function addCrewToCustom(crew) {
-  if (!crew || PREDEFINED_CREWS.includes(crew)) return;
-  if (!state.customCrews) state.customCrews = [];
-  if (!state.customCrews.includes(crew)) state.customCrews.push(crew);
-}
-
-function populateCrewSelect(selectId, currentVal) {
-  const sel = document.getElementById(selectId);
-  if (!sel) return;
-  // Nume de echipaj custom = text liber introdus de user (sau importat dintr-un JSON) — atât
-  // atributul value="..." CÂT ȘI textul vizibil al opțiunii trebuie escapate separat: esc() nu
-  // codifică ghilimelele (irelevante în conținut text, dar critice într-un atribut), de-asta
-  // există escAttr() pt. value="..." — text-ul vizibil (era complet NEescapat înainte, gap
-  // găsit acum) folosește esc() (bug latent, reproductibil prin UI normal: un nume de echipaj
-  // cu `"` sau `<script>` rupea atributul / injecta cod la fiecare randare a select-ului).
-  const all = ['', ...PREDEFINED_CREWS, ...(state.customCrews || [])];
-  sel.innerHTML = all.map(c => '<option value="' + escAttr(c) + '"' + (c === (currentVal||'') ? ' selected' : '') + '>' + (c ? esc(c) : '—') + '</option>').join('');
-}
-
-function populateCrewDatalist(datalistId) {
-  const dl = document.getElementById(datalistId);
-  if (!dl) return;
-  const all = [...PREDEFINED_CREWS, ...(state.customCrews || [])];
-  dl.innerHTML = all.map(c => '<option value="' + escAttr(c) + '">').join('');
-}
-
-function addCustomCrewToList() {
-  const inp = document.getElementById('modal-emp-crew-custom');
-  const crew = inp.value.trim();
-  if (!crew) return;
-  addCrewToCustom(crew);
-  const currentVal = document.getElementById('modal-emp-crew').value;
-  populateCrewSelect('modal-emp-crew', currentVal);
-  document.getElementById('modal-emp-crew').value = crew;
-  populateCrewDatalist('crew-datalist-override');
-  populateCrewSelect('new-emp-crew', '');
-  inp.value = '';
-  saveState();
-}
-
-let pendingOverrides = {};
-
-function renderOverridesList() {
-  const container = document.getElementById('crew-overrides-list');
-  if (!container) return;
-  const sorted = Object.keys(pendingOverrides).sort();
-  if (sorted.length === 0) {
-    container.innerHTML = '<span style="font-size:12px;color:#888">Nicio schimbare setată.</span>';
-    return;
-  }
-  // `d` (cheia de dată din crewOverrides) poate veni dintr-un angajat IMPORTAT dintr-un fișier
-  // JSON — nevalidat, potențial arbitrar, nu neapărat un format de dată curat. Interpolarea
-  // directă în onclick="...('+d+')" (fost cod) era vulnerabilă la XSS dacă d conținea ghilimele.
-  // Fix: atribut data-* (escapat de esc() ca orice alt text) + citire din dataset la click —
-  // nu se mai construiește deloc un literal JS din date neîncrezute.
-  container.innerHTML = sorted.map(d =>
-    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:13px">'
-    + '<span style="color:var(--text-muted);min-width:90px">' + esc(d) + '</span>'
-    + '<span style="font-weight:700;color:var(--text)">→ ' + esc(pendingOverrides[d]) + '</span>'
-    + '<button data-override-date="' + escAttr(d) + '" onclick="removeCrewOverride(this.dataset.overrideDate)" style="background:none;border:none;color:#e53e3e;cursor:pointer;font-size:16px;line-height:1;padding:0 4px">✕</button>'
-    + '</div>'
-  ).join('');
-}
-
-function addCrewOverride() {
-  const date = document.getElementById('override-date').value;
-  const crew = document.getElementById('override-crew').value.trim();
-  if (!date || !crew) { setStatus('Completează data și echipajul.', 'warn'); return; }
-  pendingOverrides[date] = crew;
-  addCrewToCustom(crew);
-  document.getElementById('override-date').value = '';
-  document.getElementById('override-crew').value = '';
-  const currentCrewVal = document.getElementById('modal-emp-crew') ? document.getElementById('modal-emp-crew').value : '';
-  populateCrewSelect('modal-emp-crew', currentCrewVal);
-  populateCrewDatalist('crew-datalist-override');
-  populateCrewSelect('new-emp-crew', '');
-  renderOverridesList();
-}
-
-function removeCrewOverride(date) {
-  delete pendingOverrides[date];
-  renderOverridesList();
 }
 
 function applyLeaveInterval() {
@@ -1018,12 +841,10 @@ function applyLeaveInterval() {
   // UTC miezul nopții, iar getDate()/getMonth() locale pot da o zi în minus/plus în funcție de fus.
   const start = new Date(from + 'T00:00:00');
   const end = new Date(to + 'T00:00:00');
-  let count = 0, skippedWeekend = 0;
+  let count = 0;
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    // INST nu e permis în weekend (aceeași regulă ca la selecția manuală pe celulă) — se sare
-    // peste acele zile, fără să atingă ce era deja acolo. CO/CM pot acoperi și weekendul (se
-    // afișează ca L acolo, dar valoarea rămâne CO/CM, la fel ca extensia automată de vineri).
-    if (type === 8 && (d.getDay() === 0 || d.getDay() === 6)) { skippedWeekend++; continue; }
+    // CO/CM pot acoperi și weekendul (se afișează ca L acolo, dar valoarea rămâne CO/CM,
+    // la fel ca extensia automată de vineri).
     const dk = dateKey(d.getFullYear(), d.getMonth() + 1, d.getDate());
     if (!state.schedule[dk]) state.schedule[dk] = {};
     state.schedule[dk][String(modalEmpId)] = type;
@@ -1033,42 +854,25 @@ function applyLeaveInterval() {
   render();
   document.getElementById('leave-from').value = '';
   document.getElementById('leave-to').value = '';
-  const typeLabel = type === 5 ? 'CO' : type === 6 ? 'CM' : 'INST';
-  let msg = 'Setat ' + typeLabel + ' pentru ' + count + ' zile (' + from + ' → ' + to + ').';
-  if (skippedWeekend > 0) msg += ' (' + skippedWeekend + ' zile de weekend sărite — INST nu e permis acolo)';
-  setStatus(msg, 'success');
+  setStatus('Setat ' + (type === 5 ? 'CO' : 'CM') + ' pentru ' + count + ' zile (' + from + ' → ' + to + ').', 'success');
 }
 
 function migrateState(s) {
-  if (!s.module) s.module = 'exploatare';
-  const isDisp = s.module === 'dispecer';
-  const migGroups = (MODULE_DEFS[s.module] || MODULE_DEFS.exploatare).groups;
-  s.employees.forEach(e => { if (!e.category || e.category === '8ore') e.category = isDisp ? 'dispecer' : 'urban'; if (!e.functia) e.functia = 'emitent'; if (!e.crew) e.crew = ''; if (!('forced8' in e)) e.forced8 = false; if (!e.crewOverrides) e.crewOverrides = {}; });
-  if (!s.customCrews) s.customCrews = [];
-  if (isDisp) {
-    if (!s.config || !s.config.dispecer) s.config = { dispecer: { t1: 1, t2: 1, t3: 1, t4: 1 } };
-  } else {
-    if (!s.config) s.config = { urban: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 }, rural: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 } };
-    if (s.config.tura1Count !== undefined) {
-      s.config = { urban: { t1: s.config.tura1Count || 2, t1a: 0, t2: s.config.tura2Count || 2, t2a: 0, c8: 0 }, rural: { t1: s.config.tura1Count || 2, t1a: 0, t2: s.config.tura2Count || 2, t2a: 0, c8: 0 } };
-    }
-    migGroups.forEach(g => { const c = s.config[g] || {}; if (c.t1a === undefined) c.t1a = 0; if (c.t2a === undefined) c.t2a = 0; if (c.c8 === undefined) c.c8 = 0; });
-  }
+  s.module = 'dispecer';
+  s.employees.forEach(e => { e.category = 'dispecer'; });
   if (!s.schedule) s.schedule = {};
   if (!s.preservedCOCM) s.preservedCOCM = {};
   if (s.genDay === undefined) s.genDay = 0;
   if (s.genStats === undefined) s.genStats = null;
-  if (s.genStats) Object.values(s.genStats).forEach(st => { if (st.inst === undefined) st.inst = 0; });
   if (s.genYear === undefined) s.genYear = 0;
   if (s.genMonth === undefined) s.genMonth = 0;
   if (s.genDim === undefined) s.genDim = 0;
   if (!s.org) s.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
-  if (!s.genMode) s.genMode = isDisp ? 'dispecer' : 't12';
 }
 
 async function initStateFromDB() {
   try {
-    const saved = await dbGet(moduleDef().dbKey);
+    const saved = await dbGet(DB_KEY);
     if (saved && saved.employees && Array.isArray(saved.employees)) {
       migrateState(saved);
       state = saved;
@@ -1086,15 +890,15 @@ async function initStateFromDB() {
 
 async function saveState() {
   try {
-    state.module = CURRENT_MODULE;
+    state.module = 'dispecer';
     state.preservedCOCM = genCOCM;
     state.genDay = genDay;
     state.genStats = genStats;
     state.genYear = genYear;
     state.genMonth = genMonth;
     state.genDim = genDim;
-    localStorage.setItem(moduleDef().storageKey, JSON.stringify(state));
-    await dbPut(moduleDef().dbKey, state);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    await dbPut(DB_KEY, state);
     const dbEl = document.getElementById('db-status');
     if (dbEl) dbEl.textContent = '💾 IndexedDB: salvat ' + new Date().toLocaleTimeString('ro');
   } catch (e) {
@@ -1109,7 +913,7 @@ function addEmployee() {
   const name = inp.value.trim();
   if (!name) { setStatus('Introdu numele dispecerului.', 'warn'); return; }
   const maxId = state.employees.reduce((m, e) => Math.max(m, e.id), 0);
-  state.employees.push({ id: maxId + 1, name, category: 'dispecer', functia: 'electrician', crew: '', forced8: false, crewOverrides: {} });
+  state.employees.push({ id: maxId + 1, name, category: 'dispecer' });
   inp.value = '';
   inp.focus();
   saveState();
@@ -1120,23 +924,8 @@ function addEmployee() {
 
 function openAddEmployeeModal() {
   document.getElementById('new-emp').value = '';
-  const fc = document.getElementById('new-emp-forced'); if (fc) fc.checked = false;
-  const cc = document.getElementById('new-emp-crew-custom'); if (cc) cc.value = '';
-  const cs = document.getElementById('new-emp-crew'); if (cs) populateCrewSelect('new-emp-crew', '');
   document.getElementById('add-emp-modal').style.display = 'flex';
   setTimeout(() => document.getElementById('new-emp').focus(), 50);
-}
-
-function addCustomCrewFromAdd() {
-  const inp = document.getElementById('new-emp-crew-custom');
-  const crew = inp.value.trim();
-  if (!crew) return;
-  addCrewToCustom(crew);
-  populateCrewSelect('new-emp-crew', crew);
-  populateCrewSelect('modal-emp-crew', document.getElementById('modal-emp-crew') ? document.getElementById('modal-emp-crew').value : '');
-  populateCrewDatalist('crew-datalist-override');
-  inp.value = '';
-  saveState();
 }
 
 function closeAddEmployeeModal() {
@@ -1148,47 +937,6 @@ function daysInMonth(year, month) {
 }
 
 function pad(n) { return String(n).padStart(2, '0'); }
-
-function readConfig(g) {
-  const ids = CURRENT_MODULE === 'dispecer' ? ['t1', 't2', 't3', 't4'] : ['t1', 't1a', 't2', 't2a', 'c8'];
-  const out = {};
-  ids.forEach(id => {
-    const el = document.getElementById('cfg-' + g + '-' + id);
-    out[id] = Math.max(0, parseInt(el ? el.value : 0) || 0);
-  });
-  return out;
-}
-
-// Scrie configul din state în inputurile din bara de sus (module-aware).
-function applyConfigToDOM() {
-  const c = state.config || {};
-  if (CURRENT_MODULE === 'dispecer') {
-    const d = c.dispecer || {};
-    [['t1', 1], ['t2', 1], ['t3', 1], ['t4', 1]].forEach(([k, def]) => {
-      const el = document.getElementById('cfg-dispecer-' + k);
-      if (el) el.value = (d[k] !== undefined ? d[k] : def);
-    });
-  } else {
-    GROUPS.forEach(g => {
-      const gc = c[g] || {};
-      [['t1', 2], ['t1a', 0], ['t2', 2], ['t2a', 0], ['c8', 0]].forEach(([k, def]) => {
-        const el = document.getElementById('cfg-' + g + '-' + k);
-        if (el) el.value = (gc[k] !== undefined ? gc[k] : def);
-      });
-    });
-  }
-}
-
-// Actualizează bara de sus (config, dropdown mod) pentru modulul Dispecer.
-function updateModuleUI() {
-  const gm = document.getElementById('gen-mode');
-  if (gm) {
-    gm.innerHTML = '<option value="dispecer">Rotație dispecer (T3→T2→T1→T4)</option>';
-    gm.value = state.genMode || 'dispecer';
-  }
-  const addBtn = document.getElementById('add-emp-btn');
-  if (addBtn) addBtn.textContent = '+ Dispecer';
-}
 
 // Selector de modul: Dispecer rămâne aici, Exploatare redirecționează la index.html.
 function switchApp(v) {
@@ -1226,7 +974,7 @@ function getEmployeeStats(empId) {
     const parts = dk.split('-');
     const dow = new Date(+parts[0], +parts[1]-1, +parts[2]).getDay();
     const isWeekend = dow === 0 || dow === 6;
-    if (isWeekend && v >= 5) continue; // CO/CM/8h/INST nu se contorizează în weekend
+    if (isWeekend && v >= 5) continue; // CO/CM nu se contorizează în weekend
     if (v >= 0 && v < counts.length) counts[v]++;
   }
   let hours = 0, worked = 0;
@@ -1234,365 +982,7 @@ function getEmployeeStats(empId) {
   const co = counts[5] || 0, cm = counts[6] || 0;
   return {
     counts, co, cm, hours, worked, total: worked + co,
-    t1: counts[1] || 0, t2: counts[2] || 0, t1a: counts[3] || 0, t2a: counts[4] || 0,
-    c8: counts[7] || 0, inst: counts[8] || 0
   };
-}
-
-function assignCategoryShifts(catEmps, stats, cfg, dk, assigned, weekend, day, skipTA) {
-  const t1c = cfg.t1 || 0, t1ac = cfg.t1a || 0, t2c = cfg.t2 || 0, t2ac = cfg.t2a || 0, c8c = cfg.c8 || 0;
-  if (catEmps.length === 0 || (t1c + t1ac + t2c + t2ac + c8c === 0)) return;
-
-  // Rule: max 4 consecutive working days — employees with consec >= 4 MUST get a free day (L)
-  const MAX_CONSEC = 4;
-  // Rule: max 5 zile lucrate pe săptămâna calendaristică (Luni-Duminică) — se aplică la TOATE
-  // turele (T1/T2/T1A/T2A/8h) de la această etapă, nu doar la T1A/T2A/8h cum era înainte (bug
-  // audit: cineva putea lucra 6+ zile pe T1/T2 fără nicio protecție săptămânală).
-  // new Date normalizează automat zilele ≤0 spre luna anterioară, ca săptămânile de la
-  // început de lună să se calculeze corect peste graniță.
-  const dkPartsW = dk.split('-');
-  const yrW = parseInt(dkPartsW[0]), moW = parseInt(dkPartsW[1]);
-  const dowW = new Date(yrW, moW - 1, day).getDay();
-  const weekStartW = day + (dowW === 0 ? -6 : 1 - dowW);
-  function weekCount(empId) {
-    let wc = 0;
-    for (let dd = weekStartW; dd < day; dd++) {
-      const realDate = new Date(yrW, moW - 1, dd);
-      const cdk = dateKey(realDate.getFullYear(), realDate.getMonth() + 1, realDate.getDate());
-      const v = state.schedule[cdk]?.[String(empId)];
-      if (v >= 1 && v <= 4 || v === 7 || v === 8) wc++;
-    }
-    return wc;
-  }
-  const available = catEmps.filter(e => (!stats[e.id] || stats[e.id].consec < MAX_CONSEC) && weekCount(e.id) < 5);
-
-  // group available employees by crew (non-crew each get solo group)
-  const groups = {};
-  available.forEach(e => {
-    const key = getCrewForDay(e, dk) || '__' + e.id;
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(e);
-  });
-  // Cei rămași fără pereche azi (partenerul e în CO/CM, sau angajatul n-are echipaj setat deloc)
-  // sunt împerecheați TEMPORAR între ei, determinist după id — practic (electricienii nu
-  // lucrează singuri) și mai corect pentru fairness decât tratarea ca indivizi separați, care
-  // putea duce la doi orfani lucrând pe ture DIFERITE în aceeași zi (unul T1, altul T2).
-  // Aceeași logică ca în assignRotationShifts, pt. modurile de rotație.
-  const rawCrews = Object.values(groups);
-  const soloGroups = rawCrews.filter(c => c.length === 1).sort((a, b) => a[0].id - b[0].id);
-  const pairedGroups = rawCrews.filter(c => c.length >= 2);
-  const tempPairs = [];
-  for (let i = 0; i + 1 < soloGroups.length; i += 2) tempPairs.push([...soloGroups[i], ...soloGroups[i + 1]]);
-  const leftoverSolo = soloGroups.length % 2 ? [soloGroups[soloGroups.length - 1]] : [];
-  const crews = [...pairedGroups, ...tempPairs, ...leftoverSolo];
-
-  function avg(c, field) {
-    return c.reduce((s, e) => s + stats[e.id][field], 0) / c.length;
-  }
-
-  function assignShift(crewsArr, count, shiftVal, sortField, softPrefer, hardBlock) {
-    // Doar echipaje ÎNCĂ complet neasignate azi — verificat direct în state.schedule (sursa de
-    // adevăr), nu prin lista `remaining` întoarsă de apelul anterior. `remaining` exclude doar
-    // echipajele plasate INTEGRAL (`result`); un echipaj din care fallback-ul individual a tras
-    // UN singur membru (mai jos) rămâne totuși în `remaining` cu ambii membri — la tura URMĂTOARE
-    // din aceeași zi putea fi plasat din nou integral, suprascriind membrul deja asignat (bug găsit
-    // la audit: persoana "sare" din T1 în T2, tura inițială rămâne neacoperită).
-    const unassignedToday = crewsArr.filter(c => c.every(e => state.schedule[dk][String(e.id)] === undefined));
-    // Hard block: regulă reală de siguranță (T2 ieri → nu T1/T1A azi) — niciun echipaj/individ
-    // care o încalcă nu poate fi folosit pt. acest slot, nici măcar ca rezervă de completare.
-    const candidates = (hardBlock && hardBlock.length)
-      ? unassignedToday.filter(c => c.every(e => stats[e.id].yesterday === null || !hardBlock.includes(stats[e.id].yesterday)))
-      : unassignedToday;
-    // Fairness (ore acumulate) e ÎNTOTDEAUNA criteriul principal — softPrefer (evită repetarea
-    // aceleiași ture ieri, doar variație) intervine STRICT ca departajare la egalitate de ore,
-    // niciodată nu suprascrie fairness-ul. Înainte, softPrefer înlocuia complet lista de
-    // candidați (excludea pe oricine a lucrat ieri tura respectivă, chiar și pe cel cu cele mai
-    // puține ore din toată luna) — bug găsit de user: un echipaj rămânea mereu ultimul, oricât
-    // de mult rămânea în urmă la ore, pentru că "preferința de varietate" îl exclude sistematic.
-    const pool = [...candidates];
-    pool.sort((a, b) => {
-      const da = avg(a, 'total'), db = avg(b, 'total');
-      if (da !== db) return da - db;
-      if (softPrefer && softPrefer.length) {
-        const aOK = a.every(e => stats[e.id].yesterday === null || !softPrefer.includes(stats[e.id].yesterday));
-        const bOK = b.every(e => stats[e.id].yesterday === null || !softPrefer.includes(stats[e.id].yesterday));
-        if (aOK !== bOK) return aOK ? -1 : 1;
-      }
-      return avg(a, sortField) - avg(b, sortField);
-    });
-    let placed = 0;
-    const result = [];
-    for (const c of pool) {
-      if (placed + c.length > count) continue;
-      c.forEach(e => { state.schedule[dk][String(e.id)] = shiftVal; assigned.push(e.id); });
-      placed += c.length;
-      result.push(c);
-    }
-    // fill remaining slots with individuals from unused crews (doar dintre candidates — cei
-    // hard-blocați rămân excluși și aici, dar softPrefer e doar preferință, nu excludere: dacă
-    // TOȚI cei rămași ar fi altfel excluși, capacitatea configurată tot se umple cât se poate —
-    // bug găsit de user: T1=4 configurat, dar umplut doar cu 2 în multe zile pt. că fallback-ul
-    // vechi excludea definitiv pe oricine lucrase ieri, chiar și când nu exista nicio alternativă.
-    if (placed < count) {
-      const indiv = [];
-      candidates.filter(c => !result.includes(c)).forEach(c => c.forEach(e => indiv.push(e)));
-      // Fairness (total ore) e criteriul principal; softPrefer doar departajează la egalitate —
-      // al doilea .sort() de mai jos NU mai suprascrie complet ordinea (bug: cele două sortări
-      // separate anulau reciproc efectul softPrefer, dar asta nu era cauza principală a
-      // dezechilibrului, doar o inconsistență cu partea de echipaje, corectată acum la fel).
-      indiv.sort((a, b) => {
-        const ta = stats[a.id].total, tb = stats[b.id].total;
-        if (ta !== tb) return ta - tb;
-        if (softPrefer && softPrefer.length) {
-          const aOK = stats[a.id].yesterday === null || !softPrefer.includes(stats[a.id].yesterday);
-          const bOK = stats[b.id].yesterday === null || !softPrefer.includes(stats[b.id].yesterday);
-          if (aOK !== bOK) return aOK ? -1 : 1;
-        }
-        return 0;
-      });
-      for (const e of indiv) {
-        if (placed >= count) break;
-        state.schedule[dk][String(e.id)] = shiftVal;
-        assigned.push(e.id);
-        placed++;
-      }
-    }
-    const deficit = count - placed;
-    return { remaining: crewsArr.filter(c => !result.includes(c)), deficit: deficit > 0 ? deficit : 0 };
-  }
-
-  let remaining = [...crews];
-  let r;
-  if (day % 2 === 0) {
-    r = assignShift(remaining, t2c, 2, 't2', [2]); remaining = r.remaining;
-    r = assignShift(remaining, t1c, 1, 't1', [1], [2]); remaining = r.remaining;
-  } else {
-    r = assignShift(remaining, t1c, 1, 't1', [1], [2]); remaining = r.remaining;
-    r = assignShift(remaining, t2c, 2, 't2', [2]); remaining = r.remaining;
-  }
-  if (!weekend && !skipTA) {
-    // Cap-ul de 5 zile/săptămână e deja aplicat mai sus, la `available` — acoperă acum T1/T2
-    // ȘI T1A/T2A/8h uniform, nu mai e nevoie de un filtru separat aici (era dublură/bug audit:
-    // înainte se aplica DOAR aici, lăsând T1/T2 complet neprotejate de regula săptămânală).
-    r = assignShift(remaining, t1ac, 3, 't1a', false, [2]); remaining = r.remaining;
-    r = assignShift(remaining, t2ac, 4, 't2a', false); remaining = r.remaining;
-  }
-  // c8 (8h) e independent de T1A/T2A — nu ar trebui legat de `skipTA`. Înainte era alocat DOAR în
-  // modul „full", deși câmpul de configurare rămâne vizibil (și editabil) și în „t12" (nu are
-  // clasa .ta-field) — userul îl configura, aplicația îl ignora silențios (bug găsit la audit).
-  if (!weekend) {
-    r = assignShift(remaining, c8c, 7, 'c8', false); remaining = r.remaining;
-  }
-}
-
-function assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, ROTATION) {
-  if (!ROTATION) ROTATION = [1, 3, 2, 0, 1, 4, 2, 0];
-  const CYCLE_LEN = ROTATION.length;
-  const eligible = emps.filter(e => !e.forced8 && !assigned.includes(e.id));
-  // Group by effective crew
-  const crews = {};
-  eligible.forEach(e => {
-    const key = getCrewForDay(e, dk) || '__' + e.id;
-    if (!crews[key]) crews[key] = [];
-    crews[key].push(e);
-  });
-  // Full crews (≥2) rotate as a block; partial crews (ex. partenerul e în CO/CM) feed the
-  // individual pool
-  const fullCrews = [];
-  let individuals = [];
-  Object.values(crews).forEach(c => {
-    if (c.length >= 2) { fullCrews.push(c); }
-    else { individuals.push(c[0]); }
-  });
-  individuals.sort((a, b) => a.id - b.id);
-  // Cei rămași fără pereche (de obicei partenerul e în CO/CM) sunt împerecheați TEMPORAR între
-  // ei, din echipaje diferite dar aceeași categorie — practic (electricienii nu lucrează
-  // singuri) și mai corect pentru fairness: un „echipaj temporar" de 2 concurează normal pentru
-  // capacitate, în loc să rămână individ solo (capacitate 1), ușor blocat de echipajele complete.
-  const tempPairs = [];
-  GROUPS.forEach(cat => {
-    const catIndiv = individuals.filter(e => (e.category || 'urban') === cat);
-    for (let i = 0; i + 1 < catIndiv.length; i += 2) tempPairs.push([catIndiv[i], catIndiv[i + 1]]);
-  });
-  const pairedIds = new Set(tempPairs.flat().map(e => e.id));
-  individuals = individuals.filter(e => !pairedIds.has(e.id));
-  fullCrews.push(...tempPairs);
-  fullCrews.sort((a, b) => a[0].id - b[0].id);
-  const limits = {}, used = {};
-  GROUPS.forEach(g => {
-    const c = cfgs[g];
-    limits[g] = { t1: c.t1||0, t1a: (weekend ? 0 : c.t1a||0), t2: c.t2||0, t2a: (weekend ? 0 : c.t2a||0) };
-    used[g] = { t1:0, t1a:0, t2:0, t2a:0 };
-  });
-  const MAX_CONSEC = 4;
-  // Max 5 zile lucrate pe săptămâna calendaristică (Luni-Duminică) — aceeași regulă ca în
-  // full/t12, lipsea complet din modul de rotație (bug găsit la audit). new Date normalizează
-  // automat zilele <1 spre luna anterioară, ca să conteze corect și săptămânile de la
-  // început de lună.
-  const dkParts0 = dk.split('-');
-  const yr0 = parseInt(dkParts0[0]), mo0 = parseInt(dkParts0[1]);
-  const dow0 = new Date(yr0, mo0 - 1, day).getDay();
-  const weekStart = day + (dow0 === 0 ? -6 : 1 - dow0);
-  function weekCount(empId) {
-    let wc = 0;
-    for (let dd = weekStart; dd < day; dd++) {
-      const realDate = new Date(yr0, mo0 - 1, dd);
-      const cdk = dateKey(realDate.getFullYear(), realDate.getMonth() + 1, realDate.getDate());
-      const v = state.schedule[cdk]?.[String(empId)];
-      if (v >= 1 && v <= 4 || v === 7 || v === 8) wc++;
-    }
-    return wc;
-  }
-  function doAssign(list, sv) {
-    if (sv === 0) return;
-    const key = sv === 1 ? 't1' : sv === 2 ? 't2' : sv === 3 ? 't1a' : sv === 4 ? 't2a' : null;
-    if (!key) return;
-    // Max 4 zile consecutive lucrate — dacă oricare membru al echipajului/individul e deja
-    // la limită, tot grupul primește L în loc de tura dorită (aceeași regulă ca în full/t12).
-    if (list.some(e => genStats[e.id] && genStats[e.id].consec >= MAX_CONSEC)) return;
-    // Max 5 zile lucrate pe săptămână — vezi mai sus.
-    if (list.some(e => weekCount(e.id) >= 5)) return;
-    // T2 blochează T1/T1A a doua zi (gap de 8h între ture) — aceeași regulă ca în full/t12.
-    // Ciclul propriu (8 sau 3 zile) nu produce natural T2→T1, dar rotația de bloc poate crea
-    // un salt de fază la granița dintre blocuri; verificarea explicită acoperă și acel caz.
-    if ((sv === 1 || sv === 3) && list.some(e => genStats[e.id] && genStats[e.id].yesterday === 2)) return;
-    const cat = list[0].category || 'urban';
-    if (!limits[cat] || used[cat][key] + list.length > limits[cat][key]) return;
-    list.forEach(e => { state.schedule[dk][String(e.id)] = sv; assigned.push(e.id); });
-    used[cat][key] += list.length;
-  }
-  // Fiecare echipaj/individ urmează ciclul de 8 zile T1→T1A→T2→L→..., dar cu 2 particularități:
-  // 1. Fairness: când mai multe echipaje vor ACEEAȘI tură în ACEEAȘI zi și limita numerică nu ajunge
-  //    pentru toate, câștigă cel cu mai puține ore acumulate luna curentă — nu mai câștigă mereu id-ul mai mic.
-  // 2. Rotație de bloc: dacă sunt mai mult de 4 echipaje/grup, ciclul ROTATION are o simetrie de
-  //    perioadă 4 (T1/T2/L se repetă, doar T1A/T2A diferă) — cu 5+ echipaje, cel puțin o pereche va
-  //    cere mereu aceeași tură în aceeași zi. Ca să nu cadă mereu pe aceeași pereche (ex. mereu U1↔U5),
-  //    poziția fiecărui echipaj în ciclu se decalează la fiecare bloc de 8 zile, astfel încât perechea
-  //    care „se ciocnește" se rotește printre toate echipajele pe parcursul lunii.
-  // genStats direct, nu getEmployeeStats(id).hours — acela citește din state.currentYear/Month
-  // (setate de dropdown-urile lună/an din DOM), nu din luna generată efectiv (genYear/genMonth).
-  // Dacă userul schimbă dropdown-ul lună/an în timpul unei generări pas-cu-pas, fairness-ul
-  // ajungea să citească silent orele altei luni (bug găsit la audit).
-  const hoursOf = list => genStats[list[0].id] ? genStats[list[0].id].total : 0;
-  // Faza ciclului se calculează din numărul ABSOLUT de zile (de la epoca Unix), nu din ziua
-  // lunii (care se resetează la 1 în fiecare lună). Astfel ciclul curge CONTINUU peste granițele
-  // dintre luni — nu mai există un salt de fază la trecerea lună→lună care putea produce un
-  // T2→T1 ilegal chiar pe ziua 1 (blocat de regula de gap → tura rămânea complet neacoperită).
-  // Reziduul lunilor cu 31 de zile se rotește oricum natural între echipaje, pentru că lungimile
-  // de lună diferă (31 % CYCLE_LEN ≠ 0), deci fiecare lună începe într-un punct diferit al ciclului
-  // — nu mai e nevoie de `monthSeed`.
-  const absDay = Math.round(new Date(dk + 'T00:00:00Z').getTime() / 86400000);
-  const blockAbs = Math.floor(absDay / CYCLE_LEN);
-  // Detectează dacă n echipaje pot exista fără coliziune de tură pe acest ROTATION — nu e
-  // suficient n<=CYCLE_LEN (idx unic nu garantează valoare unică: ROTATION poate avea aceeași
-  // tură pe poziții diferite, ex. T1 la poz. 0 ȘI 4 în ciclul de 8 zile). Verifică direct: există
-  // vreo zi în care două idx din [0,n) cer aceeași tură reală (L exclus, nu produce conflict)?
-  // IMPORTANT: verifică și varianta cu phaseFallback aplicat (T1A→T1, T2A→T2) — o poziție din
-  // ciclu poate cădea pe orice zi a săptămânii de-a lungul lunii, deci fallback-ul poate crea
-  // coliziuni noi (ex. T1 la poz. 0 ȘI 1 dacă poz. 1 era T1A) pe care varianta de bază nu le
-  // arată. `remapPossible` e adevărat ori de câte ori fallback-ul de mai jos ar putea remapa
-  // vreodată poziția respectivă (fie pt. că T1A e folosit activ — remap doar în weekend — fie
-  // pt. că T1A e dezactivat complet dar T1 are capacitate — remap ÎN FIECARE zi, nu doar weekend);
-  // verificarea conservativă (worst-case) e sigură chiar dacă remap-ul nu se întâmplă chiar în
-  // fiecare zi din lună — la fel ca înainte, doar cu condiția de declanșare extinsă.
-  function hasCollision(n, cat) {
-    const c = cfgs[cat] || {};
-    const remapPossibleT1A = (c.t1a || 0) > 0 || (c.t1 || 0) > 0;
-    const remapPossibleT2A = (c.t2a || 0) > 0 || (c.t2 || 0) > 0;
-    const remapped = ROTATION.map(v => (v === 3 && remapPossibleT1A) ? 1 : (v === 4 && remapPossibleT2A) ? 2 : v);
-    function check(arr) {
-      for (let D = 0; D < CYCLE_LEN; D++) {
-        const seen = new Set();
-        for (let idx = 0; idx < n; idx++) {
-          const v = arr[(idx + D) % CYCLE_LEN];
-          if (v === 0) continue;
-          if (seen.has(v)) return true;
-          seen.add(v);
-        }
-      }
-      return false;
-    }
-    return check(ROTATION) || check(remapped);
-  }
-
-  // Două motive DISTINCTE pt. care o fază T1A/T2A nu poate rămâne T1A/T2A, tratate separat:
-  // 1. Formația NU folosește deloc T1A/T2A (config = 0) — atunci acea tură pur și simplu nu
-  //    există în programul real al formației, indiferent de zi. Faza cade mereu pe echivalentul
-  //    principal (T1A→T1), în FIECARE zi (nu doar weekend) — altfel echipajul pierde o zi
-  //    lucrătoare întreagă de fiecare dată când ciclul îi cere o tură care nu există (bug găsit
-  //    la audit: cu T1A/T2A=0 — configurația implicită a aplicației — modul „Rotație 8 zile"
-  //    pierdea ~56h/lună/persoană, cu T1/T2 configurate și capacitate liberă).
-  // 2. Formația FOLOSEȘTE T1A/T2A în timpul săptămânii (config > 0), dar tura e blocată STRUCTURAL
-  //    doar sâmbătă/duminică (regulă de business, independentă de config) — faza cade pe
-  //    echivalentul principal DOAR în weekend, ca înainte.
-  // În ambele cazuri, fallback-ul nu inventează cerere unde nu exista una reală: dacă și T1A ȘI T1
-  // sunt 0, rămâne L (nimic de redirecționat spre).
-  const phaseFallback = (sv, cat) => {
-    const c = cfgs[cat] || {};
-    if (sv === 3) {
-      if ((c.t1a || 0) === 0) return (c.t1 || 0) > 0 ? 1 : sv;
-      if (weekend) return 1;
-    }
-    if (sv === 4) {
-      if ((c.t2a || 0) === 0) return (c.t2 || 0) > 0 ? 2 : sv;
-      if (weekend) return 2;
-    }
-    return sv;
-  };
-
-  // Rotația de fază (idx/block) se calculează SEPARAT per categorie (urban/rural). Limitele
-  // numerice sunt per-categorie — dacă idx s-ar calcula pe lista combinată urban+rural, numărul
-  // de „competitori" (nCrews) ar fi greșit (ex. 10 în loc de 5) și ar strica matematica de
-  // anti-coliziune derivată pentru dimensiunea reală a fiecărui grup.
-
-  // Rotația de bloc e necesară DOAR când există coliziune structurală reală (`ROTATION` repetă
-  // aceeași tură pe poziții din intervalul [0,n) — vezi `hasCollision`). Când NU există coliziune,
-  // idx rămâne fix (i) — fiecare echipaj ține un ciclu perfect continuu T1→T2→L→..., iar `absDay`
-  // asigură continuitatea peste granițele de lună. Când EXISTĂ coliziune, blocul (bazat tot pe
-  // `absDay`, continuu) se decalează la fiecare CYCLE_LEN zile, rotind perechea care se ciocnește.
-  function blockFor(n, cat) { return hasCollision(n, cat) ? blockAbs : 0; }
-
-  // Pass 1: complete crews by crew rotation, prioritizate după ore acumulate la conflict
-  const crewWants = [];
-  GROUPS.forEach(cat => {
-    const catCrews = fullCrews.filter(c => (c[0].category || 'urban') === cat);
-    const n = catCrews.length;
-    const catBlock = blockFor(n, cat);
-    catCrews.forEach((crew, i) => {
-      const idx = n > 0 ? (i + catBlock) % n : i;
-      crewWants.push({ crew, sv: phaseFallback(ROTATION[(idx + absDay) % CYCLE_LEN], cat) });
-    });
-  });
-  crewWants.sort((a, b) => hoursOf(a.crew) - hoursOf(b.crew) || a.crew[0].id - b.crew[0].id);
-  crewWants.forEach(w => doAssign(w.crew, w.sv));
-
-  // Spillover: dacă un echipaj/individ a vrut T1 sau T2 dar a fost respins (capacitatea acelei
-  // ture era deja ocupată), încearcă tura alternativă (T1↔T2) înainte să rămână fără nimic.
-  // Necesar când T1/T2 au capacități ASIMETRICE (ex. T1=4, T2=2) — ciclul de rotație poate
-  // trimite într-o zi mai multe echipaje spre T2 decât încape, lăsând T1 parțial gol în timp ce
-  // echipajele respinse de la T2 rămân pe L, deși ar fi putut umple T1. `doAssign` verifică
-  // oricum toate regulile (capacitate, gap, MAX_CONSEC), deci încercarea e sigură.
-  function spillover(list, sv) {
-    if (sv !== 1 && sv !== 2) return;
-    if (state.schedule[dk][String(list[0].id)] !== undefined) return;
-    doAssign(list, sv === 1 ? 2 : 1);
-  }
-  crewWants.forEach(w => spillover(w.crew, w.sv));
-
-  // Pass 2: individuals by individual rotation, aceeași regulă de fairness, tot separat per categorie
-  const indivWants = [];
-  GROUPS.forEach(cat => {
-    const catIndiv = individuals.filter(e => (e.category || 'urban') === cat);
-    const n = catIndiv.length;
-    const catBlock = blockFor(n, cat);
-    catIndiv.forEach((emp, i) => {
-      const idx = n > 0 ? (i + catBlock) % n : i;
-      indivWants.push({ emp, sv: phaseFallback(ROTATION[(idx + absDay) % CYCLE_LEN], cat) });
-    });
-  });
-  indivWants.sort((a, b) => hoursOf([a.emp]) - hoursOf([b.emp]) || a.emp.id - b.emp.id);
-  indivWants.forEach(w => doAssign([w.emp], w.sv));
-  indivWants.forEach(w => spillover([w.emp], w.sv));
 }
 
 function clearSchedule() {
@@ -1603,10 +993,10 @@ function clearSchedule() {
   });
   if (keysToDelete.length === 0) return;
   const mn = ['','Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'][m];
-  if (!confirm('Ștergeți turele generate pentru ' + mn + ' ' + y + '? (CO, CM și Instruire introduse se păstrează.)')) return;
+  if (!confirm('Ștergeți turele generate pentru ' + mn + ' ' + y + '? (CO și CM introduse se păstrează.)')) return;
   keysToDelete.forEach(k => {
     const day = state.schedule[k];
-    for (const eid in day) { if (![5, 6, 8].includes(day[eid])) delete day[eid]; }
+    for (const eid in day) { if (![5, 6].includes(day[eid])) delete day[eid]; }
     if (Object.keys(day).length === 0) delete state.schedule[k];
   });
   // Reset atât pe state.gen* CÂT ȘI pe variabilele de modul — saveState() de mai jos suprascrie
@@ -1618,7 +1008,7 @@ function clearSchedule() {
   updateButtons();
   saveState();
   render();
-  setStatus('Ture generate ' + mn + ' ' + y + ' șterse (CO/CM/Instruire păstrate).', 'info');
+  setStatus('Ture generate ' + mn + ' ' + y + ' șterse (CO/CM păstrate).', 'info');
 }
 
 function prevMonth() {
@@ -1672,21 +1062,8 @@ function updateButtons() {
 function startGeneration() {
   const year = parseInt(document.getElementById('sel-year').value);
   const month = parseInt(document.getElementById('sel-month').value);
-  const groups = GROUPS;
-  const cfgs = {};
-  groups.forEach(g => { cfgs[g] = readConfig(g); });
   const emps = state.employees;
-  if (emps.length === 0) { setStatus('Adaugă cel puțin un ' + (CURRENT_MODULE === 'dispecer' ? 'dispecer' : 'electrician') + '.', 'warn'); return; }
-  const isDisp = CURRENT_MODULE === 'dispecer';
-  for (let gi = 0; gi < groups.length; gi++) {
-    const g = groups[gi];
-    const ge = emps.filter(e => e.category === g);
-    const c = cfgs[g];
-    const cfgSum = isDisp ? ((c.t1 || 0) + (c.t2 || 0) + (c.t3 || 0) + (c.t4 || 0)) : ((c.t1 || 0) + (c.t1a || 0) + (c.t2 || 0) + (c.t2a || 0) + (c.c8 || 0));
-    if (cfgSum > ge.length) {
-      if (!confirm(catLabel(g) + ': nr. pe tură (' + cfgSum + ') depășește totalul (' + ge.length + '). Unii nu vor avea zile libere. Continuați?')) return;
-    }
-  }
+  if (emps.length === 0) { setStatus('Adaugă cel puțin un dispecer.', 'warn'); return; }
   if (Object.keys(state.schedule).length > 0) {
     if (!confirm('Continuați generarea din următoarea zi liberă? (Zilele deja generate se păstrează.)')) return;
   }
@@ -1701,8 +1078,8 @@ function startGeneration() {
     }
   }
   // preserve existing generated days — find first day not yet fully generated.
-  // generateDay() always writes an entry (chiar și 0/L) pentru FIECARE electrician — deci o zi
-  // deja generată are câte o intrare per electrician, indiferent dacă rezultatul a fost o zi cu
+  // generateDay() always writes an entry (chiar și 0/L) pentru FIECARE dispecer — deci o zi
+  // deja generată are câte o intrare per dispecer, indiferent dacă rezultatul a fost o zi cu
   // toată lumea pe L (capacitate 0, sau toți blocați de MAX_CONSEC/cap săptămânal). Verificarea
   // veche ("există vreo tură lucrată") trata greșit o astfel de zi ca negenerată și o rescria
   // silențios la fiecare click pe Generare (bug găsit la audit).
@@ -1745,33 +1122,8 @@ function startGeneration() {
   }
   state.currentMonth = month;
   state.currentYear = year;
-  groups.forEach(g => { state.config[g] = cfgs[g]; });
   genDim = dim;
-  genStats = rebuildGenStats(year, month, firstEmpty);
-  // Seed yesterday/consec from previous month's last day for month transition
-  let prevMonth = month - 1, prevYear = year;
-  if (prevMonth === 0) { prevMonth = 12; prevYear = year - 1; }
-  const prevDim = daysInMonth(prevYear, prevMonth);
-  const prevDk = dateKey(prevYear, prevMonth, prevDim);
-  if (state.schedule[prevDk]) {
-    emps.forEach(e => {
-      const s = genStats[e.id];
-      if (!s) return;
-      const prevV = state.schedule[prevDk][String(e.id)];
-      if (prevV !== undefined && prevV !== null) {
-        if (s.yesterday === null) s.yesterday = prevV;
-        if (s.consec === 0 && (prevV >= 1 && prevV <= 4 || prevV === 7 || prevV === 8)) {
-          let c = 1;
-          for (let d = prevDim - 1; d >= 1; d--) {
-            const pd = dateKey(prevYear, prevMonth, d);
-            const pv = state.schedule[pd]?.[String(e.id)];
-            if (pv >= 1 && pv <= 4 || pv === 7 || pv === 8) c++; else break;
-          }
-          s.consec = c;
-        }
-      }
-    });
-  }
+  genStats = {}; // marcaj „generare în curs” — vezi nota de la declararea variabilelor
   genDay = firstEmpty;
   genYear = year;
   genMonth = month;
@@ -1793,7 +1145,7 @@ function generateDay(day) {
   if (state.schedule[dk]) {
     for (const eid in state.schedule[dk]) {
       const v = state.schedule[dk][eid];
-      if ((v === 5 || v === 6 || v === 8) && !(eid in preserved)) preserved[eid] = v;
+      if ((v === 5 || v === 6) && !(eid in preserved)) preserved[eid] = v;
     }
   }
   // extend CO/CM to weekend days if adjacent weekday has CO
@@ -1814,46 +1166,9 @@ function generateDay(day) {
   const hasCOCM = Object.keys(preserved);
   const assigned = hasCOCM.map(Number);
   const emps = state.employees;
-  const groups = GROUPS;
-  const cfgs = {};
-  groups.forEach(g => { cfgs[g] = readConfig(g); });
-  if (CURRENT_MODULE === 'dispecer') {
-    assignDispecerShifts(emps.filter(e => !hasCOCM.includes(String(e.id)) && !e.forced8), dk, assigned, year, month, day);
-  } else if (state.genMode === 'rotation') {
-    assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 3, 2, 0, 1, 4, 2, 0]);
-  } else if (state.genMode === 'rotation3') {
-    assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 2, 0]);
-  } else {
-    groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day, state.genMode !== 'full'));
-  }
-  if (CURRENT_MODULE !== 'dispecer') {
-    if (!weekend) {
-      // Forced 8h employees ALWAYS get shift 8 (value 7), never T1/T2/T1A/T2A
-      emps.filter(e => e.forced8 && !hasCOCM.includes(String(e.id)) && !(state.schedule[dk][String(e.id)] > 0)).forEach(e => {
-        state.schedule[dk][String(e.id)] = 7;
-        if (!assigned.includes(e.id)) assigned.push(e.id);
-      });
-    } else {
-      // On weekends, forced8 employees get free day (L)
-      emps.filter(e => e.forced8 && !hasCOCM.includes(String(e.id)) && !assigned.includes(e.id)).forEach(e => {
-        state.schedule[dk][String(e.id)] = 0;
-        if (!assigned.includes(e.id)) assigned.push(e.id);
-      });
-    }
-  }
+  assignDispecerShifts(emps.filter(e => !hasCOCM.includes(String(e.id))), dk, assigned, year, month, day);
   emps.forEach(e => {
     if (!assigned.includes(e.id)) state.schedule[dk][String(e.id)] = 0;
-    const v = state.schedule[dk][String(e.id)];
-    genStats[e.id].yesterday = v;
-    if (v === 1) { genStats[e.id].t1++; }
-    else if (v === 2) { genStats[e.id].t2++; }
-    else if (v === 3) { genStats[e.id].t1a++; }
-    else if (v === 4) { genStats[e.id].t2a++; }
-    else if (v === 7) { genStats[e.id].c8++; }
-    else if (v === 8) { genStats[e.id].inst++; }
-    // Update consecutive working days count + total (generic pe ore/tură)
-    const isWork = v > 0 && (SHIFT_HOURS[v] || 0) > 0;
-    if (isWork) { genStats[e.id].total++; genStats[e.id].consec++; } else { genStats[e.id].consec = 0; }
   });
   saveState();
 }
@@ -1862,7 +1177,7 @@ function generateDay(day) {
 // Faza folosește indexul din lista COMPLETĂ de angajați (nu cea filtrată), ca CO/CM să nu
 // decaleze fazele celorlalți. `absDay` asigură continuitatea ciclului peste granița lunilor.
 function assignDispecerShifts(emps, dk, assigned, year, month, day) {
-  const PHASES = [3, 2, 1, 4, 0]; // T3, T2, T1, T4, L
+  const PHASES = CYCLE;
   const LEN = PHASES.length;
   const absDay = Math.round(new Date(Date.UTC(year, month - 1, day)).getTime() / 86400000);
   const allSorted = state.employees.slice().sort((a, b) => a.id - b.id);
@@ -1878,44 +1193,9 @@ function assignDispecerShifts(emps, dk, assigned, year, month, day) {
   });
 }
 
-// Reconstruiește genStats DIRECT din state.schedule (sursa de adevăr), pentru zilele
-// 1..uptoDayExclusive-1 ale lunii date. Unică sursă folosită de startGeneration/prevDay/
-// generateNextDay/generateAll — înainte exista logica DUPLICATĂ, ușor divergentă (varianta din
-// startGeneration seta `yesterday` doar dacă `v>0`, lăsând-o stale pe zilele L; varianta din
-// prevDay era corectă). Iterează TOȚI angajații curenți (nu doar cheile prezente în ziua
-// respectivă), ca o zi lipsă/incompletă să reseteze corect `consec`, nu doar s-o sară.
-function rebuildGenStats(year, month, uptoDayExclusive) {
-  const gs = {};
-  state.employees.forEach(e => { gs[e.id] = { total: 0, t1: 0, t2: 0, t1a: 0, t2a: 0, c8: 0, inst: 0, yesterday: null, consec: 0 }; });
-  for (let d = 1; d < uptoDayExclusive; d++) {
-    const dk = dateKey(year, month, d);
-    const dayData = state.schedule[dk] || {};
-    state.employees.forEach(e => {
-      const v = dayData[String(e.id)];
-      const s = gs[e.id];
-      if (v === 1) { s.t1++; s.total++; }
-      else if (v === 2) { s.t2++; s.total++; }
-      else if (v === 3) { s.t1a++; s.total++; }
-      else if (v === 4) { s.t2a++; s.total++; }
-      else if (v === 7) { s.c8++; s.total++; }
-      else if (v === 8) { s.inst++; s.total++; }
-      s.yesterday = v !== undefined ? v : null;
-      if (v >= 1 && v <= 4 || v === 7 || v === 8) { s.consec++; } else { s.consec = 0; }
-    });
-  }
-  return gs;
-}
-
 function generateNextDay() {
   if (genDay < 1 || genDay > genDim) return;
   const day = genDay;
-  // Resincronizează genStats din date reale înainte de a genera — dacă ziua curentă a fost deja
-  // regenerată (ex. imediat după prevDay(), care lasă genDay pe ziua tocmai refăcută), vechiul
-  // subtractDayStats() nu reseta `consec`/`yesterday` (doar orele), ducând la dublă-numărare a
-  // zilelor consecutive lucrate la fiecare ciclu ←/→ — regula MAX_CONSEC ajungea încălcată
-  // silențios (bug găsit la audit, confirmat cu teste automate — echipa ajungea la 5+ zile
-  // consecutive deși limita e 4).
-  genStats = rebuildGenStats(genYear, genMonth, day);
   generateDay(genDay);
   genDay++;
   if (genDay > genDim) {
@@ -1934,7 +1214,6 @@ function generateAll() {
   const from = genDay;
   document.getElementById('btn-next-day').style.display = 'none';
   document.getElementById('btn-generate-all').style.display = 'none';
-  genStats = rebuildGenStats(genYear, genMonth, from);
   for (let d = from; d <= genDim; d++) {
     generateDay(d);
     genDay = d + 1;
@@ -1948,7 +1227,6 @@ function generateAll() {
 function prevDay() {
   if (genDay <= 1) return;
   genDay--;
-  genStats = rebuildGenStats(genYear, genMonth, genDay);
   generateDay(genDay);
   updateButtons();
   setStatus('Regenerată ziua ' + genDay + '/' + genDim + '.', 'info');
@@ -1967,10 +1245,6 @@ function render() {
   renderTable();
   renderSummary();
 }
-
-function catLabel(c) { return { urban: 'Urban', rural: 'Rural', dispecer: 'Dispeceri' }[c] || c; }
-function catShort(c) { return { urban: 'U', rural: 'R', dispecer: 'D' }[c] || '?'; }
-function empWord() { return CURRENT_MODULE === 'dispecer' ? 'dispeceri' : 'electricieni'; }
 
 let modalEmpId = null;
 
@@ -2030,7 +1304,7 @@ function deleteModalEmployee() {
   closeModal();
   saveState();
   render();
-  setStatus('Electrician șters: ' + emp.name, 'info');
+  setStatus('Dispecer șters: ' + emp.name, 'info');
 }
 
 function closeModal() {
@@ -2053,6 +1327,7 @@ function showHelpTab(name, btn) {
   btn.classList.add('active');
 }
 
+
 function renderTable() {
   const thead = document.getElementById('table-head');
   const tbody = document.getElementById('table-body');
@@ -2061,21 +1336,18 @@ function renderTable() {
   const y = state.currentYear;
   const dim = daysInMonth(y, m);
   const emps = state.employees;
-  const labels = SHIFT_NAMES;
-  const groups = GROUPS;
-  const colspan = dim + 5;
+  const colspan = dim + 4;
   // Sărbători legale ale lunii curente — Map<ziua, nume>, calculat o dată per randare, folosit
   // atât pentru marcajul pe coloane cât și pentru lista de sub tabel (renderHolidayList). Doar
-  // informativ — nu influențează în niciun fel alocarea automată a echipajelor.
+  // informativ — nu influențează alocarea (dispeceratul lucrează 24/7).
   const prefix = y + '-' + pad(m);
   const monthHolidays = getLegalHolidays(y).filter(h => h.date.startsWith(prefix));
   const holidayByDay = new Map(monthHolidays.map(h => [parseInt(h.date.slice(-2), 10), h.name]));
 
-  let hhtml = '<tr><th style="min-width:180px;white-space:nowrap">Nume Prenume</th><th style="text-align:left;padding-left:4px;width:62px;min-width:62px;max-width:62px;overflow:hidden">Funcția</th>';
+  let hhtml = '<tr><th style="min-width:180px;white-space:nowrap">Nume Prenume</th>';
   for (let d = 1; d <= dim; d++) {
-    const dt = new Date(y, m - 1, d);
-    const dow = dt.getDay();
-     const dayName = ['D','L','M','M','J','V','S'][dow];
+    const dow = new Date(y, m - 1, d).getDay();
+    const dayName = ['D','L','M','M','J','V','S'][dow];
     const holidayName = holidayByDay.get(d);
     const cls = ['day-col', dow === 0 || dow === 6 ? 'th-weekend' : '', holidayName ? 'th-holiday' : ''].filter(Boolean).join(' ');
     const tip = holidayName ? ' data-tooltip="' + escAttr(holidayName) + '"' : '';
@@ -2084,122 +1356,61 @@ function renderTable() {
   hhtml += '<th style="min-width:48px;width:48px">Lucrate</th><th style="min-width:36px;width:36px;line-height:1.2">CO<br>CM</th><th style="min-width:44px;width:44px">Normă</th></tr>';
   thead.innerHTML = hhtml;
 
+  renderLegend();
+  renderHolidayList(monthHolidays, y, m);
   if (emps.length === 0) {
     tbody.innerHTML = '';
-    emptyEl.innerHTML = 'Adaugă electricieni și generează graficul.';
-    renderLegend();
-    renderHolidayList(monthHolidays, y, m);
+    emptyEl.innerHTML = 'Adaugă dispeceri și generează graficul.';
     return;
   }
   emptyEl.innerHTML = '';
-  renderLegend();
-  renderHolidayList(monthHolidays, y, m);
 
   const expected = expectedHours(y, m);
-  const maxSi = SHIFT_NAMES.length - 1;
-  const hideWe = moduleDef().weekendDropdownHide || [];
-  const blankWe = moduleDef().weekendDisplayL || [];
-  let bhtml = '';
-  groups.forEach(g => {
-    const gEmps = emps.filter(e => (e.category || 'urban') === g && !e.forced8);
-    if (gEmps.length === 0) return;
-    bhtml += '<tr class="group-header group-' + g + '"><td colspan="' + colspan + '">' + catLabel(g) + ' — ' + gEmps.length + ' ' + empWord() + '</td></tr>';
-    gEmps.sort((a,b) => (a.crew||'').localeCompare(b.crew||''));
-    gEmps.forEach(emp => {
-      const st = getEmployeeStats(emp.id);
-      const cls = hoursCellClass(st.hours, expected, st);
-      const fnLabel = FUNC_NAMES[emp.functia || 'emitent'];
-      const fnCls = 'fn-' + (emp.functia || 'emitent');
-      let crewLabel = '';
-      if (emp.crew) crewLabel = '<span style="font-size:11px;font-weight:700;color:#555;display:block;text-align:center">' + esc(emp.crew) + '</span>';
-      bhtml += '<tr><td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + (emp.forced8 ? ' <span class="forced-badge">F</span>' : '') + '</td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + crewLabel + '</td>';
-      for (let d = 1; d <= dim; d++) {
-        const dt = new Date(y, m - 1, d);
-        const dow = dt.getDay();
-        const dk = dateKey(y, m, d);
-        let v = getShift(dk, emp.id);
-        if (v === null || v === undefined) v = 0;
-        const weekend = (dow === 0 || dow === 6);
-        const displayV = (weekend && blankWe.includes(v)) ? 0 : v;
-        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
-        bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
-        for (let si = 0; si <= maxSi; si++) {
-          if (weekend && hideWe.includes(si)) continue;
-          bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
-        }
-        bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span>';
-        const effectiveCrew = getCrewForDay(emp, dk);
-        if (v > 0 && v !== 5 && v !== 6 && v !== 8 && effectiveCrew && effectiveCrew !== (emp.crew||'')) {
-          bhtml += '<span class="crew-indicator">' + esc(effectiveCrew) + '</span>';
-        }
-        bhtml += '</td>';
+  let bhtml = '<tr class="group-header"><td colspan="' + colspan + '">Dispeceri — ' + emps.length + ' dispeceri</td></tr>';
+  emps.forEach(emp => {
+    const st = getEmployeeStats(emp.id);
+    const cls = hoursCellClass(st.hours, expected, st);
+    bhtml += '<tr><td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + '</td>';
+    for (let d = 1; d <= dim; d++) {
+      const dow = new Date(y, m - 1, d).getDay();
+      const dk = dateKey(y, m, d);
+      let v = getShift(dk, emp.id);
+      if (v === null || v === undefined) v = 0;
+      const weekend = (dow === 0 || dow === 6);
+      // CO/CM în weekend: se afișează ca L (nu se contorizează), valoarea reală rămâne în state.
+      const displayV = (weekend && WEEKEND_HIDE.includes(v)) ? 0 : v;
+      const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
+      bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
+      for (let si = 0; si < SHIFT_NAMES.length; si++) {
+        if (weekend && WEEKEND_HIDE.includes(si)) continue;
+        bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + SHIFT_NAMES[si] + '</option>';
       }
-      bhtml += '<td class="' + cls + ' hours-cell">' + st.hours + 'h</td>';
-      bhtml += '<td class="hours" style="font-size:12px">' + ((st.co + st.cm) * normHoursPerDay()) + 'h</td>';
-      bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (expected !== null ? expected + 'h' : '—') + '</td></tr>';
-    });
+      bhtml += '</select><span class="print-shift shift-' + displayV + '">' + SHIFT_NAMES[displayV] + '</span></td>';
+    }
+    bhtml += '<td class="' + cls + ' hours-cell">' + st.hours + 'h</td>';
+    bhtml += '<td class="hours" style="font-size:12px">' + leaveHours(st) + 'h</td>';
+    bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (expected !== null ? expected + 'h' : '—') + '</td></tr>';
   });
-  const f8Emps = CURRENT_MODULE === 'dispecer' ? [] : emps.filter(e => e.forced8);
-  if (f8Emps.length) {
-    bhtml += '<tr class="group-header group-f8"><td colspan="' + colspan + '">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
-    f8Emps.forEach(emp => {
-      const st = getEmployeeStats(emp.id);
-      const cls = hoursCellClass(st.hours, expected, st);
-      const fnLabel = FUNC_NAMES[emp.functia || 'emitent'];
-      const fnCls = 'fn-' + (emp.functia || 'emitent');
-      bhtml += '<tr><td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + ' <span class="forced-badge">F</span></td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + '</td>';
-      for (let d = 1; d <= dim; d++) {
-        const dt = new Date(y, m - 1, d);
-        const dow = dt.getDay();
-        const dk = dateKey(y, m, d);
-        let v = getShift(dk, emp.id);
-        if (v === null || v === undefined) v = 0;
-        const weekend = (dow === 0 || dow === 6);
-        const displayV = (weekend && blankWe.includes(v)) ? 0 : v;
-        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
-        bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
-        for (let si = 0; si <= maxSi; si++) {
-          if (weekend && hideWe.includes(si)) continue;
-          bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
-        }
-        bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span></td>';
-      }
-      bhtml += '<td class="' + cls + ' hours-cell">' + st.hours + 'h</td>';
-      bhtml += '<td class="hours" style="font-size:12px">' + ((st.co + st.cm) * normHoursPerDay()) + 'h</td>';
-      bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (expected !== null ? expected + 'h' : '—') + '</td></tr>';
-    });
-  }
-  renderLegend();
   tbody.innerHTML = bhtml;
 }
+
 
 function renderLegend() {
   const legendEl = document.getElementById('table-legend');
   if (!legendEl) return;
   const pill = (cls, txt, style) => '<span class="shift-pill ' + cls + '" style="padding:2px 8px;font-size:11px;' + (style || '') + '">' + txt + '</span> ';
-  let html = '<span style="font-weight:700;color:var(--text-muted);margin-right:4px">Legendă:</span>';
-  if (CURRENT_MODULE === 'dispecer') {
-    html += pill('pill-t1', 'T1 &nbsp;06:00–10:00 (4h)')
-      + pill('pill-t2', 'T2 &nbsp;10:00–16:00 (6h)')
-      + pill('pill-t1a', 'T3 &nbsp;16:00–22:00 (6h)')
-      + pill('pill-t2a', 'T4 &nbsp;22:00–06:00 (8h)')
-      + pill('pill-co', 'CO — Concediu Odihnă')
-      + pill('pill-cm', 'CM — Concediu Medical')
-      + pill('', 'L — Liber', 'background:var(--shift0-bg);color:var(--shift0-text)');
-  } else {
-    html += pill('pill-t1', 'T1 / T1A &nbsp;06:00–14:00')
-      + pill('pill-t2', 'T2 / T2A &nbsp;14:00–22:00')
-      + pill('pill-c8', '8h &nbsp;08:00–16:00')
-      + pill('', 'INST — Instruire', 'background:#d5f5e3;color:#1a7a3a')
-      + pill('pill-co', 'CO — Concediu Odihnă')
-      + pill('pill-cm', 'CM — Concediu Medical')
-      + pill('', 'L — Liber', 'background:var(--shift0-bg);color:var(--shift0-text)');
-  }
-  legendEl.innerHTML = html;
+  legendEl.innerHTML = '<span style="font-weight:700;color:var(--text-muted);margin-right:4px">Legendă:</span>'
+    + pill('pill-t1', 'T1 &nbsp;06:00–10:00 (4h)')
+    + pill('pill-t2', 'T2 &nbsp;10:00–16:00 (6h)')
+    + pill('pill-t3', 'T3 &nbsp;16:00–22:00 (6h)')
+    + pill('pill-t4', 'T4 &nbsp;22:00–06:00 (8h)')
+    + pill('pill-co', 'CO — Concediu Odihnă')
+    + pill('pill-cm', 'CM — Concediu Medical')
+    + pill('', 'L — Liber', 'background:var(--shift0-bg);color:var(--shift0-text)');
 }
 
 // Listă informativă — sărbătorile legale ale lunii afișate curent, mereu vizibilă sub tabel
-// (nu doar la hover pe coloană). Nu afectează alocarea echipajelor în niciun fel; se
+// (nu doar la hover pe coloană). Nu afectează alocarea automată în niciun fel; se
 // actualizează automat la orice navigare lună/an, pentru că renderTable() o apelează la fiecare
 // randare, cu lista deja filtrată pe luna curentă.
 function renderHolidayList(monthHolidays, y, m) {
@@ -2234,7 +1445,7 @@ function onShiftChange(dk, empId, sel) {
   const expected = expectedHours(state.currentYear, state.currentMonth);
   hourCell.className = hoursCellClass(st.hours, expected, st) + ' hours-cell';
   hourCell.textContent = st.hours + 'h';
-  cocmCell.textContent = ((st.co + st.cm) * 8) + 'h';
+  cocmCell.textContent = leaveHours(st) + 'h';
   renderSummary();
 }
 
@@ -2297,46 +1508,28 @@ function holidayShiftsCount(empId, y, m) {
   return count;
 }
 
-function workingDays(y, m) {
-  const dim = daysInMonth(y, m);
-  const prefix = y + '-' + pad(m);
-  const holidaySet = new Set(getLegalHolidays(y).filter(h => h.date.startsWith(prefix)).map(h => h.date));
-  if (holidaySet.size === 0 && getLegalHolidays(y).length === 0) return null; // y în afara 1900-2099
-  let wd = 0;
-  for (let d = 1; d <= dim; d++) {
-    const dow = new Date(y, m - 1, d).getDay();
-    if (dow === 0 || dow === 6) continue;
-    if (holidaySet.has(dateKey(y, m, d))) continue;
-    wd++;
-  }
-  return wd;
-}
-
 // Norma așteptată pt. o lună. `null` doar dacă anul e în afara intervalului 1900-2099 (gardă
 // a algoritmului Paștelui — selectorul de an al aplicației merge 2020-2040, deci în practică
 // nu se atinge). Înainte, consumatorii foloseau un fallback INVENTAT (184h) pt. anii în afara
 // unui tabel hardcodat 2025-2028, afișat ca normă reală în carduri/sumar, în timp ce coloana
 // „Normă" din tabel arăta corect „—" — aceeași informație, contradictorie în două locuri
 // (găsit la audit). Acum practic mereu un număr real, calculat corect.
+
 function expectedHours(y, m) {
-  if (CURRENT_MODULE === 'dispecer') {
-    // Dispecer: normă = media ciclului (24h la 5 zile) pe zilele lunii.
-    return Math.round(daysInMonth(y, m) * 24 / 5);
-  }
-  const wd = workingDays(y, m);
-  return wd !== null ? wd * 8 : null;
+  // Dispecer: normă = media ciclului (24h la 5 zile) pe zilele lunii.
+  return Math.round(daysInMonth(y, m) * AVG_HOURS_PER_DAY);
 }
 
-// Ore medii pe zi pentru reducerea normei la CO/CM (8h exploatare, 4.8h dispecer).
-function normHoursPerDay() {
-  return CURRENT_MODULE === 'dispecer' ? 24 / 5 : 8;
+// Ore de concediu (CO/CM) ale unui dispecer, la media ciclului (4,8h/zi), rotunjite la 0,1h.
+function leaveHours(st) {
+  return Math.round((st.co + st.cm) * AVG_HOURS_PER_DAY * 10) / 10;
 }
 
 // CO/CM aprobate reduc legitim norma așteptată — un angajat cu concediu nu ar trebui să apară
 // „sub normă" doar pentru zilele în care a fost în concediu (bug găsit la audit: cineva cu 4 zile
 // CO + restul lucrat corect apărea cu „-32h", card roșu, deși nu are nicio problemă reală).
 function effectiveExpected(expected, st) {
-  return expected === null ? null : Math.max(0, expected - (st.co + st.cm) * normHoursPerDay());
+  return expected === null ? null : Math.max(0, Math.round((expected - (st.co + st.cm) * AVG_HOURS_PER_DAY) * 10) / 10);
 }
 
 // Un singur loc care decide culoarea/verdictul — folosit ȘI de tabel ȘI de sumar (înainte,
@@ -2381,7 +1574,7 @@ function renderSummary() {
   const mn = getMonthName(state.currentMonth);
   const sectionStyle = 'display:flex;align-items:center;gap:8px;margin:14px 0 6px;cursor:pointer;user-select:none';
   const btnStyle = 'background:none;border:none;font-size:12px;cursor:pointer;color:var(--text-muted);padding:2px 6px;border-radius:4px;border:1px solid var(--border)';
-  const pillCls = ['', 'pill-t1', 'pill-t2', 'pill-t1a', 'pill-t2a'];
+  const pillCls = ['', 'pill-t1', 'pill-t2', 'pill-t3', 'pill-t4'];
   let html = '';
   if (expected !== null) {
     html += '<div style="font-size:13px;color:var(--text);padding:6px 10px;background:var(--ctrl-bg);border-radius:6px;display:inline-block">📅 ' + mn + ' ' + state.currentYear + ' — <strong>' + expected + 'h</strong> normă/dispecer</div>';
@@ -2482,7 +1675,7 @@ function esc(s) {
 // irelevante într-un nod de TEXT, dar critice într-o valoare de ATRIBUT). Pt. interpolare în
 // interiorul unui atribut HTML (ex. data-*="..."), e nevoie de escAttr(), care adaugă și &quot;/
 // &#39; peste esc() — altfel un `"` din date neîncrezute (ex. un câmp importat dintr-un JSON)
-// rupe atributul (bug audit: XSS posibil în renderOverridesList prin cheile din crewOverrides).
+// rupe atributul (bug audit: XSS posibil prin valori neîncrezute importate din JSON).
 function escAttr(s) {
   return esc(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
@@ -2584,6 +1777,16 @@ function importJSON(event) {
   event.target.value = '';
 }
 
+// Fișierele din aplicația Exploatare (electricieni urban/rural, ture T1A/T2A/8/INST) au alt
+// înțeles al valorilor de tură — importate aici ar produce un grafic fără sens. Se refuză.
+function looksLikeExploatare(data) {
+  if (data.module && data.module !== 'dispecer') return true;
+  const emps = Array.isArray(data.employees) ? data.employees : [];
+  if (emps.some(e => e && (e.category === 'urban' || e.category === 'rural' || e.category === '8ore' || e.forced8 || e.crew))) return true;
+  if (data.config && (data.config.urban || data.config.rural)) return true;
+  return false;
+}
+
 function importEmployees() {
   document.getElementById('import-employees-file').click();
 }
@@ -2598,31 +1801,24 @@ function importEmployeesJSON(event) {
       let employees = [];
       if (Array.isArray(data)) employees = data;
       else if (data.employees && Array.isArray(data.employees)) employees = data.employees;
-      else { setStatus('Format JSON invalid. Aștept array de electricieni.', 'err'); return; }
+      else { setStatus('Format JSON invalid. Aștept array de dispeceri.', 'err'); return; }
+      if (looksLikeExploatare({ employees })) { setStatus('Fișierul conține electricieni din aplicația Exploatare — nu poate fi importat în Dispecer.', 'err'); return; }
       const existingNames = new Set(state.employees.map(e => e.name.toLowerCase()));
       let added = 0;
       employees.forEach(emp => {
         if (!emp.name) return;
         if (existingNames.has(emp.name.toLowerCase())) return;
         const maxId = state.employees.reduce((m, e) => Math.max(m, e.id), 0);
-        state.employees.push({
-          id: maxId + 1,
-          name: emp.name,
-          category: emp.category || 'urban',
-          functia: emp.functia || 'emitent',
-          crew: emp.crew || '',
-          forced8: emp.forced8 || false,
-          crewOverrides: emp.crewOverrides || {}
-        });
+        state.employees.push({ id: maxId + 1, name: emp.name, category: 'dispecer' });
         existingNames.add(emp.name.toLowerCase());
         added++;
       });
       if (added > 0) {
         saveState();
         render();
-        setStatus('Importat ' + added + ' electricieni noi.', 'success');
+        setStatus('Importat ' + added + ' dispeceri noi.', 'success');
       } else {
-        setStatus('Niciun electrician nou de importat (toți există deja).', 'warn');
+        setStatus('Niciun dispecer nou de importat (toți există deja).', 'warn');
       }
     } catch (err) {
       setStatus('Eroare la parsarea JSON: ' + err.message, 'err');
@@ -2635,10 +1831,11 @@ function importEmployeesJSON(event) {
 function applyJSON(text) {
   try {
     const data = JSON.parse(text);
+    if (looksLikeExploatare(data)) { setStatus('Fișierul provine din aplicația Exploatare — nu poate fi încărcat în Dispecer.', 'err'); return; }
     // Detecția de tip nu se poate baza STRICT pe data.type==='month' — fișiere vechi legitime
     // (dinainte de introducerea câmpului type, ex. exporturi cu {employees,config,schedule,
     // currentMonth,currentYear}) nu au deloc type și cădeau pe ramura "backup complet" (state =
-    // data), ștergând toate celelalte luni + echipaje custom + org (bug găsit la audit). Doar
+    // data), ștergând toate celelalte luni + org (bug găsit la audit). Doar
     // backup-urile REALE (exportFullJSON) au genStats/genDay ca chei top-level — exportMonthJSON
     // nu le include niciodată — deci prezența lor e semnalul de încredere pt. "backup complet".
     const looksLikeFullBackup = data.type === 'full' || 'genStats' in data || 'genDay' in data;
@@ -2651,7 +1848,7 @@ function applyJSON(text) {
       // Fără schedule valid, ștergerea de mai jos ar goli luna țintă și tot ar raporta succes
       // (bug găsit la audit: for...in undefined nu aruncă eroare, doar nu adaugă nimic).
       if (!data.schedule || typeof data.schedule !== 'object') { setStatus('Fișier invalid — lipsește graficul (schedule).', 'err'); return; }
-      // Coliziune de id: dacă fișierul are un electrician cu ACELAȘI id dar NUME diferit față de
+      // Coliziune de id: dacă fișierul are un dispecer cu ACELAȘI id dar NUME diferit față de
       // cineva local, turele din fișier i s-ar aplica silențios persoanei greșite (bug găsit la
       // audit — id-urile pornesc de la 1 în orice instalare nouă, coliziunea e foarte plauzibilă
       // exact în fluxul publicitar al aplicației: "trimite doar luna curentă cuiva").
@@ -2673,7 +1870,7 @@ function applyJSON(text) {
         if (dk.startsWith(prefix)) genCOCM[dk] = data.preservedCOCM[dk];
       }
       // MERGE electricienii (adaugă după id pe cei lipsă din state curent), NU înlocui lista —
-      // altfel un import de lună mai veche ștergea silențios orice electrician adăugat de atunci
+      // altfel un import de lună mai veche ștergea silențios orice dispecer adăugat de atunci
       // (electricienii/config-ul sunt setări GLOBALE, nu specifice unei luni — un fișier de lună
       // nu ar trebui să le poată suprascrie complet; bug găsit la audit).
       if (Array.isArray(data.employees)) {
@@ -2706,11 +1903,9 @@ function applyJSON(text) {
     migrateState(state);
     // org lives in ORG_KEY — only migrate from file if ORG_KEY is empty
     if (data.org && data.org.sefFOL && !loadOrg()) saveOrg(data.org);
-    updateModeFieldVisibility();
     saveState();
     document.getElementById('sel-month').value = state.currentMonth || 1;
     document.getElementById('sel-year').value = state.currentYear || new Date().getFullYear();
-    applyConfigToDOM();
     render();
     updateButtons();
     setStatus('Baza de date restaurată din fișier.', 'success');
@@ -2727,8 +1922,7 @@ function exportExcel() {
   const m = state.currentMonth, y = state.currentYear;
   const dim = daysInMonth(y, m);
   const mn = getMonthName(m);
-  if (emps.length === 0) { setStatus('Niciun electrician de exportat.', 'warn'); return; }
-  const wd = workingDays(y, m);
+  if (emps.length === 0) { setStatus('Niciun dispecer de exportat.', 'warn'); return; }
   const expected = expectedHours(y, m);
   const DAY_NAMES = ['D','L','M','M','J','V','S'];
   const shiftFill = {
@@ -2740,13 +1934,13 @@ function exportExcel() {
   const fill = bg => ({ type:'pattern', pattern:'solid', fgColor:{ argb: argb(bg) } });
   const fnt = (fg, bold, sz, italic) => ({ color:{ argb: argb(fg) }, bold:!!bold, size: sz||10, italic:!!italic });
   const aln = (h, v, wrap) => ({ horizontal: h||'center', vertical: v||'middle', wrapText:!!wrap });
-  const firstDay = 3, lastDay = firstDay + dim - 1;
+  const firstDay = 1, lastDay = firstDay + dim - 1;
   const colLucrate = lastDay + 1, colCOCM = lastDay + 2, colHoliday = lastDay + 3, colNorma = lastDay + 4;
   const totalCols = colNorma + 1;
   (async () => {
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet(mn + ' ' + y, { pageSetup:{ paperSize:13, orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0 } });
-    ws.getColumn(1).width = 22; ws.getColumn(2).width = 11; ws.getColumn(3).width = 7;
+    ws.getColumn(1).width = 22;
     for (let d = 1; d <= dim; d++) ws.getColumn(firstDay + d).width = 4.5;
     ws.getColumn(colLucrate+1).width = 9; ws.getColumn(colCOCM+1).width = 7; ws.getColumn(colHoliday+1).width = 7; ws.getColumn(colNorma+1).width = 7;
     // Logo
@@ -2754,15 +1948,15 @@ function exportExcel() {
     ws.addImage(logoId, { tl:{ col:0, row:0 }, ext:{ width:160, height:52 } });
     ws.getRow(1).height = 42;
     // Title
-    const tc = ws.getCell(1, 4); tc.value = 'Grafic dispecer — ' + mn + ' ' + y;
+    const tc = ws.getCell(1, 2); tc.value = 'Grafic dispecer — ' + mn + ' ' + y;
     tc.font = fnt('2C3E50', true, 16); tc.alignment = aln('left','middle');
-    ws.mergeCells(1, 4, 1, totalCols);
+    ws.mergeCells(1, 2, 1, totalCols);
     // Subtitle
     ws.getRow(2).height = 16;
     const org = getOrg();
-    const sc = ws.getCell(2, 4); sc.value = [org.formatia, 'Delgaz Grid S.A'].filter(Boolean).join(' — ');
+    const sc = ws.getCell(2, 2); sc.value = [org.formatia, 'Delgaz Grid S.A'].filter(Boolean).join(' — ');
     sc.font = fnt('7F8C8D', false, 10, true); sc.alignment = aln('left','middle');
-    ws.mergeCells(2, 4, 2, totalCols);
+    ws.mergeCells(2, 2, 2, totalCols);
     // Norm
     ws.getRow(3).height = 14;
     const nc0 = ws.getCell(3, 1); nc0.value = mn + ' ' + y + ' — ' + (expected!==null?expected+'h':'? h') + ' normă/dispecer';
@@ -2780,7 +1974,7 @@ function exportExcel() {
       cl.fill = fill(holiday ? '8A6510' : (wknd ? '4A2C2C' : '2C3E50'));
       cl.alignment = aln('center','middle', true);
     };
-    setHdr(HDR, 1, 'Nume Prenume'); setHdr(HDR, 2, ''); setHdr(HDR, 3, '');
+    setHdr(HDR, 1, 'Nume Prenume');
     const yearHolidays = new Set(getLegalHolidays(y).map(h => h.date));
     for (let d = 1; d <= dim; d++) {
       const dow = new Date(y, m-1, d).getDay();
@@ -2789,7 +1983,7 @@ function exportExcel() {
     setHdr(HDR, colLucrate+1, 'Lucrate'); setHdr(HDR, colCOCM+1, 'CO/CM'); setHdr(HDR, colHoliday+1, 'Sărb.'); setHdr(HDR, colNorma+1, 'Normă');
     // Rows
     let R = HDR + 1;
-    const gEmpsX = emps.filter(e => !e.forced8);
+    const gEmpsX = emps;
     if (gEmpsX.length) {
       ws.getRow(R).height = 16;
       for (let c = 1; c <= totalCols; c++) {
@@ -2818,7 +2012,7 @@ function exportExcel() {
           if (yearHolidays.has(dk)) { const hb = { style:'thick', color:{argb:'FFD4A017'} }; dc.border = { top:hb, bottom:hb, left:hb, right:hb }; }
         }
         const lc=ws.getCell(R,colLucrate+1); lc.value=st.hours; lc.font=fnt(hFg,true,9); lc.fill=fill(hBg); lc.alignment=aln('center','middle');
-        const cc=ws.getCell(R,colCOCM+1); cc.value=Math.round((st.co+st.cm)*normHoursPerDay()); cc.font=fnt('6C3483',false,9); cc.fill=fill('F5EEF8'); cc.alignment=aln('center','middle');
+        const cc=ws.getCell(R,colCOCM+1); cc.value=leaveHours(st); cc.font=fnt('6C3483',false,9); cc.fill=fill('F5EEF8'); cc.alignment=aln('center','middle');
         const holCount1 = holidayShiftsCount(emp.id, y, m);
         const hcc=ws.getCell(R,colHoliday+1); hcc.value=holCount1||0; hcc.font=fnt(holCount1?'8A6510':'AAAAAA', !!holCount1, 9); hcc.fill=fill(holCount1?'FDF3D0':'F8F9FB'); hcc.alignment=aln('center','middle');
         const nc=ws.getCell(R,colNorma+1); nc.value=expected!==null?expected:'—'; nc.font=fnt('7F8C8D',false,9); nc.fill=fill('F8F9FB'); nc.alignment=aln('center','middle');
@@ -2887,207 +2081,6 @@ function printSchedule() {
   window.print();
 }
 
-// ── Analiză moduri ──────────────────────────────────────────────────────
-// Simulează pe rând toate cele 4 moduri de generare, pentru luna selectată
-// curent, folosind exact motorul real de generare (generateDay), pe o copie
-// izolată a state.schedule/genStats — starea reală nu e atinsă (backup +
-// restore complet la final, saveState() dezactivat temporar cât timp rulează
-// simulările, ca autosave-ul din generateDay() să nu scrie variante
-// intermediare peste datele reale din localStorage/IndexedDB).
-function groupByEffectiveCrew(emps, dk) {
-  const groups = {};
-  emps.forEach(e => {
-    const key = getCrewForDay(e, dk) || ('__' + e.id);
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(e);
-  });
-  return groups;
-}
-
-function computeCategoryAnalysis(cat, year, month, dim) {
-  const catEmps = state.employees.filter(e => (e.category || 'urban') === cat && !e.forced8);
-  if (catEmps.length === 0) return null;
-  const staticCrews = {};
-  catEmps.forEach(e => { const k = e.crew || ('__' + e.id); (staticCrews[k] = staticCrews[k] || []).push(e); });
-  const fullCrewCount = Object.values(staticCrews).filter(c => c.length >= 2).length;
-  const soloCount = Object.values(staticCrews).filter(c => c.length === 1).length;
-
-  let totalWorked = 0, totalGroupDays = 0, fullUtilDays = 0;
-  for (let d = 1; d <= dim; d++) {
-    const dk = dateKey(year, month, d);
-    const dayGroups = groupByEffectiveCrew(catEmps, dk);
-    const vals = Object.values(dayGroups);
-    let worked = 0, available = 0;
-    vals.forEach(g => {
-      const memberVals = g.map(e => state.schedule[dk] ? state.schedule[dk][String(e.id)] : undefined);
-      // Un echipaj integral în CO/CM azi nu era niciodată DISPONIBIL — nu ar trebui să scadă
-      // utilizarea raportată (numitorul), la fel cum un om în concediu legal nu e o "capacitate
-      // irosită". Fără asta, utilPct arăta mai rău decât realitatea de fiecare dată când exista
-      // concediu în echipă (bug găsit la audit).
-      const allOnLeave = memberVals.every(v => v === 5 || v === 6);
-      if (allOnLeave) return;
-      available++;
-      // "activ" = CEL PUȚIN un membru lucrează, nu doar primul din listă — un echipaj cu
-      // membri pe ture diferite (split legitim, ex. capacitate impară față de mărimea echipajului)
-      // era raportat greșit ca inactiv dacă tocmai primul membru avea L (bug găsit la audit).
-      if (memberVals.some(v => v >= 1 && v <= 4)) worked++;
-    });
-    totalWorked += worked;
-    totalGroupDays += available;
-    if (available > 0 && worked === available) fullUtilDays++;
-  }
-  const utilPct = totalGroupDays > 0 ? (totalWorked / totalGroupDays * 100) : 0;
-  const avgPerDay = totalWorked / dim;
-
-  // conflicte reale: max 4 consecutive, max 5/săptămână, gap T2->T1/T1A. Citește și zilele
-  // dinaintea zilei 1 (din luna reală anterioară, dacă a fost vreodată generată) pt. săptămâna
-  // care traversează granița de lună — altfel o violare reală, ce se întinde peste graniță, nu
-  // era niciodată văzută de analiză (bug găsit la audit; generatorul real deja face asta corect).
-  const violations = [];
-  const readV = (empId, y, m, d) => {
-    if (d < 1) { const pm = m === 1 ? 12 : m - 1, py = m === 1 ? y - 1 : y; const pdim = daysInMonth(py, pm); d += pdim; m = pm; y = py; }
-    const dk = dateKey(y, m, d);
-    return state.schedule[dk] ? state.schedule[dk][String(empId)] : undefined;
-  };
-  catEmps.forEach(emp => {
-    let consec = 0, maxConsec = 0, prevV = null;
-    for (let d = 1; d <= dim; d++) {
-      const v = readV(emp.id, year, month, d);
-      const worked = (v >= 1 && v <= 4) || v === 7 || v === 8;
-      if (worked) { consec++; maxConsec = Math.max(maxConsec, consec); } else { consec = 0; }
-      if (prevV === 2 && (v === 1 || v === 3)) violations.push('gap');
-      prevV = v;
-    }
-    if (maxConsec > 4) violations.push('consec');
-    const weekStarts = new Set();
-    for (let d = 1; d <= dim; d++) {
-      const dow = new Date(year, month - 1, d).getDay();
-      weekStarts.add(d + (dow === 0 ? -6 : 1 - dow));
-    }
-    weekStarts.forEach(ws => {
-      let wc = 0;
-      for (let dd = ws; dd <= ws + 6; dd++) {
-        const v2 = readV(emp.id, year, month, dd);
-        if ((v2 >= 1 && v2 <= 4) || v2 === 7 || v2 === 8) wc++;
-      }
-      if (wc > 5) violations.push('weekly');
-    });
-  });
-
-  const hoursArr = catEmps.map(e => getEmployeeStats(e.id).hours);
-  return {
-    fullCrewCount, soloCount, avgPerDay, utilPct, fullUtilDays, dim,
-    minH: Math.min(...hoursArr), maxH: Math.max(...hoursArr), spread: Math.max(...hoursArr) - Math.min(...hoursArr),
-    violations: violations.length
-  };
-}
-
-const ANALYZE_MODES = [
-  { key: 'full', label: '1) T1/T2 + T1A/T2A' },
-  { key: 't12', label: '2) Zilnic T1/T2' },
-  { key: 'rotation', label: '3) Rotație 8 zile' },
-  { key: 'rotation3', label: '4) Rotație T1-T2-L' }
-];
-
-function analyzeModes() {
-  if (state.employees.length === 0) { setStatus('Adaugă cel puțin un electrician pentru analiză.', 'warn'); return; }
-  const year = state.currentYear, month = state.currentMonth;
-  const dim = daysInMonth(year, month);
-  const cfgs = {};
-  GROUPS.forEach(g => cfgs[g] = readConfig(g));
-
-  const backup = {
-    schedule: JSON.parse(JSON.stringify(state.schedule)),
-    genStats: genStats ? JSON.parse(JSON.stringify(genStats)) : null,
-    genDay, genYear, genMonth, genDim,
-    genCOCM: JSON.parse(JSON.stringify(genCOCM)),
-    genMode: state.genMode
-  };
-  // CO/CM deja introduse manual în graficul REAL al lunii curente trebuie respectate în
-  // simulare — altfel analiza răspunde la întrebarea greșită ("dacă nimeni nu ar fi în
-  // concediu"), nu la cea reală ("cu concediile/lipsurile deja introduse"). Se extrag din
-  // backup ÎNAINTE de a goli state.schedule, apoi se re-seedează ca genCOCM la fiecare mod —
-  // generateDay() le tratează la fel ca orice CO/CM preexistent (inclusiv extensia de weekend).
-  const realCOCM = {};
-  for (const dk in backup.schedule) {
-    for (const eid in backup.schedule[dk]) {
-      const v = backup.schedule[dk][eid];
-      if (v === 5 || v === 6) { if (!realCOCM[dk]) realCOCM[dk] = {}; realCOCM[dk][eid] = v; }
-    }
-  }
-  const realSaveState = saveState;
-  saveState = function () { return Promise.resolve(); };
-
-  const perMode = {};
-  try {
-    ANALYZE_MODES.forEach(({ key: mode }) => {
-      state.schedule = {};
-      genCOCM = JSON.parse(JSON.stringify(realCOCM));
-      state.genMode = mode;
-      genYear = year; genMonth = month; genDim = dim; genDay = 0;
-      genStats = {};
-      state.employees.forEach(e => { genStats[e.id] = { total: 0, t1: 0, t2: 0, t1a: 0, t2a: 0, c8: 0, inst: 0, yesterday: null, consec: 0 }; });
-      for (let d = 1; d <= dim; d++) generateDay(d);
-      const byCat = {};
-      GROUPS.forEach(cat => { byCat[cat] = computeCategoryAnalysis(cat, year, month, dim); });
-      perMode[mode] = byCat;
-    });
-  } finally {
-    state.schedule = backup.schedule;
-    genStats = backup.genStats;
-    genDay = backup.genDay; genYear = backup.genYear; genMonth = backup.genMonth; genDim = backup.genDim;
-    genCOCM = backup.genCOCM;
-    state.genMode = backup.genMode;
-    saveState = realSaveState;
-    const sel = document.getElementById('gen-mode');
-    if (sel) sel.value = backup.genMode;
-    saveState();
-    render();
-  }
-  renderAnalyzeModal(perMode, year, month);
-}
-
-function renderAnalyzeModal(perMode, year, month) {
-  let html = '<p style="color:var(--text-muted);margin-bottom:14px">Simulare pe baza electricienilor și configurației curente (Urban/Rural), pentru <strong>' + getMonthName(month) + ' ' + year + '</strong> — respectă CO/CM deja introduse manual în graficul real. Graficul real nu este modificat.</p>';
-  GROUPS.forEach(cat => {
-    const rows = ANALYZE_MODES.map(m => ({ ...m, stats: perMode[m.key][cat] }));
-    if (!rows[0].stats) return;
-    const best = rows.reduce((a, b) => (b.stats.utilPct > a.stats.utilPct ? b : a), rows[0]);
-    const gc = cat === 'urban' ? { bg: 'D6EAF8', fg: '1A5276' } : { bg: 'FDEBD0', fg: '935116' };
-    html += '<div style="margin-bottom:18px">';
-    html += '<div style="font-weight:700;font-size:13px;margin-bottom:6px;color:var(--heading)">' + (cat === 'urban' ? 'Urban' : 'Rural') + ' — ' + rows[0].stats.fullCrewCount + ' echipaje complete' + (rows[0].stats.soloCount ? ' + ' + rows[0].stats.soloCount + ' individuali' : '') + '</div>';
-    html += '<table class="stat-table"><thead><tr>';
-    html += '<th data-tooltip="Modul de generare simulat — vezi manualul pentru detalii despre fiecare algoritm">Mod</th>';
-    html += '<th data-tooltip="Media echipajelor/persoanelor care lucrează efectiv pe zi (media pe toată luna) — cu cât mai mare, cu atât capacitatea e mai bine folosită">Echipaje active/zi</th>';
-    html += '<th data-tooltip="% din zile-echipaj disponibile (excluzând echipajele integral în CO/CM) în care cel puțin un membru a lucrat efectiv">Utilizare</th>';
-    html += '<th data-tooltip="Numărul de zile din lună în care TOATE echipajele disponibile au fost active simultan, din totalul zilelor lunii">Zile cu toate echipajele</th>';
-    html += '<th data-tooltip="Orele lucrate cele mai mici, respectiv cele mai mari, dintre toți electricienii categoriei, la finalul lunii simulate">Ore min–max</th>';
-    html += '<th data-tooltip="Diferența dintre orele maxime și minime (max − min) — cu cât mai mic, cu atât distribuția e mai echitabilă între electricieni">Spread</th>';
-    html += '<th data-tooltip="Număr de reguli încălcate: peste 4 zile consecutive lucrate, peste 5 zile/săptămână, sau gap T2→T1/T1A nerespectat">Conflicte</th>';
-    html += '</tr></thead><tbody>';
-    rows.forEach(r => {
-      const s = r.stats;
-      const isBest = r.key === best.key;
-      html += '<tr class="' + (isBest ? 'stat-row-ok' : '') + '" style="' + (isBest ? 'outline:2px solid var(--accent);outline-offset:-2px' : '') + '">';
-      html += '<td style="text-align:left;white-space:normal;overflow:visible;text-overflow:clip">' + esc(r.label) + (isBest ? ' <span class="shift-pill pill-t1" style="margin-left:4px">recomandat</span>' : '') + '</td>';
-      html += '<td data-tooltip="' + s.avgPerDay.toFixed(2) + ' echipaje/persoane active în medie pe zi, din ' + s.fullCrewCount + (s.soloCount ? ' echipaje + ' + s.soloCount + ' individuali' : ' echipaje') + '">' + s.avgPerDay.toFixed(2) + '</td>';
-      html += '<td class="' + (s.utilPct >= 70 ? 'stat-hours-ok' : s.utilPct >= 50 ? 'stat-hours-warn' : 'stat-hours-bad') + '" data-tooltip="' + s.utilPct.toFixed(1) + '% din zilele-echipaj disponibile au avut activitate — ≥70% bine, 50–70% acceptabil, sub 50% slab">' + s.utilPct.toFixed(1) + '%</td>';
-      html += '<td data-tooltip="' + s.fullUtilDays + ' din ' + s.dim + ' zile ale lunii au avut toate echipajele disponibile active simultan">' + s.fullUtilDays + '/' + s.dim + '</td>';
-      html += '<td data-tooltip="Electricianul cu cele mai puține ore a lucrat ' + s.minH + 'h, cel cu cele mai multe ' + s.maxH + 'h, la finalul lunii simulate">' + s.minH + 'h – ' + s.maxH + 'h</td>';
-      html += '<td data-tooltip="Diferență de ' + s.spread + 'h între cel mai încărcat și cel mai puțin încărcat electrician — cu cât mai mic, cu atât mai echitabil">' + s.spread + 'h</td>';
-      html += '<td class="' + (s.violations ? 'stat-hours-bad' : 'stat-hours-ok') + '" data-tooltip="' + (s.violations ? s.violations + ' încălcări de reguli (consecutive/săptămânal/gap T2→T1)' : 'Nicio încălcare de regulă detectată') + '">' + (s.violations || '—') + '</td>';
-      html += '</tr>';
-    });
-    html += '</tbody></table></div>';
-  });
-  document.getElementById('analyze-body').innerHTML = html;
-  document.getElementById('analyze-modal').style.display = 'flex';
-}
-
-function closeAnalyzeModal() {
-  document.getElementById('analyze-modal').style.display = 'none';
-}
-
 function loadOrg() {
   try {
     const raw = localStorage.getItem(ORG_KEY);
@@ -3108,7 +2101,7 @@ function applyOrgToDOM() {
   const org = getOrg();
   const subtitle = document.getElementById('org-subtitle');
   if (subtitle) subtitle.textContent = [org.formatia, 'Delgaz Grid S.A'].filter(Boolean).join(' — ');
-  document.title = 'Grafic de tură' + (org.formatia ? ' — ' + org.formatia : '') + ' - Delgaz Grid S.A';
+  document.title = 'Grafic dispecer' + (org.formatia ? ' — ' + org.formatia : '') + ' - Delgaz Grid S.A';
   // esc() (deja folosit pt. nume electricieni în renderTable) — org.* poate veni dintr-un fișier
   // JSON importat de la altcineva; fără escape, innerHTML nesigur = XSS stocat la reload (bug
   // găsit la audit: applyJSON poate seta ORG_KEY din data.org la import de lună).
@@ -3181,18 +2174,6 @@ function toggleTbDropdown(id) {
 function closeTbDropdowns() {
   document.querySelectorAll('.tb-dd').forEach(d => d.classList.remove('open'));
 }
-function updateModeFieldVisibility() {
-  // T1A/T2A sunt relevante doar in modurile care le pot folosi automat: T1/T2+T1A/T2A
-  // ("full") si Rotatie 8 zile ("rotation"). In "t12" (Zilnic T1/T2) sunt ignorate complet
-  // de algoritm (raman doar pt editare manuala pe celule), iar in "rotation3" nu exista deloc.
-  const usesTA = state.genMode === 'full' || state.genMode === 'rotation';
-  document.querySelectorAll('.ta-field').forEach(el => { el.style.display = usesTA ? '' : 'none'; });
-  // c8 (8h) e alocat automat doar in full/t12 (assignCategoryShifts) — modurile de rotatie
-  // (3/4) nu au deloc logica de c8, ascunde campul acolo ca sa nu para configurabil fara efect
-  // (bug audit: campul ramanea vizibil peste tot, dar t12 il ignora silentios pana la fixul de mai sus).
-  const usesC8 = state.genMode === 'full' || state.genMode === 't12';
-  document.querySelectorAll('.c8-field').forEach(el => { el.style.display = usesC8 ? '' : 'none'; });
-}
 function toggleDarkMode() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
@@ -3232,13 +2213,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('sel-year').value = state.currentYear;
       document.getElementById('sel-month').value = state.currentMonth;
     }
-    if (!state.genMode) state.genMode = (CURRENT_MODULE === 'dispecer' ? 'dispecer' : 't12');
     // migrate org from state to dedicated ORG_KEY if not yet migrated
     if (!loadOrg() && state.org && state.org.sefFOL) saveOrg(state.org);
-    updateModuleUI();
-    // Sincronizează inputurile de configurare cu state.config salvat (module-aware).
-    applyConfigToDOM();
-    updateModeFieldVisibility();
     applyOrgToDOM();
     render();
     updateButtons();
@@ -3247,8 +2223,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const org = getOrg();
     if (!org.sefFOL && !org.responsabilTehnic && !org.aprobat) openOrgModal();
   }).catch(e => {
-    updateModuleUI();
-    applyConfigToDOM();
     render();
     updateButtons();
     applyOrgToDOM();

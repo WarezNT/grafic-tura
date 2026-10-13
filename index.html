@@ -878,12 +878,19 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura';
 const VERSION_KEY = 'graficTura_version';
 const ORG_KEY = 'graficTura_org';
-const APP_VERSION = 'V2026.09.23';
-const COMMIT_COUNT = 99;
+const APP_VERSION = 'V2026.10.1';
+const COMMIT_COUNT = 104;
 const DB_NAME = 'GraficTuraDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.10.1': {
+    title: 'Modul Dispecer + selector de modul',
+    items: [
+      { icon: '🔗', text: 'Selector „Modul” în antet: comută între Exploatare și noua aplicație Dispecer (grafic separat, cu date proprii)' },
+      { icon: '🕐', text: 'Dispecer: ture T1 (4h), T2 (6h), T3 (6h), T4 (8h) cu acoperire 24h automată, CO/CM, statistici, Excel și print' }
+    ]
+  },
   'V2026.09.23': {
     title: 'Print/PDF mereu pe temă deschisă',
     items: [
