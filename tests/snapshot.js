@@ -115,5 +115,93 @@ async function runSnapshot() {
     await excelHash('d-n7-nov');
     reset(mk(7)); co(2026, 11, 3, [10, 11, 12]); gen(2026, 11); await excelHash('d-n7-nov-co');
   }
+
+  // ---------------- ACȚIUNI INTERACTIVE (identice ca flux în ambele moduri) ----------------
+  {
+    const stateHash = () => hash(JSON.stringify(canon({ e: state.employees, s: state.schedule, c: state.config || null })));
+    const status = () => ($('status') ? $('status').textContent : '');
+    const A = {};
+    const fresh = () => {
+      if (isDisp) { reset(Array.from({ length: 6 }, (_, i) => ({ id: i + 1, name: 'D' + (i + 1), category: 'dispecer' }))); gen(2026, 11); }
+      else {
+        const e = []; let id = 1;
+        ['urban', 'rural'].forEach(c => { for (let i = 0; i < 3; i++) { const cr = (c === 'urban' ? 'U' : 'R') + (i + 1); for (let j = 0; j < 2; j++) e.push({ id: id++, name: cr + '-' + j, category: c, functia: 'emitent', crew: cr, forced8: false, crewOverrides: {} }); } });
+        reset(e);
+        ['urban', 'rural'].forEach(g => ['t1', 't1a', 't2', 't2a', 'c8'].forEach(k => { $('cfg-' + g + '-' + k).value = { t1: 2, t2: 2 }[k] || 0; }));
+        state.genMode = 't12'; gen(2026, 11);
+      }
+      render();
+    };
+    // 1) adăugare angajat
+    fresh();
+    openAddEmployeeModal(); $('new-emp').value = 'Nou Test';
+    if (!isDisp) { $('new-emp-cat').value = 'rural'; $('new-emp-fn').value = 'seftura'; $('new-emp-crew').value = 'R1'; }
+    addEmployee();
+    A.add = { st: stateHash(), msg: hash(status()), last: hash(JSON.stringify(canon(state.employees[state.employees.length - 1]))) };
+    // 2) nume gol
+    openAddEmployeeModal(); $('new-emp').value = ''; addEmployee(); A.addEmpty = hash(status());
+    // 3) editare
+    fresh(); openEditModal(2); $('modal-emp-name').value = 'Redenumit';
+    if (!isDisp) { $('modal-emp-fn').value = 'admitent'; }
+    saveModalEmployee(); A.edit = { st: stateHash(), msg: hash(status()) };
+    // 4) CO pe interval (CO apoi CM)
+    fresh(); openEditModal(3); $('leave-from').value = '2026-11-09'; $('leave-to').value = '2026-11-14'; $('leave-type').value = '5'; applyLeaveInterval();
+    A.leaveCO = { st: stateHash(), msg: hash(status()) };
+    $('leave-from').value = '2026-11-18'; $('leave-to').value = '2026-11-20'; $('leave-type').value = '6'; applyLeaveInterval(); closeModal();
+    A.leaveCM = { st: stateHash(), msg: hash(status()) };
+    // intervale invalide
+    openEditModal(3); $('leave-from').value = '2026-11-20'; $('leave-to').value = '2026-11-10'; applyLeaveInterval(); A.leaveBad = hash(status()); closeModal();
+    // 5) schimbare manuală a unei celule
+    fresh(); render();
+    const sel = [...document.querySelectorAll('#table-body select')][5];
+    const m = sel.getAttribute('onchange').match(/onShiftChange\('([^']+)',(\d+),this\)/);
+    sel.value = '2'; onShiftChange(m[1], +m[2], sel);
+    A.cell = { st: stateHash(), td: hash(sel.parentElement.className), sum: hash($('summary').innerHTML) };
+    // 6) ștergere angajat
+    fresh(); modalEmpId = state.employees[1].id; deleteModalEmployee(); A.del = { st: stateHash(), msg: hash(status()), tbl: hash($('table-body').innerHTML) };
+    // 7) curăță luna (păstrează CO/CM)
+    fresh(); openEditModal(1); $('leave-from').value = '2026-11-05'; $('leave-to').value = '2026-11-07'; $('leave-type').value = '5'; applyLeaveInterval(); closeModal();
+    state.currentYear = 2026; state.currentMonth = 11; $('sel-year').value = 2026; $('sel-month').value = 11;
+    clearSchedule(); A.clear = { st: stateHash(), msg: hash(status()) };
+    // 8) pas cu pas vs total, regenerare cu CO
+    fresh(); clearSchedule(); startGeneration(); for (let i = 0; i < 12; i++) generateNextDay(); prevDay(); prevDay(); generateNextDay();
+    A.step = { st: stateHash(), msg: hash(status()) };
+    // 9) export/import: backup complet, lună, angajați
+    fresh();
+    let captured = null; const sfp = window.saveFileWithPicker; window.saveFileWithPicker = async d => { captured = d; return null; };
+    await exportFullJSON(); const full = captured;
+    await exportMonthJSON(); const month = captured;
+    window.saveFileWithPicker = sfp;
+    A.exportFull = hash(full); A.exportMonth = hash(month);
+    const before = stateHash();
+    state.schedule = {}; applyJSON(full); A.importFull = { st: stateHash(), same: before === stateHash(), msg: hash(status()) };
+    state.schedule = {}; applyJSON(month); A.importMonth = { st: stateHash(), msg: hash(status()) };
+    applyJSON('nu e json'); A.importBad = hash(status());
+    const evt = txt => ({ target: { files: [new Blob([txt])], value: '' } });
+    const n0 = state.employees.length;
+    await new Promise(r => { importEmployeesJSON(evt(JSON.stringify([{ name: 'Importat Unu' }, { name: state.employees[0].name }]))); setTimeout(r, 250); });
+    A.importEmps = { added: state.employees.length - n0, st: stateHash(), msg: hash(status()) };
+    // 10) setări organizație (salvare + reafișare)
+    openOrgModal(); A.orgModal = hash($('org-modal').innerHTML);
+    saveOrgSettings(); A.orgSaved = { sub: hash($('org-subtitle').textContent), sig: hash($('signatures').innerHTML), msg: hash(status()) };
+    out['actions'] = A;
+  }
   return out;
+}
+
+/* Compară cu referința locală tests/_baseline-<mod>.json (generată din versiunea de referință).
+ * Utilizare: eval(await (await fetch('/tests/snapshot.js')).text()); JSON.stringify(await compareSnapshot())
+ * Întoarce lista diferențelor (goală = comportament identic). Rulează de două ori (prima rulare „încălzește”). */
+async function compareSnapshot() {
+  await runSnapshot();
+  const s = await runSnapshot();
+  const isD = typeof assignDispecerShifts === 'function';
+  const base = await (await fetch('/tests/_baseline-' + (isD ? 'dispecer' : 'exploatare') + '.json')).json();
+  const diffs = [];
+  const walk = (x, y, p) => {
+    if (x && typeof x === 'object') { for (const k of Object.keys(x)) walk(x[k], y ? y[k] : undefined, p + '.' + k); }
+    else if (x !== y) diffs.push(p + ': base=' + x + ' now=' + y);
+  };
+  walk(base, s, '');
+  return { page: isD ? 'dispecer' : 'exploatare', keys: Object.keys(s).length, diffs };
 }

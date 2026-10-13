@@ -13,6 +13,33 @@ const APP_VERSION = 'V2026.10.8';
 
 const DB_NAME = 'GraficTuraDispecerDB';
 
+// ── Configurația modului: citită de nucleu (js/core.js). Vezi modes/_template.js pentru ghid. ──
+const MODE = {
+  id: 'dispecer',
+  dbKey: 'main_dispecer',        // cheia în IndexedDB
+  stateModule: 'dispecer',       // etichetă salvată în state.module (garda la import)
+  words: {
+    employee: 'dispecer', Employee: 'Dispecer', employeeGen: 'dispecerului', employeesPl: 'dispeceri',
+    keptLong: 'CO și CM', keptShort: 'CO/CM'
+  },
+  keepOnClear: [5, 6],
+  leaveTypes: { 5: 'CO', 6: 'CM' },
+  leaveSkipWeekend: [],
+  leaveHoursPerDay() { return avgHoursPerDay(); },
+  isWorkShift(v) { return v > 0 && (SHIFT_HOURS[v] || 0) > 0; },
+  expectedHours(y, m) { return Math.round(daysInMonth(y, m) * avgHoursPerDay()); },
+  readAddForm() { return { category: 'dispecer' }; },
+  resetAddForm() {},
+  afterAdd() {},
+  addedMessage(name) { return 'Dispecer adăugat: ' + name; },
+  fillEditForm(emp) {},
+  readEditForm() { return null; },
+  applyEditForm(emp, f) {},
+  importEmployee(e) { return { category: 'dispecer' }; },
+  looksForeign: looksLikeExploatare,
+  foreignMessage: 'Fișierul conține electricieni din aplicația Exploatare — nu poate fi importat în Dispecer.'
+};
+
 const CHANGELOG = {
   'V2026.10.8': {
     title: 'Distribuție echitabilă, setări editabile, manual în două moduri',
@@ -76,8 +103,6 @@ const SHIFT_HOURS = [0, 4, 6, 6, 8, 0, 0];
 
 const WEEKEND_HIDE = [5, 6]; // CO/CM nu se oferă în dropdown pe S/D (se afișează ca L)
 
-const DB_KEY = 'main_dispecer';
-
 // Un bloc = T3 → T2 → T1 → T4 (4 zile la rând), apoi cel puțin o zi liberă. În fiecare zi începe exact un
 // bloc nou (T3), deci fiecare tură are CEL MULT UN dispecer pe zi, iar ceilalți sunt liberi. Cine începe
 // blocul se alege echitabil (ore în an, apoi weekenduri + sărbători) — nu un ciclu fix pe zilele săptămânii.
@@ -102,33 +127,6 @@ function defaultState() {
   };
 }
 
-function applyLeaveInterval() {
-  const from = document.getElementById('leave-from').value;
-  const to = document.getElementById('leave-to').value;
-  const type = parseInt(document.getElementById('leave-type').value);
-  if (!from || !to) { setStatus('Completează data de început și data de sfârșit.', 'warn'); return; }
-  if (to < from) { setStatus('Data de sfârșit e înainte de data de început.', 'warn'); return; }
-  if (modalEmpId === null) return;
-  // 'T00:00:00' evită bug-ul de fus orar: new Date('YYYY-MM-DD') fără oră se interpretează ca
-  // UTC miezul nopții, iar getDate()/getMonth() locale pot da o zi în minus/plus în funcție de fus.
-  const start = new Date(from + 'T00:00:00');
-  const end = new Date(to + 'T00:00:00');
-  let count = 0;
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    // CO/CM pot acoperi și weekendul (se afișează ca L acolo, dar valoarea rămâne CO/CM,
-    // la fel ca extensia automată de vineri).
-    const dk = dateKey(d.getFullYear(), d.getMonth() + 1, d.getDate());
-    if (!state.schedule[dk]) state.schedule[dk] = {};
-    state.schedule[dk][String(modalEmpId)] = type;
-    count++;
-  }
-  saveState();
-  render();
-  document.getElementById('leave-from').value = '';
-  document.getElementById('leave-to').value = '';
-  setStatus('Setat ' + (type === 5 ? 'CO' : 'CM') + ' pentru ' + count + ' zile (' + from + ' → ' + to + ').', 'success');
-}
-
 function migrateState(s) {
   s.module = 'dispecer';
   // Câmpuri rămase din vechea copie a Exploatării (config Urban/Rural, mod de generare, echipaje).
@@ -145,64 +143,6 @@ function migrateState(s) {
   if (s.genMonth === undefined) s.genMonth = 0;
   if (s.genDim === undefined) s.genDim = 0;
   if (!s.org) s.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
-}
-
-async function initStateFromDB() {
-  try {
-    const saved = await dbGet(DB_KEY);
-    if (saved && saved.employees && Array.isArray(saved.employees)) {
-      migrateState(saved);
-      state = saved;
-      genDay = state.genDay || 0;
-      genStats = state.genStats || null;
-      genCOCM = state.preservedCOCM || {};
-      genYear = state.genYear || 0;
-      genMonth = state.genMonth || 0;
-      genDim = state.genDim || 0;
-      return true;
-    }
-  } catch (e) { console.warn('IndexedDB load failed, using localStorage:', e); }
-  return false;
-}
-
-async function saveState() {
-  try {
-    state.module = 'dispecer';
-    state.preservedCOCM = genCOCM;
-    state.genDay = genDay;
-    state.genStats = genStats;
-    state.genYear = genYear;
-    state.genMonth = genMonth;
-    state.genDim = genDim;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    await dbPut(DB_KEY, state);
-    const dbEl = document.getElementById('db-status');
-    if (dbEl) dbEl.textContent = '💾 IndexedDB: salvat ' + new Date().toLocaleTimeString('ro');
-  } catch (e) {
-    console.warn('IndexedDB save failed:', e);
-    const dbEl = document.getElementById('db-status');
-    if (dbEl) dbEl.textContent = '💾 IndexedDB: eroare salvare';
-  }
-}
-
-function addEmployee() {
-  const inp = document.getElementById('new-emp');
-  const name = inp.value.trim();
-  if (!name) { setStatus('Introdu numele dispecerului.', 'warn'); return; }
-  const maxId = state.employees.reduce((m, e) => Math.max(m, e.id), 0);
-  state.employees.push({ id: maxId + 1, name, category: 'dispecer' });
-  inp.value = '';
-  inp.focus();
-  saveState();
-  closeAddEmployeeModal();
-  render();
-  setStatus('Dispecer adăugat: ' + name, 'success');
-}
-
-function openAddEmployeeModal() {
-  document.getElementById('new-emp').value = '';
-  document.getElementById('add-emp-modal').style.display = 'flex';
-  setTimeout(() => document.getElementById('new-emp').focus(), 50);
 }
 
 // Selector de modul: Dispecer rămâne aici, Exploatare redirecționează la index.html.
@@ -229,32 +169,6 @@ function getEmployeeStats(empId) {
   return {
     counts, co, cm, hours, worked, total: worked + co,
   };
-}
-
-function clearSchedule() {
-  const m = state.currentMonth, y = state.currentYear;
-  const keysToDelete = Object.keys(state.schedule).filter(k => {
-    const parts = k.split('-');
-    return +parts[0] === y && +parts[1] === m;
-  });
-  if (keysToDelete.length === 0) return;
-  const mn = ['','Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'][m];
-  if (!confirm('Ștergeți turele generate pentru ' + mn + ' ' + y + '? (CO și CM introduse se păstrează.)')) return;
-  keysToDelete.forEach(k => {
-    const day = state.schedule[k];
-    for (const eid in day) { if (![5, 6].includes(day[eid])) delete day[eid]; }
-    if (Object.keys(day).length === 0) delete state.schedule[k];
-  });
-  // Reset atât pe state.gen* CÂT ȘI pe variabilele de modul — saveState() de mai jos suprascrie
-  // necondiționat state.gen* cu variabilele de modul, deci un reset doar pe state.* era anulat
-  // instant (bug găsit la audit: după Curăță, butoanele de generare rămâneau active, iar un
-  // "Ziua →" scria o zi orfană într-o lună altfel goală).
-  state.genDay = 0; state.genStats = null; state.genYear = 0; state.genMonth = 0; state.genDim = 0;
-  genDay = 0; genStats = null; genYear = 0; genMonth = 0; genDim = 0;
-  updateButtons();
-  saveState();
-  render();
-  setStatus('Ture generate ' + mn + ' ' + y + ' șterse (CO/CM păstrate).', 'info');
 }
 
 function startGeneration() {
@@ -629,41 +543,6 @@ function prevDay() {
   render();
 }
 
-function openEditModal(id) {
-  modalEmpId = id;
-  const emp = state.employees.find(e => e.id === id);
-  if (!emp) return;
-  document.getElementById('modal-emp-name').value = emp.name;
-  // Inputurile de dată pornesc de la prima zi a lunii afișate în grafic.
-  const firstOfMonth = dateKey(state.currentYear, state.currentMonth, 1);
-  document.getElementById('leave-from').value = firstOfMonth;
-  document.getElementById('leave-to').value = firstOfMonth;
-  document.getElementById('emp-modal').style.display = 'flex';
-}
-
-function saveModalEmployee() {
-  const name = document.getElementById('modal-emp-name').value.trim();
-  if (!name) { setStatus('Numele nu poate fi gol.', 'warn'); return; }
-  const emp = state.employees.find(e => e.id === modalEmpId);
-  if (emp) { emp.name = name; saveState(); }
-  closeModal();
-  render();
-  setStatus('Dispecer actualizat.', 'success');
-}
-
-function deleteModalEmployee() {
-  const emp = state.employees.find(e => e.id === modalEmpId);
-  if (!emp) return;
-  state.employees = state.employees.filter(e => e.id !== modalEmpId);
-  for (const dk in state.schedule) {
-    delete state.schedule[dk][modalEmpId];
-  }
-  closeModal();
-  saveState();
-  render();
-  setStatus('Dispecer șters: ' + emp.name, 'info');
-}
-
 const HELP_DEFAULT_MODE = 'disp';
 
 function renderTable() {
@@ -772,74 +651,6 @@ function renderLegend() {
     + pill('', 'L — Liber', 'background:var(--shift0-bg);color:var(--shift0-text)');
 }
 
-function onShiftChange(dk, empId, sel) {
-  const v = parseInt(sel.value);
-  const existing = getShift(dk, empId);
-  if (existing !== null && existing !== v && existing !== 0 && v !== 0) {
-    if (!confirm('Angajatul are deja tura ' + SHIFT_NAMES[existing] + ' în această zi. Schimbi în ' + SHIFT_NAMES[v] + '?')) {
-      sel.value = existing;
-      sel.parentElement.className = sel.parentElement.className.replace(/\bshift-\d\b/, 'shift-' + existing);
-      return;
-    }
-  }
-  setShift(dk, empId, v);
-  const td = sel.parentElement;
-  td.className = td.className.replace(/\bshift-\d\b/, 'shift-' + v);
-  const span = sel.parentElement.querySelector('.print-shift');
-  if (span) { span.className = 'print-shift shift-' + v; span.textContent = SHIFT_NAMES[v]; }
-  const st = getEmployeeStats(empId);
-  const row = sel.closest('tr');
-  const cells = row.cells;
-  const hourCell = cells[cells.length - 3];
-  const cocmCell = cells[cells.length - 2];
-  const expected = expectedHours(state.currentYear, state.currentMonth);
-  hourCell.className = hoursCellClass(st.hours, expected, st) + ' hours-cell';
-  hourCell.textContent = st.hours + 'h';
-  cocmCell.textContent = leaveHours(st) + 'h';
-  renderSummary();
-}
-
-// Câte ture a lucrat efectiv un angajat în zile de sărbătoare legală, într-o lună — informativ,
-// pentru statistici (cerere: oamenii trebuie să poată vedea câte ture au avut în sărbători).
-function holidayShiftsCount(empId, y, m) {
-  const dim = daysInMonth(y, m);
-  const prefix = y + '-' + pad(m);
-  const holidaySet = new Set(getLegalHolidays(y).filter(h => h.date.startsWith(prefix)).map(h => h.date));
-  if (holidaySet.size === 0) return 0;
-  let count = 0;
-  for (let d = 1; d <= dim; d++) {
-    const dk = dateKey(y, m, d);
-    if (!holidaySet.has(dk)) continue;
-    const v = state.schedule[dk] ? state.schedule[dk][String(empId)] : undefined;
-    if (v > 0 && (SHIFT_HOURS[v] || 0) > 0) count++;
-  }
-  return count;
-}
-
-// Norma așteptată pt. o lună. `null` doar dacă anul e în afara intervalului 1900-2099 (gardă
-// a algoritmului Paștelui — selectorul de an al aplicației merge 2020-2040, deci în practică
-// nu se atinge). Înainte, consumatorii foloseau un fallback INVENTAT (184h) pt. anii în afara
-// unui tabel hardcodat 2025-2028, afișat ca normă reală în carduri/sumar, în timp ce coloana
-// „Normă" din tabel arăta corect „—" — aceeași informație, contradictorie în două locuri
-// (găsit la audit). Acum practic mereu un număr real, calculat corect.
-
-function expectedHours(y, m) {
-  // Dispecer: normă = zilele lunii × 24h / lungimea ciclului (max(5, nr. dispeceri)).
-  return Math.round(daysInMonth(y, m) * avgHoursPerDay());
-}
-
-// Ore de concediu (CO/CM) ale unui dispecer, la media pe zi a ciclului (24h / lungimea ciclului), rotunjite la 0,1h.
-function leaveHours(st) {
-  return Math.round((st.co + st.cm) * avgHoursPerDay() * 10) / 10;
-}
-
-// CO/CM aprobate reduc legitim norma așteptată — un angajat cu concediu nu ar trebui să apară
-// „sub normă" doar pentru zilele în care a fost în concediu (bug găsit la audit: cineva cu 4 zile
-// CO + restul lucrat corect apărea cu „-32h", card roșu, deși nu are nicio problemă reală).
-function effectiveExpected(expected, st) {
-  return expected === null ? null : Math.max(0, Math.round((expected - (st.co + st.cm) * avgHoursPerDay()) * 10) / 10);
-}
-
 function renderSummary() {
   const container = document.getElementById('summary');
   if (state.employees.length === 0) { container.innerHTML = ''; return; }
@@ -938,43 +749,6 @@ function looksLikeExploatare(data) {
   if (emps.some(e => e && (e.category === 'urban' || e.category === 'rural' || e.category === '8ore' || e.forced8 || e.crew))) return true;
   if (data.config && (data.config.urban || data.config.rural)) return true;
   return false;
-}
-
-function importEmployeesJSON(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      let employees = [];
-      if (Array.isArray(data)) employees = data;
-      else if (data.employees && Array.isArray(data.employees)) employees = data.employees;
-      else { setStatus('Format JSON invalid. Aștept array de dispeceri.', 'err'); return; }
-      if (looksLikeExploatare({ employees })) { setStatus('Fișierul conține electricieni din aplicația Exploatare — nu poate fi importat în Dispecer.', 'err'); return; }
-      const existingNames = new Set(state.employees.map(e => e.name.toLowerCase()));
-      let added = 0;
-      employees.forEach(emp => {
-        if (!emp.name) return;
-        if (existingNames.has(emp.name.toLowerCase())) return;
-        const maxId = state.employees.reduce((m, e) => Math.max(m, e.id), 0);
-        state.employees.push({ id: maxId + 1, name: emp.name, category: 'dispecer' });
-        existingNames.add(emp.name.toLowerCase());
-        added++;
-      });
-      if (added > 0) {
-        saveState();
-        render();
-        setStatus('Importat ' + added + ' dispeceri noi.', 'success');
-      } else {
-        setStatus('Niciun dispecer nou de importat (toți există deja).', 'warn');
-      }
-    } catch (err) {
-      setStatus('Eroare la parsarea JSON: ' + err.message, 'err');
-    }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
 }
 
 function applyJSON(text) {
