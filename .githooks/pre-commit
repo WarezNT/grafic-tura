@@ -1,15 +1,14 @@
 #!/bin/sh
-# Auto-update COMMIT_COUNT in index.html and dispecer.html to match the commit about to be made.
-# HEAD doesn't include this commit yet, so +1.
+# Actualizează COMMIT_COUNT (în js/core.js, comun tuturor modurilor) cu numărul commit-ului care urmează.
+# HEAD nu include încă acest commit, deci +1.
+
+FILE="js/core.js"
+[ -f "$FILE" ] || exit 0
 
 CURRENT=$(git rev-list --count HEAD 2>/dev/null || echo 0)
 NEXT=$((CURRENT + 1))
 
-for FILE in index.html dispecer.html; do
-  [ -f "$FILE" ] || continue
-  # Only touch the file if the constant is present and actually needs updating.
-  if grep -q "const COMMIT_COUNT = " "$FILE"; then
-    sed -i "s/const COMMIT_COUNT = [0-9]*;/const COMMIT_COUNT = ${NEXT};/" "$FILE"
-    git add "$FILE"
-  fi
-done
+if grep -q "const COMMIT_COUNT = " "$FILE"; then
+  sed -i "s/const COMMIT_COUNT = [0-9]*;/const COMMIT_COUNT = ${NEXT};/" "$FILE"
+  git add "$FILE"
+fi

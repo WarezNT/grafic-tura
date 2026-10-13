@@ -14,3 +14,6 @@ delgaz.png
 # Harness local de teste/audit (Node, nu face parte din aplicație)
 .audit/
 AUDIT.md
+
+# referințe locale pentru tests/snapshot.js (se regenerează din versiunea de referință)
+tests/_baseline-*.json
