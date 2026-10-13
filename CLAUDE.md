@@ -14,17 +14,18 @@ apoi commit + push.
 valorile 3/4 înseamnă T3/T4 aici, dar T1A/T2A în Exploatare — de aici garda la import.
 
 **Cum generează**
-- Regulă dură: într-o tură (T1–T4) cel mult UN dispecer pe zi; ceilalți sunt liberi. Ciclu:
-  T3→T2→T1→T4 apoi zile libere, lungime `max(5, nr. dispeceri)` (7 dispeceri: 4 lucrate + 3 libere).
-  Faza = `(index în lista completă + zi absolută) % lungime` (`cycleShiftFor`, `cycleLength`, `absDayOf`);
-  curge continuu peste luni/ani; CO/CM nu decalează fazele. Nu reintroduce dubluri „pentru acoperire".
+- Regulă dură: într-o tură (T1–T4) cel mult UN dispecer pe zi; ceilalți sunt liberi. Se lucrează în BLOCURI
+  T3→T2→T1→T4 (4 zile), apoi ≥1 zi liberă; în fiecare zi începe exact un bloc nou. Continuarea blocului e funcție de
+  tura REALĂ de ieri (`BLOCK_NEXT`), iar cine începe T3 se alege echitabil: ore în an la nivel de bloc (toleranță
+  `BLOCK_HOURS`=24h), apoi cele mai puține weekenduri+sărbători (`assignDispecerShifts`). NU reveni la un ciclu fix pe poziții:
+  la 7 dispeceri ciclul = o săptămână și fiecare lucrează mereu aceleași zile (weekend 0–104/an). Nu reintroduce dubluri.
 - Dacă CO/CM (sau < 5 dispeceri) lasă o tură goală, `rebalanceCoverage` caută cea mai bună
   reasignare a zilei (căutare exhaustivă, lanțuri de mutări): acoperire → ore uniforme în an →
-  puține schimbări; cu 11h odihnă (față de ieri real și mâine din ciclu) și max 4 zile consecutive
+  puține schimbări; cu 11h odihnă (față de ieri real; mâine = continuarea blocului) și max 4 zile consecutive
   (`MAX_CONSEC_DAYS` — decizie de business, vezi sensibilitatea din DISPECER.md §12).
   Ce nu se poate acoperi legal rămâne gol și apare ca ⚠️ sub tabel (`coverageGaps`); dublurile introduse
   manual apar tot ca ⚠️ (`duplicateShifts`).
-- Norma lunară = `round(zile × 24 / max(5, nr. dispeceri))` (`avgHoursPerDay`; 7 dispeceri ≈ 103h/lună);
+- Norma lunară = `round(zile × 24 / max(5, nr. dispeceri))` (`cycleLength`/`avgHoursPerDay`; 7 dispeceri ≈ 103h/lună);
   CO/CM reduc norma cu aceleași ore/zi; CO/CM în weekend nu se contorizează și se afișează ca L.
 - Sărbătorile legale sunt DOAR informative: marcaj pe coloane, listă, carduri „🎉 Sărb.: N lună · M an”
   și coloanele din Statistici. Raționalizarea/echilibrarea automată din sărbători a fost implementată
@@ -48,6 +49,8 @@ valorile 3/4 înseamnă T3/T4 aici, dar T1A/T2A în Exploatare — de aici garda
 - `migrateState` șterge câmpurile vechi (config, genMode, customCrews, functia/crew/forced8) din date salvate.
 - Importul (backup, lună, „Adaugă dispeceri") refuză fișierele din Exploatare (`looksLikeExploatare`).
 - Print/PDF: tema deschisă mereu (`enterPrintTheme`), ca în Exploatare.
+- Manualul (📖) are aceeași structură în ambele fișiere: două moduri (`help-exp-*` = Electricieni, `help-disp-*` = Dispecer),
+  `showHelpMode`/`showHelpTab(mode, name, btn)`, `HELP_DEFAULT_MODE`. Conținutul e duplicat — modifică-l în ambele fișiere.
 
 **Testare** (fără UI, în consolă, pe `http://`): `python -m http.server`, apoi deschide pagina în
 Browser pane — NU `file://`/`data:` (localStorage/IndexedDB blocate → bannere false „Date corupte”).

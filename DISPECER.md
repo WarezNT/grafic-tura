@@ -43,34 +43,37 @@ Organizația (formație, șef, responsabil) este **distinctă** între cele dou�
 
 T1+T2+T3+T4 = 24h (acoperire completă a zilei).
 
-## 3. Ciclul de rotație
+## 3. Blocuri de ture (V2026.10.8 — înlocuiește ciclul fix pe poziții)
 
-Regulă de bază (V2026.10.6): **într-o tură (T1–T4) nu poate fi mai mult de un dispecer într-o zi — ceilalți sunt
-liberi**. Ciclul fiecărui dispecer are lungimea `max(5, nr. dispeceri)`:
+Regulă dură: **într-o tură (T1–T4) nu poate fi mai mult de un dispecer într-o zi — ceilalți sunt liberi**.
 
-```
-T3 → T2 → T1 → T4 → L → (L ... până la lungimea ciclului) → repetă
-```
-- n = 5: T3,T2,T1,T4,L (4 zile lucrate, 1 liberă). n = 7: T3,T2,T1,T4,L,L,L. n = 10: 4 lucrate + 6 libere.
-- Poziția avansează cu 1 pe zi; ciclul curge continuu peste luni/ani (fără resetare).
-- T1 e urmat de T4; după T4 cel puțin o zi liberă; max 4 zile lucrate la rând.
-- n < 5: ciclul rămâne de 5, deci nu toate turele pot fi acoperite (inevitabil).
+Un **bloc** = `T3 → T2 → T1 → T4` (4 zile la rând), urmat de cel puțin o zi liberă. În fiecare zi începe
+**exact un bloc nou** (T3), deci fiecare tură are un singur dispecer. Cu n dispeceri, 4 lucrează pe zi și n−4 sunt liberi
+(n=5: 4 din 5; n=7: 4 din 7, fiecare face un bloc la ~7 zile).
 
-## 4. Algoritm de acoperire 24h
+De ce nu mai e ciclu fix: cu 7 dispeceri un ciclu de 7 zile = o săptămână → fiecare ajungea să lucreze mereu aceleași zile
+ale săptămânii (măsurat 2026: ture în weekend 104/52/0/0/52/104/104, T4 mereu în aceeași zi). Acum cine începe se alege la fiecare zi.
 
-```
-poz(dispecer i, ziAbs) = (i + ziAbs) % lungimeCiclu        i = indexul în lista COMPLETĂ (după id)
-tura = poz < 4 ? [T3, T2, T1, T4][poz] : L
-```
-- `ziAbs` = zile absolute (continuitate între luni). Indexul e din lista completă, ca CO/CM să nu decaleze fazele.
-- Pentru n ≥ 4 fazele sunt distincte → fiecare tură are exact un dispecer în fiecare zi (n ≥ 5).
-- CO/CM introduse manual sunt păstrate; golurile rezultate se completează prin §12.
-- Siguranță la schimbarea numărului de dispeceri (ciclul se recalculează): dacă tura din ciclu ar încălca
-  odihna de 11h față de ieri sau ar depăși 4 zile la rând, dispecerul primește L (`assignDispecerShifts`).
+## 4. Algoritm (`assignDispecerShifts`)
+
+Pentru ziua d, pornind de la tura reală de IERI a fiecărui dispecer (`BLOCK_NEXT`):
+1. **Continuă blocurile în curs**: ieri T3 → azi T2; T2 → T1; T1 → T4; T4 → L.
+2. **Alege cine începe T3 azi** dintre cei odihniți (ieri nu T4/bloc, nu în CO/CM, fără CO/CM în următoarele 3 zile, ca să
+   nu rupă blocul): ore în an cu credit CO/CM (`ctx.yearHours`) la nivel de bloc (toleranță 24h, `BLOCK_HOURS`), apoi
+   **cele mai puține weekenduri+sărbători** lucrate în an (`weekendHolidayShifts`), apoi ore, apoi id.
+   Toleranța de 24h e esențială: fără ea, diferențe mici de ore impun o coadă fixă care la 7 dispeceri se blochează iar pe zilele săptămânii.
+3. Fără istoric (prima zi generată): „ieri" virtual T1/T2/T3 pentru primii trei, ca toate cele 4 ture să pornească din prima zi.
+4. CO/CM introduse manual se păstrează; golurile rezultate se completează prin §12.
+
+Blocul garantează prin construcție: T1→T4, odihnă ≥ 11h, max 4 zile la rând, cel puțin o zi liberă după T4, o singură persoană pe tură.
+Schimbarea numărului de dispeceri la mijloc de an nu cere nicio recalculare (starea e în `state.schedule`, nu într-o formulă).
+
+Testat (2026, fără concedii, ture lucrate în weekend per dispecer / spread; goluri 0, dubluri 0, încălcări 0):
+n=5: 84/83/83/83/83 (1) · n=6: 67–73 (6) · **n=7: 59–60 (1)** · n=8: 42–57 (15) · n=10: 40–44 (4).
 
 ## 5. Norma (Dispecer)
 
-- Ore medii pe zi = `24 / max(5, nr. dispeceri)` (`avgHoursPerDay()`); norma lunară = `round(zile × ore_medii)`.
+- Ore medii pe zi = `24 / max(5, nr. dispeceri)` (`cycleLength()`, `avgHoursPerDay()`); norma lunară = `round(zile × ore_medii)`.
   Ex. 7 dispeceri: 3,43h/zi → ~103h/lună, ~1250h/an (nu 144h ca la 5 dispeceri).
 - CO/CM reduc norma cu orele medii pe zi (doar zile lucrătoare).
 
@@ -132,8 +135,8 @@ variante) și alege, în ordine: (1) cât mai multe ture acoperite; (2) suma pă
 (`ctx.yearHours`, cu credit CO/CM) după azi cât mai mică = ore uniforme; (3) cât mai puține schimbări.
 
 Un dispecer poate prelua o tură t doar dacă: nu e în CO/CM; are ≥ 11h odihnă față de tura de IERI (reală)
-și față de tura de MÂINE (din ciclu sau CO/CM) — `ctx.restOk`; iar dacă era în zi liberă, seria de
-zile consecutive ≤ 4 inclusiv zilele următoare din ciclu — `ctx.consecOk`.
+și (ziua următoare e continuarea blocului, care respectă mereu odihna) — `ctx.restOk`; iar seria de zile consecutive
+(zile lucrate înainte + restul blocului din tura preluată, `BLOCK_REMAINING`) ≤ 4 — `ctx.consecOk(e, t)`.
 
 Efecte: fără CO/CM rezultatul e identic cu ciclul pur (no-op, ore egale). „T1 urmat de T4" poate fi
 încălcată — acoperirea 24h are prioritate. Lanțurile (A preia golul, B preia tura lui A) apar des:
@@ -191,3 +194,11 @@ Dispecerii au alte entități/funcții decât Exploatarea, deci modalul ⚙️ e
   `graficTura_dispecer_org` și intră în exportul de lună. Dialogul de la prima pornire nu se mai redeschide
   după ce a fost salvat o dată (`org.configured`), chiar dacă toate câmpurile sunt dezactivate.
 - Toate valorile se afișează cu `esc()`/`escAttr()` (import JSON de la terți).
+
+## 16. Manualul în două moduri (V2026.10.8 / index V2026.10.2)
+
+Butonul 📖 Manual din **ambele** aplicații deschide același manual cu două moduri: „👷 Mod Electricieni (Exploatare)" și
+„🎧 Mod Dispecer" (`showHelpMode`, `HELP_DEFAULT_MODE` = modul aplicației curente). Fiecare mod are cele 7 file
+(`help-exp-*` / `help-disp-*`). Aplicațiile sunt single-file, deci conținutul ambelor moduri e DUPLICAT în `index.html` și
+`dispecer.html` — orice modificare de manual se face în ambele fișiere (aceeași structură, ID-uri prefixate cu modul).
+CSS-ul claselor `pill-*` folosite de manualul celuilalt mod e inclus în ambele fișiere.

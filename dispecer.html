@@ -148,6 +148,17 @@ td.hours.ok{background:var(--hours-ok-bg);color:var(--hours-ok-text)}
 .tb-dd button:hover{background:var(--hover-bg)}
 .tb-dd-sep{border:none;border-top:1px solid var(--border);margin:4px 2px}
 .tb-dd-hint{font-size:10px;color:var(--text-muted);background:var(--ctrl-bg);border:1px solid var(--border);padding:1px 5px;border-radius:4px;font-weight:600;flex-shrink:0}
+.help-modes{display:flex;gap:6px;margin-bottom:10px}
+.help-mode{flex:1;background:var(--ctrl-bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--text-muted)}
+.help-mode:hover{background:var(--hover-bg);color:var(--text)}
+.help-mode.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.help-mode-wrap{flex-direction:column;flex:1;min-height:0}
+.pill-t1a{background:#aed6f1;color:#154360}
+.pill-t2a{background:#fad7a0;color:#7e4d0e}
+.pill-c8{background:#f0f4f8;color:#2c3e50}
+[data-theme="dark"] .pill-t1a{background:#1a3d52;color:#7ad4f8}
+[data-theme="dark"] .pill-t2a{background:#352610;color:#f0c060}
+[data-theme="dark"] .pill-c8{background:#1e2838;color:#a0bcd8}
 .help-tabs{display:flex;gap:3px;border-bottom:2px solid var(--border);margin-bottom:14px;flex-wrap:wrap}
 .help-tab{background:none;border:none;border-bottom:3px solid transparent;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:-2px;border-radius:6px 6px 0 0;transition:all .15s;white-space:nowrap}
 .help-tab:hover{background:var(--hover-bg);color:var(--text)}
@@ -424,99 +435,118 @@ td.emp-name-cell:hover{text-decoration:underline}
 
 <div id="help-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeHelp()">
   <div class="modal-content" style="max-width:760px;max-height:88vh;display:flex;flex-direction:column;padding-bottom:12px">
-    <h3 style="margin-bottom:12px">📖 Manual de utilizare — Dispecer</h3>
+    <h3 style="margin-bottom:10px">📖 Manual de utilizare</h3>
+    <div class="help-modes">
+      <button class="help-mode" data-mode="exp" onclick="showHelpMode('exp')">👷 Mod Electricieni (Exploatare)</button>
+      <button class="help-mode active" data-mode="disp" onclick="showHelpMode('disp')">🎧 Mod Dispecer</button>
+    </div>
+    <div id="help-mode-exp" class="help-mode-wrap" style="display:none">
     <div class="help-tabs">
-      <button class="help-tab active" onclick="showHelpTab('start',this)">🚀 Început rapid</button>
-      <button class="help-tab" onclick="showHelpTab('config',this)">⚙️ Configurare</button>
-      <button class="help-tab" onclick="showHelpTab('gen',this)">▶ Generare</button>
-      <button class="help-tab" onclick="showHelpTab('rules',this)">📏 Reguli</button>
-      <button class="help-tab" onclick="showHelpTab('edit',this)">✏️ Editare</button>
-      <button class="help-tab" onclick="showHelpTab('stats',this)">📈 Statistici</button>
-      <button class="help-tab" onclick="showHelpTab('export',this)">💾 Fișiere &amp; Export</button>
+      <button class="help-tab active" onclick="showHelpTab('exp','start',this)">🚀 Început rapid</button>
+      <button class="help-tab" onclick="showHelpTab('exp','config',this)">⚙️ Configurare</button>
+      <button class="help-tab" onclick="showHelpTab('exp','gen',this)">▶ Generare</button>
+      <button class="help-tab" onclick="showHelpTab('exp','rules',this)">📏 Reguli</button>
+      <button class="help-tab" onclick="showHelpTab('exp','edit',this)">✏️ Editare</button>
+      <button class="help-tab" onclick="showHelpTab('exp','stats',this)">📈 Statistici</button>
+      <button class="help-tab" onclick="showHelpTab('exp','export',this)">💾 Fișiere &amp; Export</button>
     </div>
     <div style="overflow-y:auto;flex:1;font-size:13px;line-height:1.7;color:var(--text);padding-right:4px">
 
-      <!-- TAB: Început rapid -->
-      <div id="help-tab-start" class="help-tab-panel">
+<!-- TAB: Început rapid -->
+      <div id="help-exp-start" class="help-tab-panel">
         <div class="help-hero">
-          <div class="help-hero-title">Grafic Dispecer</div>
-          <div class="help-hero-sub">Planifică turele dispecerilor pe ciclul T3→T2→T1→T4, cu acoperire 24h — generare automată, CO/CM, statistici și export.</div>
+          <div class="help-hero-title">Grafic de Tură</div>
+          <div class="help-hero-sub">Planifică turele echipelor Urban și Rural în câteva secunde — generare automată, concedii și instruiri, statistici și export.</div>
           <div class="help-chips">
             <span class="help-chip">📴 Funcționează offline</span>
-            <span class="help-chip">🎯 Acoperire 24h</span>
-            <span class="help-chip">🔄 Ciclu T3→T2→T1→T4</span>
+            <span class="help-chip">🎯 Generare automată</span>
+            <span class="help-chip">🔄 Rotații configurabile</span>
           </div>
         </div>
 
         <div class="help-section">
           <div class="help-section-title">✨ Ce poate face aplicația</div>
           <div class="help-feat-grid">
-            <div class="help-feat"><span class="help-feat-ico">🕐</span><div><div class="help-feat-t">Ture de 4/6/6/8 ore</div><div class="help-feat-d">T1 (06–10), T2 (10–16), T3 (16–22), T4 (22–06).</div></div></div>
-            <div class="help-feat"><span class="help-feat-ico">🔄</span><div><div class="help-feat-t">Ciclu automat</div><div class="help-feat-d">Fiecare dispecer: T3→T2→T1→T4→liber, apoi se repetă.</div></div></div>
-            <div class="help-feat"><span class="help-feat-ico">🌐</span><div><div class="help-feat-t">Acoperire 24h</div><div class="help-feat-d">Faze distribuite automat, cel puțin un dispecer pe fiecare tură.</div></div></div>
-            <div class="help-feat"><span class="help-feat-ico">🏖️</span><div><div class="help-feat-t">CO / CM</div><div class="help-feat-d">Păstrate la regenerare, introduse manual.</div></div></div>
-            <div class="help-feat"><span class="help-feat-ico">🧮</span><div><div class="help-feat-t">Ore reale</div><div class="help-feat-d">Fiecare tură are durata ei (4/6/6/8h).</div></div></div>
-            <div class="help-feat"><span class="help-feat-ico">📊</span><div><div class="help-feat-t">Statistici</div><div class="help-feat-d">Ore și ture pe dispecer, comparație cu norma.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🏭</span><div><div class="help-feat-t">Urban &amp; Rural</div><div class="help-feat-d">Două grupe cu cerințe de ture independente.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">👥</span><div><div class="help-feat-t">Echipaje</div><div class="help-feat-d">Membrii unui echipaj lucrează împreună; schimbare de echipaj pe dată.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🔀</span><div><div class="help-feat-t">4 moduri de generare</div><div class="help-feat-d">Complet, doar T1/T2, rotație 8 zile, rotație 3 zile.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🏖️</span><div><div class="help-feat-t">CO / CM / Instruire</div><div class="help-feat-d">Păstrate la regenerare, excluse automat din weekend.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🧮</span><div><div class="help-feat-t">Normă &amp; validare</div><div class="help-feat-d">Calcul automat cu sărbători legale și verificarea orelor.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">📊</span><div><div class="help-feat-t">Statistici</div><div class="help-feat-d">Ore pe angajat, carduri, comparație cu norma lunară.</div></div></div>
             <div class="help-feat"><span class="help-feat-ico">💾</span><div><div class="help-feat-t">Salvare &amp; backup</div><div class="help-feat-d">Automat în browser + backup JSON portabil.</div></div></div>
             <div class="help-feat"><span class="help-feat-ico">📤</span><div><div class="help-feat-t">Export</div><div class="help-feat-d">Excel stilizat, Print/PDF (A3) și JSON.</div></div></div>
           </div>
         </div>
 
         <div class="help-section">
-          <div class="help-section-title">🚀 Pașii pentru un grafic nou</div>
+          <div class="help-section-title">🚀 Cei 6 pași pentru un grafic nou</div>
           <div class="help-steps">
-            <div class="help-step"><span class="help-step-n">1</span><span class="help-step-t"><strong>Completează setările organizației</strong> (⚙️ din colțul dreapta-sus).</span></div>
-            <div class="help-step"><span class="help-step-n">2</span><span class="help-step-t"><strong>Adaugă dispecerii</strong> cu <em>+ Dispecer</em> (doar numele).</span></div>
+            <div class="help-step"><span class="help-step-n">1</span><span class="help-step-t"><strong>Completează setările organizației</strong> (⚙️ din colțul dreapta-sus) — apar în antet, semnături, print și Excel.</span></div>
+            <div class="help-step"><span class="help-step-n">2</span><span class="help-step-t"><strong>Adaugă electricienii</strong> cu <em>+ Electrician</em>: nume, mediu (Urban/Rural), funcție, echipaj.</span></div>
             <div class="help-step"><span class="help-step-n">3</span><span class="help-step-t"><strong>Alege luna și anul</strong> (săgețile ‹ › sau selectoarele).</span></div>
-            <div class="help-step"><span class="help-step-n">4</span><span class="help-step-t"><strong>Introdu concediile</strong> (CO / CM) <em>înainte</em> de generare — algoritmul le respectă.</span></div>
-            <div class="help-step"><span class="help-step-n">5</span><span class="help-step-t">Apasă <em>▶ Generare</em>, apoi <em>Generare totală →</em> (sau <em>Ziua →</em> pas cu pas). Ajustează manual celulele, verifică <em>Statisticile</em>, apoi exportă (Excel / Print / JSON).</span></div>
+            <div class="help-step"><span class="help-step-n">4</span><span class="help-step-t"><strong>Setează cerința</strong> pentru fiecare grup (Urban / Rural): câți electricieni pe T1, T2 etc., apoi alege <strong>Modul</strong> de generare.</span></div>
+            <div class="help-step"><span class="help-step-n">5</span><span class="help-step-t"><strong>Introdu concediile</strong> (CO / CM) și instruirile <em>înainte</em> de generare — algoritmul le respectă.</span></div>
+            <div class="help-step"><span class="help-step-n">6</span><span class="help-step-t">Apasă <em>▶ Generare</em>, apoi <em>Generare totală →</em> (sau <em>Ziua →</em> pas cu pas). Ajustează manual celulele, verifică <em>Statisticile</em>, apoi exportă (Excel / Print / JSON).</span></div>
           </div>
         </div>
         <div class="help-section">
           <div class="help-section-title">🧭 Ce găsești pe ecran</div>
           <ul class="help-list">
-            <li><strong>Antet</strong> — logo, luna afișată, formația; selectorul de <em>Modul</em>, ⚙️ setări organizație, 🌙/☀️ mod întunecat.</li>
-            <li><strong>Bara de sus</strong> — navigare lună/an, câți dispeceri pe fiecare tură (T1–T4), apoi butoanele <em>▶ Generare</em>, <em>✕ Curăță</em>, <em>+ Dispecer</em>.</li>
-            <li><strong>Tabelul</strong> — un rând pe dispecer, o coloană pe zi; fiecare celulă e un dropdown editabil. Coloanele finale: <em>Lucrate</em>, <em>CO/CM</em>, <em>Normă</em>.</li>
+            <li><strong>Antet</strong> — logo, luna afișată, formația; ⚙️ setări organizație, 🌙/☀️ mod întunecat.</li>
+            <li><strong>Bara de sus</strong> — navigare lună/an, cerința de ture pentru Urban și Rural, <em>Mod</em>, apoi butoanele <em>▶ Generare</em>, <em>✕ Curăță</em>, <em>+ Electrician</em>.</li>
+            <li><strong>Tabelul</strong> — un rând pe electrician, o coloană pe zi; fiecare celulă e un dropdown editabil. Coloanele finale: <em>Lucrate</em> (ore), <em>CO/CM</em> (ore de concediu) și <em>Normă</em>.</li>
             <li><strong>Sub tabel</strong> — legenda turelor, lista sărbătorilor lunii, carduri și tabel de statistici.</li>
-            <li><strong>Bara de jos</strong> — <em>💾 Fișiere</em>, <em>📊 Excel</em>, <em>🖨️ Print/PDF</em>, <em>📖 Manual</em>, versiunea aplicației.</li>
+            <li><strong>Bara de jos</strong> — <em>💾 Fișiere</em>, <em>📊 Excel</em>, <em>🖨️ Print/PDF</em>, <em>📈 Analiză moduri</em>, <em>📖 Manual</em>, versiunea aplicației (click = ce e nou) și numărul de commit.</li>
           </ul>
+          <p>Peste tot în aplicație, trecerea cu cursorul peste un buton, un câmp sau un antet de coloană afișează un tooltip explicativ.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">💡 Bune de știut</div>
           <ul class="help-list">
-            <li>Tot ce faci se <strong>salvează automat</strong> în browser. Fă periodic un backup JSON.</li>
-            <li>Datele Dispecer sunt <strong>separate</strong> de cele din aplicația de Exploatare.</li>
+            <li>Tot ce faci se <strong>salvează automat</strong> în browser. Pentru siguranță, fă periodic un backup JSON (<em>Fișiere → Descarcă tot</em>).</li>
+            <li>Graficul fiecărei luni e independent; poți lucra oricând pe orice lună/an (2020–2040).</li>
             <li>Aplicația funcționează și <strong>offline</strong>; doar exportul Excel are nevoie de internet.</li>
           </ul>
         </div>
       </div>
 
       <!-- TAB: Configurare -->
-      <div id="help-tab-config" class="help-tab-panel" style="display:none">
+      <div id="help-exp-config" class="help-tab-panel" style="display:none">
         <div class="help-section">
           <div class="help-section-title">⚙️ Setări organizație</div>
-          <p>La prima utilizare apare automat un dialog; îl poți redeschide oricând cu butonul <em>⚙️</em>. Câmpuri: <strong>Entitate</strong> (implicit Delgaz Grid S.A), <strong>Formația/Unitatea</strong>, <strong>Șef FOL EM</strong>, <strong>Responsabil Tehnic</strong>, <strong>Județ</strong> (pentru Șef CORE) și <strong>Aprobat Șef CORE</strong>. <strong>Denumirea fiecărui câmp se poate edita</strong> (ex. „Șef dispecerat" în loc de „Șef FOL EM"), iar <strong>bifa</strong> din stânga lui îl activează / dezactivează — un câmp dezactivat nu mai apare în antet, la print și în Excel.</p>
+          <p>La prima utilizare apare automat un dialog; îl poți redeschide oricând cu butonul <em>⚙️</em>. Câmpuri: <strong>Formația/Unitatea</strong>, <strong>Șef FOL EM</strong>, <strong>Responsabil Tehnic</strong>, <strong>Județ</strong> (pentru Șef CORE) și <strong>Aprobat Șef CORE</strong>.</p>
           <p>Datele apar în subtitlul paginii, titlul filei de browser, semnăturile de la print și exportul Excel. Sunt salvate separat de grafic și <strong>nu se șterg</strong> la import de fișiere sau la actualizarea aplicației.</p>
         </div>
         <div class="help-section">
-          <div class="help-section-title">👤 Dispeceri</div>
-          <p>Apasă <em>+ Dispecer</em> și completează doar <strong>numele</strong>.</p>
+          <div class="help-section-title">👤 Electricieni</div>
+          <p>Apasă <em>+ Electrician</em> și completează:</p>
           <ul class="help-list">
             <li><strong>Nume</strong> — apare în tabel, carduri și exporturi.</li>
+            <li><strong>Categorie (Urban / Rural)</strong> — grupul de ture; fiecare grup e alocat separat, conform cerinței proprii.</li>
+            <li><strong>Funcția</strong> — Emitent, Admitent, Electrician, Șef tură (informativ, colorat în tabel).</li>
+            <li><strong>Echipaj</strong> — opțional; membrii aceluiași echipaj lucrează împreună (vezi mai jos).</li>
+            <li><strong>Forțat 8h</strong> — primește mereu tura 8h în zilele lucrătoare (weekend = L), e exclus din orice altă alocare automată și apare grupat separat, sub „Program 8 ore", cu insigna <em>F</em>.</li>
           </ul>
-          <p><strong>Editare / ștergere:</strong> click pe numele dispecerului din tabel. Ștergerea cere confirmare în doi pași. Din același loc poți seta CO/CM pe interval.</p>
+          <p><strong>Editare / ștergere:</strong> click pe numele electricianului din tabel. Ștergerea cere confirmare în doi pași (a doua apăsare în 3 secunde), ca să nu se șteargă din greșeală.</p>
+          <p><strong>Adăugare din fișier:</strong> <em>Fișiere → Adaugă electricieni din fișier</em> — vezi tabul Fișiere &amp; Export.</p>
         </div>
         <div class="help-section">
-          <div class="help-section-title">🔧 Cerința de ture</div>
-          <p>Cele 4 ture acoperă 24h și se alocă automat:</p>
+          <div class="help-section-title">👥 Echipaje</div>
+          <p>Membrii aceluiași echipaj sunt tratați ca un bloc: primesc aceeași tură în aceeași zi. Dacă blocul nu încape pe o tură, tot echipajul trece la următoarea.</p>
+          <p><strong>Echipaje predefinite:</strong> U1–U5 (Urban), R1–R5 (Rural). Poți crea oricâte echipaje proprii scriind un nume în câmpul „Echipaj nou…” și apăsând <em>+ Adaugă</em>.</p>
+          <p><strong>Schimbare echipaj pe dată</strong> — în modalul de editare, secțiunea „Schimbări echipaj pe dată”: alegi o dată și echipajul nou; de la acea dată electricianul face parte din alt echipaj (valabil până la următoarea schimbare). Poți adăuga oricâte schimbări și le poți șterge individual.</p>
+          <p><strong>Vizualizare:</strong> în zilele în care electricianul e mutat într-un alt echipaj, numele echipajului efectiv apare <span style="color:#f59e0b;font-weight:600">portocaliu</span> sub tură, în celulă (ecran și print).</p>
+          <p><strong>Echipaj rupt (CO/CM sau fără echipaj):</strong> dacă partenerul cuiva e în concediu într-o zi, sau dacă cineva nu are echipaj setat, cei rămași fără pereche sunt <strong>împerecheați temporar</strong> între ei, automat, în acea zi (după ordinea din listă). Dacă rămâne unul singur, lucrează ca individ solo, iar responsabilul îi poate ajusta manual programul (de ex. 8h). Nu există echipaje de 3 persoane.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🔧 Cerința de ture (bara de sus)</div>
+          <p>Pentru fiecare grup, <strong>Urban</strong> și <strong>Rural</strong>, setezi câți electricieni vrei pe fiecare tură, în fiecare zi:</p>
           <ul class="help-list">
-            <li><strong>T1</strong> (06:00–10:00, 4h)</li>
-            <li><strong>T2</strong> (10:00–16:00, 6h)</li>
-            <li><strong>T3</strong> (16:00–22:00, 6h)</li>
-            <li><strong>T4</strong> (22:00–06:00, 8h)</li>
+            <li><strong>T1</strong> (06:00–14:00) și <strong>T2</strong> (14:00–22:00) — se alocă în orice zi, în toate modurile.</li>
+            <li><strong>T1A / T2A</strong> — variante ale T1/T2, doar zile lucrătoare (L–V). Câmpurile apar doar în modurile 1 și 3, care le pot aloca automat.</li>
+            <li><strong>8h</strong> (08:00–16:00) — program normal, doar zile lucrătoare. Câmpul apare doar în modurile 1 și 2.</li>
           </ul>
-          <p>Generarea asigură acoperirea celor 4 ture (24h) prin rotația T3→T2→T1→T4→liber, în funcție de numărul de dispeceri. Nu e nevoie de configurare numerică.</p>
+          <p>Dacă suma cerută depășește numărul de electricieni din grup, aplicația te avertizează la generare (unii nu vor avea zile libere). Valorile se salvează și se restaurează la redeschidere.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">🌙 Mod întunecat</div>
@@ -525,7 +555,7 @@ td.emp-name-cell:hover{text-decoration:underline}
       </div>
 
       <!-- TAB: Generare -->
-      <div id="help-tab-gen" class="help-tab-panel" style="display:none">
+      <div id="help-exp-gen" class="help-tab-panel" style="display:none">
         <div class="help-section">
           <div class="help-section-title">▶ Cum generezi graficul</div>
           <p>Selectează luna și anul, setează cerința și modul, apoi apasă <em>▶ Generare</em>. Aplicația verifică dacă există electricieni și, dacă sunt zile deja generate, îți cere confirmarea să continue din prima zi liberă (zilele existente se păstrează). După pornire apar:</p>
@@ -534,117 +564,139 @@ td.emp-name-cell:hover{text-decoration:underline}
             <li><em>Generare totală (N) →</em> — generează dintr-odată toate zilele rămase.</li>
             <li><em>← Ziua N</em> — întoarce cu o zi și o regenerează dacă rezultatul nu te mulțumește.</li>
           </ul>
-          <p><strong>Continuitate între luni:</strong> generarea ține cont de poziția în ciclu de la lunile anterioare, deci rotația continuă corect la început de lună.</p>
+          <p><strong>Modul</strong> se poate schimba oricând, inclusiv în timpul generării pas cu pas; se aplică zilelor următoare.</p>
+          <p><strong>Continuitate între luni:</strong> generarea ține cont de ultima zi din luna anterioară (tura de ieri, zile consecutive, săptămâna care traversează granița), deci regulile se respectă și la început de lună.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">✕ Curăță</div>
-          <p>Șterge <strong>doar turele generate</strong> pentru luna afișată. <strong>CO și CM deja introduse se păstrează.</strong> Dispecerii și setările rămân neatinse. Cere confirmare înainte.</p>
+          <p>Șterge <strong>doar turele generate</strong> pentru luna afișată. <strong>CO, CM și Instruire deja introduse se păstrează.</strong> Electricienii și setările rămân neatinse. Cere confirmare înainte.</p>
         </div>
         <div class="help-section">
-          <div class="help-section-title">🔀 Modul de generare</div>
+          <div class="help-section-title">🔀 Cele 4 moduri de generare</div>
           <ul class="help-list">
-            <li><strong>Rotație dispecer</strong> — fiecare dispecer urmează ciclul <strong>T3→T2→T1→T4→liber</strong>, apoi se repetă. Fazele sunt distribuite automat, astfel încât fiecare din cele 4 ture să fie acoperită (24h). Ciclul curge continuu peste granița dintre luni.</li>
+            <li><strong>1) T1/T2 + T1A/T2A</strong> — toate turele se alocă automat zilnic, prin completare (nu ciclu fix). Alternanța par/impar a zilei inversează ordinea de asignare T1↔T2, ca să nu se fixeze mereu același echipaj pe aceeași tură.</li>
+            <li><strong>2) Zilnic T1/T2</strong> (implicit) — la fel, dar completează automat doar T1, T2 (și 8h); T1A/T2A rămân complet manuale.</li>
+            <li><strong>3) Rotație 8 zile</strong> — fiecare echipaj/individ urmează ciclul personal T1→T1A→T2→L→T1→T2A→T2→L. Dacă faza T1A/T2A cade în weekend, se transformă în T1/T2 (dacă formația folosește T1A/T2A), altfel rămâne L. Ciclul curge continuu peste granița dintre luni. La 5+ echipaje pe grup, ciclul are coliziuni inevitabile, rezolvate automat: câștigă cine are mai puține ore, iar perechea care se ciocnește se rotește la fiecare 8 zile.</li>
+            <li><strong>4) Rotație T1-T2-L</strong> — ciclu fix de 3 zile: T1→T2→L. Nu folosește T1A/T2A/8h. Aceeași protecție la coliziuni și aceeași continuitate între luni.</li>
           </ul>
-          <p><strong>Rotație:</strong> după T4 urmează cel puțin o zi liberă până la următorul T3. Persoana care a fost în T1 este întotdeauna și în T4 (T1 e urmat direct de T4).</p>
+          <p><strong>Cum alegi:</strong> folosește <em>📈 Analiză moduri</em> (bara de jos) — simulează toate cele 4 moduri pe luna curentă și arată care utilizează cel mai bine echipajele, fără să modifice graficul real (vezi tabul Statistici).</p>
+          <p>Comune tuturor modurilor: grupare pe echipaje, respectarea echipajului „pe dată”, împerecherea temporară a celor rămași fără pereche, protecțiile din tabul Reguli, iar electricienii cu <em>Forțat 8h</em> primesc mereu 8h în zile lucrătoare.</p>
+          <p>În modurile de rotație, dacă un echipaj pierde competiția pentru tura dorită, încearcă automat cealaltă tură (T1↔T2) dacă acolo mai e loc. Cu puține echipaje și cerere mare, unele zile pot rămâne totuși sub capacitatea configurată — ciclul fix garantează ziua liberă.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">🏷️ Legendă ture</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
-            <span class="shift-pill pill-t1" style="padding:3px 10px;font-size:12px">T1 — 06:00–10:00 (4h)</span>
-            <span class="shift-pill pill-t2" style="padding:3px 10px;font-size:12px">T2 — 10:00–16:00 (6h)</span>
-            <span class="shift-pill pill-t3" style="padding:3px 10px;font-size:12px">T3 — 16:00–22:00 (6h)</span>
-            <span class="shift-pill pill-t4" style="padding:3px 10px;font-size:12px">T4 — 22:00–06:00 (8h)</span>
+            <span class="shift-pill pill-t1" style="padding:3px 10px;font-size:12px">T1 — 06:00–14:00</span>
+            <span class="shift-pill pill-t2" style="padding:3px 10px;font-size:12px">T2 — 14:00–22:00</span>
+            <span class="shift-pill pill-t1a" style="padding:3px 10px;font-size:12px">T1A — 06:00–14:00 (L–V)</span>
+            <span class="shift-pill pill-t2a" style="padding:3px 10px;font-size:12px">T2A — 14:00–22:00 (L–V)</span>
             <span class="shift-pill pill-co" style="padding:3px 10px;font-size:12px">CO — Concediu Odihnă</span>
             <span class="shift-pill pill-cm" style="padding:3px 10px;font-size:12px">CM — Concediu Medical</span>
+            <span class="shift-pill pill-c8" style="padding:3px 10px;font-size:12px">8h — Program normal (08:00–16:00, L–V)</span>
+            <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:#d5f5e3;color:#1a7a3a;font-weight:600">INST — Instruire</span>
             <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>
           </div>
-          <p style="margin-top:8px">Orele se contorizează real per tură: T1 = 4h, T2 = 6h, T3 = 6h, T4 = 8h.</p>
+          <p style="margin-top:8px">Orice tură lucrată (T1, T2, T1A, T2A, 8h, INST) se numără ca <strong>8 ore</strong>.</p>
         </div>
       </div>
 
       <!-- TAB: Reguli -->
-      <div id="help-tab-rules" class="help-tab-panel" style="display:none">
+      <div id="help-exp-rules" class="help-tab-panel" style="display:none">
         <div class="help-section">
           <div class="help-section-title">📏 Reguli respectate la generarea automată</div>
           <ul class="help-list">
-            <li><strong>Ciclu fix</strong> — fiecare dispecer: T3→T2→T1→T4→liber, apoi se repetă. Fiecare zi avansează o poziție în ciclu.</li>
-            <li><strong>După T4 — minim o zi liberă</strong> înainte de următorul T3.</li>
-            <li><strong>T1 e urmat întotdeauna de T4</strong> (aceeași persoană).</li>
-            <li><strong>Acoperire 24h</strong> — fazele sunt distribuite automat, astfel încât fiecare din cele 4 ture să aibă cel puțin un dispecer.</li>
-            <li><strong>Ciclu continuu</strong> — rotația curge peste granița dintre luni (fără resetare).</li>
-            <li><strong>CO / CM existente</strong> se păstrează la generare și regenerare.</li>
-            <li><strong>Redistribuire automată</strong> — dacă CO/CM lasă o tură (T1–T4) fără nimeni într-o zi, aplicația caută cea mai bună reasignare a zilei (inclusiv lanțuri de mutări: A preia tura goală, B preia tura lui A ș.a.m.d.). Se aleg, în ordine: cât mai multe ture acoperite, orele din an cât mai uniforme între dispeceri, cât mai puține schimbări. Se respectă <strong>11h de odihnă</strong> față de ziua anterioară și cea următoare și maximum <strong>4 zile consecutive</strong>. CO/CM nu se ating.</li>
+            <li><strong>Maxim 4 zile consecutive lucrate</strong> — după 4 zile la rând, următoarea zi e obligatoriu L (toate modurile).</li>
+            <li><strong>Maxim 5 zile lucrate pe săptămână calendaristică</strong> (luni–duminică), inclusiv zilele din luna precedentă când săptămâna traversează granița.</li>
+            <li><strong>Pauză de siguranță T2 → T1/T1A</strong> — dacă ieri a fost T2, azi nu poate fi T1 sau T1A (gap de 8h). T2A nu blochează nimic.</li>
+            <li><strong>Echitate pe ore</strong> — la concurență pentru o tură, primește cine are mai puține ore acumulate în luna curentă.</li>
+            <li><strong>T1A / T2A / 8h doar în zile lucrătoare</strong> (L–V).</li>
+            <li><strong>CO / CM / INST existente</strong> se păstrează la generare și regenerare.</li>
           </ul>
         </div>
         <div class="help-section">
-          <div class="help-section-title">🏖️ CO și CM în calcule</div>
+          <div class="help-section-title">🏖️ CO, CM și Instruire în calcule</div>
           <ul class="help-list">
-            <li><strong>CO/CM nu se contorizează în weekend</strong> — se afișează ca L, dar valoarea rămâne memorată.</li>
-            <li><strong>CO/CM reduc norma</strong> dispecerului cu orele medii pe zi (24h împărțite la numărul de dispeceri, minim 5), ca să nu apară „sub normă” pentru zilele de concediu.</li>
+            <li><strong>CO / CM nu se contorizează în weekend</strong> — consumă normă doar în zile lucrătoare. Sâmbăta/duminica cu CO/CM se afișează ca L, dar valoarea rămâne memorată.</li>
+            <li><strong>Extensie la weekend:</strong> dacă vineri (sau luni) are CO/CM, sâmbăta/duminica adiacentă primește automat același marcaj la generare.</li>
+            <li><strong>Instruirea (INST)</strong> se contorizează ca zi lucrată (8h), se poate seta doar în zile lucrătoare și rămâne pe loc și la regenerare.</li>
+            <li>CO/CM <strong>reduc norma</strong> electricianului cu 8h/zi, ca să nu apară „sub normă” pentru zilele de concediu.</li>
           </ul>
         </div>
         <div class="help-section">
           <div class="help-section-title">⚠️ Limitări cunoscute</div>
           <ul class="help-list">
-            <li><strong>Cel mult un dispecer pe tură</strong> într-o zi: cu 5 dispeceri fiecare lucrează 4 zile din 5; cu mai mulți (ex. 7), ciclul se prelungește cu zile libere (4 zile lucrate, 3 libere), deci cei în plus nu dublează o tură. Cu mai puțin de 5 dispeceri nu toate turele pot fi acoperite.</li>
-            <li>Când nu se poate acoperi o tură fără să încalce odihna minimă (ex. 5 dispeceri și unul în CO), ziua rămâne cu tura goală — apare un avertisment ⚠️ sub tabel și o corectezi manual.</li>
-            <li>Sărbătorile legale nu influențează alocarea automată. Pe carduri și în Statistici vezi câte ture de sărbătoare a lucrat fiecare (în lună și de la 1 ianuarie), ca să decizi manual, din dropdown, cine lucrează în sărbători.</li>
-            <li>Regulile se aplică doar generării automate; la editare manuală ai libertate deplină.</li>
+            <li>Un electrician rămas fără pereche și fără alt orfan lucrează solo; programul lui (de ex. 8h) se ajustează manual de responsabil.</li>
+            <li>Dacă un echipaj e blocat de „maxim 4 consecutive”, sloturile lui pot rămâne neocupate — nu se redistribuie automat către alt echipaj.</li>
+            <li>Sărbătorile legale sunt strict informative: nu influențează alocarea automată.</li>
+            <li>Regulile de mai sus se aplică doar generării automate; la editare manuală, responsabilul are libertate deplină.</li>
           </ul>
         </div>
       </div>
 
       <!-- TAB: Editare -->
-      <div id="help-tab-edit" class="help-tab-panel" style="display:none">
+      <div id="help-exp-edit" class="help-tab-panel" style="display:none">
         <div class="help-section">
           <div class="help-section-title">✏️ Editare pe celulă</div>
-          <p>Click pe orice celulă din tabel → dropdown cu turele disponibile: <strong>L, T1, T2, T3, T4, CO, CM</strong>. Modificarea se salvează imediat; orele și statisticile se actualizează în timp real.</p>
-          <p>În weekend (S/D), CO și CM nu sunt oferite. Dacă o celulă de weekend are deja CO/CM din date mai vechi, se afișează ca L.</p>
+          <p>Click pe orice celulă din tabel → dropdown cu turele disponibile: <strong>L, T1, T2, T1A, T2A, CO, CM, 8h, INST</strong>. Modificarea se salvează imediat, iar orele, cardurile și statisticile se actualizează în timp real.</p>
+          <p>În weekend (S/D), opțiunile T1A, T2A, 8h, CO, CM și INST nu sunt oferite. Dacă o celulă de weekend are deja CO/CM/INST din date mai vechi sau din extensia automată, se afișează ca L.</p>
           <p>Dacă schimbi o tură deja setată (diferită de L) în alta, apare o confirmare.</p>
         </div>
         <div class="help-section">
-          <div class="help-section-title">🏖️ CO / CM pe interval</div>
-          <p>Click pe numele dispecerului → secțiunea <em>„CO / CM pe interval”</em>: alegi data de început, data de sfârșit și tipul (CO sau CM), apoi <em>Aplică</em>. Se setează dintr-odată toate zilele din interval.</p>
+          <div class="help-section-title">🏖️ CO / CM / Instruire pe interval</div>
+          <p>Click pe numele electricianului → secțiunea <em>„CO / CM / Instruire pe interval”</em>: alegi data de început, data de sfârșit și tipul (CO, CM sau INST), apoi <em>Aplică</em>. Se setează dintr-odată toate zilele din interval, în loc de click pe fiecare celulă.</p>
           <ul class="help-list">
             <li>Suprascrie ce era setat înainte în acele zile.</li>
-            <li>CO/CM acoperă și weekendul (afișat ca L, fără să consume normă).</li>
-            <li>Datele pornesc pe prima zi a <strong>lunii afișate</strong>.</li>
+            <li>CO/CM acoperă și weekendul (afișat ca L, fără să consume normă); <strong>INST sare automat peste weekend</strong>, iar mesajul îți spune câte zile au fost sărite.</li>
+            <li>Datele pornesc pe prima zi a <strong>lunii afișate</strong> în grafic, nu pe data de azi.</li>
             <li>Intervalul poate traversa mai multe luni.</li>
           </ul>
         </div>
         <div class="help-section">
-          <div class="help-section-title">👤 Modalul de editare dispecer</div>
-          <p>Click pe nume: poți schimba numele și seta concedii pe interval. Butonul <em>🗑 Șterge</em> cere două confirmări.</p>
+          <div class="help-section-title">👤 Modalul de editare electrician</div>
+          <p>Click pe nume: poți schimba numele, mediul, funcția, echipajul implicit, bifa/debifa <em>Forțat 8h</em>, adăuga schimbări de echipaj pe dată și seta concedii pe interval. Butonul <em>🗑 Șterge</em> cere două confirmări.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">🎉 Sărbători legale</div>
-          <p>Sărbătorile legale din România sunt calculate automat pentru orice an. Sărbătorile <strong>nu influențează</strong> alocarea automată (dispeceratul lucrează 24/7). Ture lucrate în sărbători: coloana „🎉 Sărb.” din Statistici.</p>
+          <p>Sărbătorile legale din România (Anul Nou, Boboteaza, Paște, Ziua Muncii, Rusalii, Sf. Maria, Crăciun etc.) sunt calculate automat pentru orice an, inclusiv datele mobile (Paște, Rusalii).</p>
+          <p>Coloana zilei e evidențiată pe grafic (antet colorat + chenar), cu numele sărbătorii la hover; sub tabel apare lista sărbătorilor lunii. Sărbătorile <strong>scad din norma lunară</strong>, dar <strong>nu influențează</strong> alocarea automată. Ture lucrate în sărbători: coloana „🎉 Sărb.” din Statistici.</p>
         </div>
       </div>
 
       <!-- TAB: Statistici -->
-      <div id="help-tab-stats" class="help-tab-panel" style="display:none">
+      <div id="help-exp-stats" class="help-tab-panel" style="display:none">
         <div class="help-section">
           <div class="help-section-title">📊 Ore și normă în tabel</div>
           <ul class="help-list">
-            <li><strong>Lucrate</strong> — suma orelor reale pe ture (T1=4h, T2=6h, T3=6h, T4=8h).</li>
+            <li><strong>Lucrate</strong> — numărul de ture lucrate × 8h.</li>
             <li><strong>CO/CM</strong> — orele de concediu (doar zile lucrătoare).</li>
-            <li><strong>Normă</strong> — zilele lunii × 24h împărțite la lungimea ciclului (cel puțin 5; cu 7 dispeceri ≈ 3,4h/zi).</li>
+            <li><strong>Normă</strong> — zilele lucrătoare ale lunii (fără weekend și sărbători) × 8h. Deasupra secțiunii de statistici apare rezumatul: „N zile lucrătoare = Xh normă/electrician”.</li>
           </ul>
-          <p><strong>Culorile orelor:</strong> verde = exact norma, galben = sub normă cu cel mult 16h, roșu = peste normă sau cu mai mult de 16h sub normă.</p>
+          <p><strong>Culorile orelor:</strong> verde = exact norma (după scăderea CO/CM), galben = sub normă cu cel mult 16h, roșu = peste normă sau cu mai mult de 16h sub normă.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">🗂️ Carduri și statistici (sub tabel)</div>
           <ul class="help-list">
-            <li><strong>Carduri dispeceri</strong> — ore lucrate față de normă (procent) și câte ture de fiecare tip (T1–T4, CO, CM, sărbători).</li>
-            <li><strong>Statistici ture</strong> — tabel detaliat cu ture pe tip, sărbători, ore, normă și diferența (±).</li>
+            <li><strong>Carduri electricieni</strong> — ore lucrate față de normă (procent), plus câte ture de fiecare tip a făcut (T1, T2, T1A, T2A, 8h, INST, CO, CM, sărbători).</li>
+            <li><strong>Statistici ture</strong> — tabel detaliat pe Urban/Rural/Program 8 ore, cu ture pe tip, sărbători, ore lucrate, ore CO/CM, normă și diferența (±) față de normă.</li>
           </ul>
           <p>Ambele secțiuni se pot plia/desface cu butonul ▼/▶ din antetul lor.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">📈 Analiză moduri</div>
+          <p>Butonul <em>📈 Analiză moduri</em> simulează pe rând cele 4 moduri pe luna afișată, cu electricienii și cerința curentă, respectând CO/CM deja introduse. <strong>Graficul real nu se modifică.</strong> Pentru fiecare grup (Urban/Rural) vezi un tabel cu:</p>
+          <ul class="help-list">
+            <li><strong>Echipaje active/zi</strong> — media echipajelor care lucrează pe zi.</li>
+            <li><strong>Utilizare</strong> — procentul de zile-echipaj disponibile în care echipajul a lucrat (verde ≥ 70%, galben 50–70%, roșu sub 50%).</li>
+            <li><strong>Zile cu toate echipajele</strong> — zilele în care toate echipajele disponibile au fost active simultan.</li>
+            <li><strong>Ore min–max</strong> și <strong>Spread</strong> — cât de echitabil sunt distribuite orele (spread mic = echitabil).</li>
+            <li><strong>Conflicte</strong> — încălcări ale regulilor (peste 4 consecutive, peste 5/săptămână, gap T2→T1).</li>
+          </ul>
+          <p>Modul cu cea mai bună utilizare e marcat „recomandat”. Trece cu cursorul peste antetul și valorile din tabel pentru explicații.</p>
         </div>
       </div>
 
       <!-- TAB: Fișiere & Export -->
-      <div id="help-tab-export" class="help-tab-panel" style="display:none">
+      <div id="help-exp-export" class="help-tab-panel" style="display:none">
         <div class="help-section">
           <div class="help-section-title">💾 Salvare automată</div>
           <p>Orice modificare se salvează automat în browser (localStorage + copie de siguranță în IndexedDB). La redeschidere, în același browser, datele se restaurează. Starea salvării apare sub tabel („💾 IndexedDB…”).</p>
@@ -654,12 +706,11 @@ td.emp-name-cell:hover{text-decoration:underline}
           <div class="help-section-title">📁 Meniul „💾 Fișiere”</div>
           <ul class="help-list">
             <li><em>💾 Descarcă doar luna curentă</em> — fișier JSON mic cu graficul lunii afișate, electricienii și configurația; ușor de trimis cuiva.</li>
-            <li><em>💿 Descarcă tot (backup complet)</em> — toate lunile, toți dispecerii și toate setările.</li>
+            <li><em>💿 Descarcă tot (backup complet)</em> — toate lunile, toți electricienii și toate setările.</li>
             <li><em>📂 Încarcă fișier (lună sau backup)</em> — recunoaște automat tipul fișierului.</li>
-            <li><em>👥 Adaugă dispeceri din fișier</em> — adaugă doar dispecerii lipsă (după nume), fără să atingă graficul.</li>
+            <li><em>👥 Adaugă electricieni din fișier</em> — adaugă doar electricienii lipsă (după nume), fără să atingă graficul.</li>
           </ul>
-          <p><strong>Import de lună:</strong> înlocuiește doar luna din fișier; celelalte luni rămân intacte. Dispecerii lipsă se adaugă, dar lista existentă <strong>nu</strong> se suprascrie. Dacă un id de dispecer coincide cu unul local dar numele diferă, primești un avertisment (turele ar putea ajunge la persoana greșită).</p>
-          <p><strong>Fișiere din Exploatare:</strong> fișierele exportate din aplicația Exploatare (electricieni, ture T1A/T2A/8h) sunt refuzate la import — au alt înțeles al turelor.</p>
+          <p><strong>Import de lună:</strong> înlocuiește doar luna din fișier; celelalte luni rămân intacte. Electricienii lipsă se adaugă, dar lista existentă și configurația curentă <strong>nu</strong> se suprascriu. Dacă un id de electrician coincide cu unul local dar numele diferă, primești un avertisment (turele ar putea ajunge la persoana greșită).</p>
           <p><strong>Import de backup complet:</strong> <strong>înlocuiește toată baza de date</strong> curentă. Datele organizației deja completate nu se suprascriu.</p>
           <p>Fișierele sunt compatibile între versiuni; câmpurile noi se completează automat la import. În browserele moderne, „Descarcă tot” rescrie același fișier ales anterior, fără să mai ceară locația.</p>
         </div>
@@ -678,6 +729,267 @@ td.emp-name-cell:hover{text-decoration:underline}
         </div>
       </div>
 
+    
+    </div>
+    </div>
+    <div id="help-mode-disp" class="help-mode-wrap" style="display:flex">
+    <div class="help-tabs">
+      <button class="help-tab active" onclick="showHelpTab('disp','start',this)">🚀 Început rapid</button>
+      <button class="help-tab" onclick="showHelpTab('disp','config',this)">⚙️ Configurare</button>
+      <button class="help-tab" onclick="showHelpTab('disp','gen',this)">▶ Generare</button>
+      <button class="help-tab" onclick="showHelpTab('disp','rules',this)">📏 Reguli</button>
+      <button class="help-tab" onclick="showHelpTab('disp','edit',this)">✏️ Editare</button>
+      <button class="help-tab" onclick="showHelpTab('disp','stats',this)">📈 Statistici</button>
+      <button class="help-tab" onclick="showHelpTab('disp','export',this)">💾 Fișiere &amp; Export</button>
+    </div>
+    <div style="overflow-y:auto;flex:1;font-size:13px;line-height:1.7;color:var(--text);padding-right:4px">
+
+      <!-- TAB: Început rapid -->
+      <div id="help-disp-start" class="help-tab-panel">
+        <div class="help-hero">
+          <div class="help-hero-title">Grafic Dispecer</div>
+          <div class="help-hero-sub">Planifică turele dispecerilor pe blocuri T3→T2→T1→T4, cu acoperire 24h și un singur dispecer pe tură — generare automată, CO/CM, statistici și export.</div>
+          <div class="help-chips">
+            <span class="help-chip">📴 Funcționează offline</span>
+            <span class="help-chip">🎯 Acoperire 24h</span>
+            <span class="help-chip">1️⃣ Un dispecer pe tură</span>
+            <span class="help-chip">⚖️ Distribuție echitabilă</span>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-section-title">✨ Ce poate face aplicația</div>
+          <div class="help-feat-grid">
+            <div class="help-feat"><span class="help-feat-ico">🕐</span><div><div class="help-feat-t">Ture de 4/6/6/8 ore</div><div class="help-feat-d">T1 (06–10), T2 (10–16), T3 (16–22), T4 (22–06).</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🔄</span><div><div class="help-feat-t">Blocuri automate</div><div class="help-feat-d">Fiecare dispecer: T3→T2→T1→T4, apoi zile libere.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">1️⃣</span><div><div class="help-feat-t">Un dispecer pe tură</div><div class="help-feat-d">Niciodată doi pe aceeași tură; ceilalți sunt liberi.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">⚖️</span><div><div class="help-feat-t">Alegere echitabilă</div><div class="help-feat-d">Cine începe un bloc se alege după ore, weekenduri și sărbători.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🏖️</span><div><div class="help-feat-t">CO / CM</div><div class="help-feat-d">Păstrate la regenerare; turele rămase goale se redistribuie automat.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">📊</span><div><div class="help-feat-t">Statistici</div><div class="help-feat-d">Ore, ture și sărbători pe dispecer, comparate cu norma.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">💾</span><div><div class="help-feat-t">Salvare &amp; backup</div><div class="help-feat-d">Automat în browser + backup JSON portabil.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">📤</span><div><div class="help-feat-t">Export</div><div class="help-feat-d">Excel stilizat, Print/PDF (A3) și JSON.</div></div></div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-section-title">🚀 Pașii pentru un grafic nou</div>
+          <div class="help-steps">
+            <div class="help-step"><span class="help-step-n">1</span><span class="help-step-t"><strong>Completează setările organizației</strong> (⚙️ din colțul dreapta-sus) — denumirile câmpurilor sunt editabile.</span></div>
+            <div class="help-step"><span class="help-step-n">2</span><span class="help-step-t"><strong>Adaugă dispecerii</strong> cu <em>+ Dispecer</em> (doar numele). Pentru acoperire 24h ai nevoie de cel puțin 5.</span></div>
+            <div class="help-step"><span class="help-step-n">3</span><span class="help-step-t"><strong>Alege luna și anul</strong> (săgețile ‹ › sau selectoarele).</span></div>
+            <div class="help-step"><span class="help-step-n">4</span><span class="help-step-t"><strong>Introdu concediile</strong> (CO / CM) <em>înainte</em> de generare — algoritmul le respectă și redistribuie turele rămase goale.</span></div>
+            <div class="help-step"><span class="help-step-n">5</span><span class="help-step-t">Apasă <em>▶ Generare</em>, apoi <em>Generare totală →</em> (sau <em>Ziua →</em> pas cu pas). Verifică avertismentele ⚠️ de sub tabel, ajustează manual celulele, apoi exportă (Excel / Print / JSON).</span></div>
+          </div>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🧭 Ce găsești pe ecran</div>
+          <ul class="help-list">
+            <li><strong>Antet</strong> — logo, luna afișată, formația și entitatea; selectorul de <em>Modul</em>, ⚙️ setări organizație, 🌙/☀️ mod întunecat.</li>
+            <li><strong>Bara de sus</strong> — navigare lună/an, eticheta <em>Acoperire 24h automată</em>, apoi butoanele <em>▶ Generare</em>, <em>✕ Curăță</em>, <em>+ Dispecer</em>.</li>
+            <li><strong>Tabelul</strong> — un rând pe dispecer, o coloană pe zi; fiecare celulă e un dropdown editabil. Coloanele finale: <em>Lucrate</em>, <em>CO/CM</em>, <em>Normă</em>.</li>
+            <li><strong>Sub tabel</strong> — legenda turelor, lista sărbătorilor lunii, avertismente ⚠️ (ture neacoperite / cu mai mulți dispeceri), carduri și tabel de statistici.</li>
+            <li><strong>Bara de jos</strong> — <em>💾 Fișiere</em>, <em>📊 Excel</em>, <em>🖨️ Print/PDF</em>, <em>📖 Manual</em>, versiunea aplicației.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">💡 Bune de știut</div>
+          <ul class="help-list">
+            <li>Tot ce faci se <strong>salvează automat</strong> în browser. Fă periodic un backup JSON.</li>
+            <li>Datele Dispecer sunt <strong>separate</strong> de cele din modul Electricieni (Exploatare).</li>
+            <li>Aplicația funcționează și <strong>offline</strong>; doar exportul Excel are nevoie de internet.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- TAB: Configurare -->
+      <div id="help-disp-config" class="help-tab-panel" style="display:none">
+        <div class="help-section">
+          <div class="help-section-title">⚙️ Setări organizație</div>
+          <p>La prima utilizare apare automat un dialog; îl poți redeschide oricând cu butonul <em>⚙️</em>. Câmpuri: <strong>Entitate</strong> (implicit Delgaz Grid S.A), <strong>Formația/Unitatea</strong>, <strong>Șef FOL EM</strong>, <strong>Responsabil Tehnic</strong>, <strong>Județ</strong> (pentru Șef CORE) și <strong>Aprobat Șef CORE</strong>. <strong>Denumirea fiecărui câmp se poate edita</strong> (ex. „Șef dispecerat” în loc de „Șef FOL EM”), iar <strong>bifa</strong> din stânga lui îl activează / dezactivează — un câmp dezactivat nu mai apare în antet, la print și în Excel.</p>
+          <p>Datele apar în subtitlul paginii, titlul filei de browser, semnăturile de la print și exportul Excel. Sunt salvate separat de grafic și <strong>nu se șterg</strong> la import de fișiere sau la actualizarea aplicației.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">👤 Dispeceri</div>
+          <p>Apasă <em>+ Dispecer</em> și completează doar <strong>numele</strong>. Numărul de dispeceri determină ciclul și norma (vezi tabul <em>Reguli</em>).</p>
+          <p><strong>Editare / ștergere:</strong> click pe numele dispecerului din tabel. Ștergerea cere confirmare în doi pași. Din același loc poți seta CO/CM pe interval.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🕐 Cele 4 ture</div>
+          <ul class="help-list">
+            <li><strong>T1</strong> (06:00–10:00, 4h)</li>
+            <li><strong>T2</strong> (10:00–16:00, 6h)</li>
+            <li><strong>T3</strong> (16:00–22:00, 6h)</li>
+            <li><strong>T4</strong> (22:00–06:00, 8h)</li>
+          </ul>
+          <p>Împreună acoperă 24h. Nu există configurare numerică: alocarea e automată, în funcție de numărul de dispeceri.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🌙 Mod întunecat</div>
+          <p>Butonul 🌙 / ☀️ din antet comută între tema clară și cea întunecată. Alegerea nu se păstrează după reîncărcarea paginii; la print se folosește mereu tema clară.</p>
+        </div>
+      </div>
+
+      <!-- TAB: Generare -->
+      <div id="help-disp-gen" class="help-tab-panel" style="display:none">
+        <div class="help-section">
+          <div class="help-section-title">▶ Cum generezi graficul</div>
+          <p>Selectează luna și anul, apoi apasă <em>▶ Generare</em>. Dacă există deja zile generate, aplicația cere confirmarea să continue din prima zi negenerată (zilele existente se păstrează). După pornire apar:</p>
+          <ul class="help-list">
+            <li><em>Ziua N →</em> — generează doar ziua curentă și avansează; util pentru verificare pas cu pas.</li>
+            <li><em>Generare totală (N) →</em> — generează dintr-odată toate zilele rămase.</li>
+            <li><em>← Ziua N</em> — întoarce cu o zi și o regenerează dacă rezultatul nu te mulțumește.</li>
+          </ul>
+          <p><strong>Continuitate între luni:</strong> blocurile în curs continuă peste granița dintre luni și ani; nu se resetează nimic.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🔄 Cum se alocă turele</div>
+          <ul class="help-list">
+            <li>Un <strong>bloc</strong> înseamnă <strong>T3 → T2 → T1 → T4</strong> (4 zile la rând), urmat de cel puțin o zi liberă.</li>
+            <li>În <strong>fiecare zi începe exact un bloc nou</strong> (tura T3). Așa, fiecare tură are un singur dispecer în fiecare zi, iar ceilalți sunt liberi.</li>
+            <li><strong>Cine începe</strong> blocul se alege din cei odihniți, echitabil: cu cele mai puține ore în an (cu report între luni), apoi cu cele mai puține weekenduri/sărbători lucrate. De aceea nu lucrezi „mereu aceleași zile ale săptămânii”.</li>
+            <li>Nu începe un bloc cine are CO/CM în următoarele 3 zile (l-ar rupe).</li>
+          </ul>
+          <p>Exemplu: cu 7 dispeceri lucrează 4 pe zi, iar 3 sunt liberi; fiecare face un bloc la aproximativ 7 zile.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">✕ Curăță</div>
+          <p>Șterge <strong>doar turele generate</strong> pentru luna afișată. <strong>CO și CM deja introduse se păstrează.</strong> Dispecerii și setările rămân neatinse. Cere confirmare înainte.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🏷️ Legendă ture</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+            <span class="shift-pill pill-t1" style="padding:3px 10px;font-size:12px">T1 — 06:00–10:00 (4h)</span>
+            <span class="shift-pill pill-t2" style="padding:3px 10px;font-size:12px">T2 — 10:00–16:00 (6h)</span>
+            <span class="shift-pill pill-t3" style="padding:3px 10px;font-size:12px">T3 — 16:00–22:00 (6h)</span>
+            <span class="shift-pill pill-t4" style="padding:3px 10px;font-size:12px">T4 — 22:00–06:00 (8h)</span>
+            <span class="shift-pill pill-co" style="padding:3px 10px;font-size:12px">CO — Concediu Odihnă</span>
+            <span class="shift-pill pill-cm" style="padding:3px 10px;font-size:12px">CM — Concediu Medical</span>
+            <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>
+          </div>
+          <p style="margin-top:8px">Orele se contorizează real per tură: T1 = 4h, T2 = 6h, T3 = 6h, T4 = 8h.</p>
+        </div>
+      </div>
+
+      <!-- TAB: Reguli -->
+      <div id="help-disp-rules" class="help-tab-panel" style="display:none">
+        <div class="help-section">
+          <div class="help-section-title">📏 Reguli respectate la generarea automată</div>
+          <ul class="help-list">
+            <li><strong>Cel mult un dispecer pe tură</strong> într-o zi; restul sunt liberi.</li>
+            <li><strong>Bloc T3→T2→T1→T4</strong>; <strong>T1 e urmat de T4</strong> (aceeași persoană) și după T4 urmează cel puțin o zi liberă.</li>
+            <li><strong>Odihnă minimă 11h</strong> între două ture consecutive și maximum <strong>4 zile lucrate la rând</strong>.</li>
+            <li><strong>Acoperire 24h</strong> — în fiecare zi există câte un dispecer pe T1, T2, T3 și T4 (cu cel puțin 5 dispeceri și fără concedii suprapuse).</li>
+            <li><strong>Echitate</strong> — cine începe un bloc se alege după orele din an, apoi după weekenduri și sărbători lucrate; nu apar dispeceri „blocați” pe aceleași zile ale săptămânii.</li>
+            <li><strong>Continuitate</strong> — blocurile curg peste granița dintre luni (fără resetare).</li>
+            <li><strong>CO / CM existente</strong> se păstrează la generare și regenerare.</li>
+            <li><strong>Redistribuire automată</strong> — dacă CO/CM lasă o tură fără nimeni într-o zi, aplicația caută cea mai bună reasignare a zilei (inclusiv lanțuri de mutări: A preia tura goală, B preia tura lui A ș.a.m.d.). Se aleg, în ordine: cât mai multe ture acoperite, orele din an cât mai uniforme, cât mai puține schimbări — cu 11h odihnă și max. 4 zile la rând. CO/CM nu se ating.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🧮 Norma și CO/CM în calcule</div>
+          <ul class="help-list">
+            <li><strong>Norma lunară</strong> = zilele lunii × 24h împărțite la numărul de dispeceri (minim 5). Cu 5 dispeceri ≈ 4,8h/zi (144h/lună), cu 7 ≈ 3,4h/zi (≈103h/lună).</li>
+            <li><strong>CO/CM reduc norma</strong> cu aceleași ore pe zi (doar zile lucrătoare), ca să nu apară „sub normă” pentru zilele de concediu.</li>
+            <li><strong>CO/CM nu se contorizează în weekend</strong> — se afișează ca L, dar valoarea rămâne memorată.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">⚠️ Limitări și avertismente</div>
+          <ul class="help-list">
+            <li>Cu mai puțin de 5 dispeceri nu toate turele pot fi acoperite.</li>
+            <li>Când nu se poate acoperi o tură fără să se încalce odihna minimă sau seria de 4 zile (de ex. concedii suprapuse), ziua rămâne cu tura goală — apare un avertisment ⚠️ sub tabel și o corectezi manual din dropdown.</li>
+            <li>Dacă introduci manual doi dispeceri pe aceeași tură, apare avertismentul „Ture cu mai mulți dispeceri”.</li>
+            <li>Sărbătorile legale nu influențează alocarea; pe carduri și în Statistici vezi câte ture de sărbătoare a lucrat fiecare (în lună și în an), ca să poți decide manual.</li>
+            <li>Regulile se aplică doar generării automate; la editare manuală ai libertate deplină.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- TAB: Editare -->
+      <div id="help-disp-edit" class="help-tab-panel" style="display:none">
+        <div class="help-section">
+          <div class="help-section-title">✏️ Editare pe celulă</div>
+          <p>Click pe orice celulă din tabel → dropdown cu turele disponibile: <strong>L, T1, T2, T3, T4, CO, CM</strong>. Modificarea se salvează imediat; orele și statisticile se actualizează în timp real.</p>
+          <p>În weekend (S/D), CO și CM nu sunt oferite. Dacă o celulă de weekend are deja CO/CM din date mai vechi, se afișează ca L.</p>
+          <p>Dacă schimbi o tură deja setată (diferită de L) în alta, apare o confirmare.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🏖️ CO / CM pe interval</div>
+          <p>Click pe numele dispecerului → secțiunea <em>„CO / CM pe interval”</em>: alegi data de început, data de sfârșit și tipul (CO sau CM), apoi <em>Aplică</em>. Se setează dintr-odată toate zilele din interval. Apoi regenerează luna ca turele să se redistribuie.</p>
+          <ul class="help-list">
+            <li>Suprascrie ce era setat înainte în acele zile.</li>
+            <li>CO/CM acoperă și weekendul (afișat ca L, fără să consume normă).</li>
+            <li>Datele pornesc pe prima zi a <strong>lunii afișate</strong>.</li>
+            <li>Intervalul poate traversa mai multe luni.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">👤 Modalul de editare dispecer</div>
+          <p>Click pe nume: poți schimba numele și seta concedii pe interval. Butonul <em>🗑 Șterge</em> cere două confirmări; turele lui dispar din grafic, iar în zilele rămase goale poți regenera luna.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🎉 Sărbători legale</div>
+          <p>Sărbătorile legale din România sunt calculate automat pentru orice an și marcate pe coloane. Ele <strong>nu influențează</strong> alocarea (dispeceratul lucrează 24/7). Pe carduri apare <em>„🎉 Sărb.: N lună · M an”</em>, iar în Statistici coloanele „🎉 Sărb.” și „🎉 Sărb. an” — le folosești ca să decizi manual cine lucrează în sărbători.</p>
+        </div>
+      </div>
+
+      <!-- TAB: Statistici -->
+      <div id="help-disp-stats" class="help-tab-panel" style="display:none">
+        <div class="help-section">
+          <div class="help-section-title">📊 Ore și normă în tabel</div>
+          <ul class="help-list">
+            <li><strong>Lucrate</strong> — suma orelor reale pe ture (T1=4h, T2=6h, T3=6h, T4=8h).</li>
+            <li><strong>CO/CM</strong> — orele de concediu (doar zile lucrătoare).</li>
+            <li><strong>Normă</strong> — zilele lunii × 24h împărțite la numărul de dispeceri (minim 5).</li>
+          </ul>
+          <p><strong>Culorile orelor:</strong> verde = exact norma, galben = sub normă cu cel mult 16h, roșu = peste normă sau cu mai mult de 16h sub normă. Pentru un dispecer cu blocuri care încep/se termină în altă lună, diferențele se echilibrează de-a lungul anului.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🗂️ Carduri și statistici (sub tabel)</div>
+          <ul class="help-list">
+            <li><strong>Carduri dispeceri</strong> — ore lucrate față de normă (procent), câte ture de fiecare tip (T1–T4, CO, CM) și „🎉 Sărb.” (în lună · în an).</li>
+            <li><strong>Statistici ture</strong> — tabel detaliat cu ture pe tip, sărbători (lună și an), ore, normă și diferența (±).</li>
+          </ul>
+          <p>Ambele secțiuni se pot plia/desface cu butonul ▼/▶ din antetul lor.</p>
+        </div>
+      </div>
+
+      <!-- TAB: Fișiere & Export -->
+      <div id="help-disp-export" class="help-tab-panel" style="display:none">
+        <div class="help-section">
+          <div class="help-section-title">💾 Salvare automată</div>
+          <p>Orice modificare se salvează automat în browser (localStorage + copie de siguranță în IndexedDB). La redeschidere, în același browser, datele se restaurează. Starea salvării apare sub tabel („💾 IndexedDB…”).</p>
+          <p><strong>Atenție:</strong> datele se pierd dacă ștergi datele site-ului/cache-ul sau folosești alt browser/calculator. Folosește exportul JSON ca backup portabil. Dacă la pornire datele salvate sunt corupte, aplicația pornește curat și păstrează copia coruptă sub o cheie separată, cu un avertisment.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">📁 Meniul „💾 Fișiere”</div>
+          <ul class="help-list">
+            <li><em>💾 Descarcă doar luna curentă</em> — fișier JSON mic cu graficul lunii afișate și dispecerii; ușor de trimis cuiva.</li>
+            <li><em>💿 Descarcă tot (backup complet)</em> — toate lunile, toți dispecerii și toate setările.</li>
+            <li><em>📂 Încarcă fișier (lună sau backup)</em> — recunoaște automat tipul fișierului.</li>
+            <li><em>👥 Adaugă dispeceri din fișier</em> — adaugă doar dispecerii lipsă (după nume), fără să atingă graficul.</li>
+          </ul>
+          <p><strong>Import de lună:</strong> înlocuiește doar luna din fișier; celelalte luni rămân intacte. Dispecerii lipsă se adaugă, dar lista existentă <strong>nu</strong> se suprascrie. Dacă un id de dispecer coincide cu unul local dar numele diferă, primești un avertisment (turele ar putea ajunge la persoana greșită).</p>
+          <p><strong>Fișiere din modul Electricieni:</strong> fișierele exportate din aplicația Exploatare (electricieni, ture T1A/T2A/8h) sunt refuzate la import — au alt înțeles al turelor.</p>
+          <p><strong>Import de backup complet:</strong> <strong>înlocuiește toată baza de date</strong> curentă. Datele organizației deja completate nu se suprascriu.</p>
+          <p>Fișierele sunt compatibile între versiuni; câmpurile noi se completează automat la import. În browserele moderne, „Descarcă tot” rescrie același fișier ales anterior, fără să mai ceară locația.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">📊 Export Excel</div>
+          <p><em>📊 Excel</em> generează un fișier <strong>.xlsx</strong> (A3, peisaj) cu logo, antet (formația și entitatea), ture colorate, totaluri de ore, chenar auriu pe zilele de sărbătoare, legendă și semnăturile active — oglinda variantei printate.</p>
+          <p><em>Necesită internet</em> (biblioteca ExcelJS se încarcă din CDN). Dacă ești offline, apare un avertisment la deschiderea aplicației; restul funcțiilor merg normal.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🖨️ Print / PDF</div>
+          <p><em>🖨️ Print / PDF</em> deschide dialogul de printare (sau Ctrl+P). <strong>Setări recomandate: A3, Peisaj (Landscape).</strong> Documentul conține antetul cu logo și organizația, graficul colorat, semnăturile active, legenda, sărbătorile și statisticile; numerele de pagină apar automat. Elementele de editare (butoane, dropdown-uri) nu se printează. Pentru PDF alege „Salvare ca PDF” ca imprimantă.</p>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title">🆕 Versiune și „Ce e nou”</div>
+          <p>Insigna cu versiunea din bara de jos deschide lista noutăților; după o actualizare, fereastra apare automat o singură dată. Numărul de după # e numărul de commit (reper de versiune).</p>
+        </div>
+      </div>
+
+    </div>
     </div>
     <div class="modal-buttons" style="margin-top:12px">
       <button class="btn btn-primary" onclick="closeHelp()">Închide</button>
@@ -714,17 +1026,19 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura_dispecer';
 const VERSION_KEY = 'graficTura_dispecer_version';
 const ORG_KEY = 'graficTura_dispecer_org';
-const APP_VERSION = 'V2026.10.7';
-const COMMIT_COUNT = 110;
+const APP_VERSION = 'V2026.10.8';
+const COMMIT_COUNT = 112;
 const DB_NAME = 'GraficTuraDispecerDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
-  'V2026.10.7': {
-    title: 'Setări organizație editabile',
+  'V2026.10.8': {
+    title: 'Distribuție echitabilă, setări editabile, manual în două moduri',
     items: [
-      { icon: '✏️', text: 'În Setări organizație, denumirea fiecărui câmp se poate edita (ex. „Șef dispecerat” în loc de „Șef FOL EM”), inclusiv Entitatea din antet' },
-      { icon: '☑️', text: 'Fiecare câmp are o bifă: dezactivat = nu mai apare în antet, la print și în Excel' }
+      { icon: '⚖️', text: 'Cine începe un bloc T3→T2→T1→T4 se alege echitabil (ore în an, apoi weekenduri și sărbători) — nu mai lucrează nimeni mereu aceleași zile ale săptămânii; la 7 dispeceri weekendurile au ajuns de la 0–104 la ~60 pentru fiecare' },
+      { icon: '🔁', text: 'Mai puține zile cu ture neacoperite la concedii suprapuse (redistribuire pe blocuri)' },
+      { icon: '✏️', text: 'Setări organizație: denumirile câmpurilor sunt editabile, fiecare câmp are bifă activ/inactiv, plus câmpul Entitate' },
+      { icon: '📖', text: 'Manualul are două moduri: „Mod Electricieni (Exploatare)” și „Mod Dispecer”' }
     ]
   },
   'V2026.10.6': {
@@ -780,12 +1094,12 @@ const SHIFT_NAMES = ['L', 'T1', 'T2', 'T3', 'T4', 'CO', 'CM'];
 const SHIFT_HOURS = [0, 4, 6, 6, 8, 0, 0];
 const WEEKEND_HIDE = [5, 6]; // CO/CM nu se oferă în dropdown pe S/D (se afișează ca L)
 const DB_KEY = 'main_dispecer';
-// Ciclu: T3 → T2 → T1 → T4, apoi zile libere. Lungimea ciclului = max(5, număr de dispeceri), deci
-// fiecare tură are CEL MULT UN dispecer pe zi (cei în plus față de 4 sunt liberi, nu dublează o tură).
-const BASE_CYCLE = [3, 2, 1, 4];
-const MIN_CYCLE_LEN = 5; // cel puțin o zi liberă după T4
+// Un bloc = T3 → T2 → T1 → T4 (4 zile la rând), apoi cel puțin o zi liberă. În fiecare zi începe exact un
+// bloc nou (T3), deci fiecare tură are CEL MULT UN dispecer pe zi, iar ceilalți sunt liberi. Cine începe
+// blocul se alege echitabil (ore în an, apoi weekenduri + sărbători) — nu un ciclu fix pe zilele săptămânii.
+const MIN_CYCLE_LEN = 5; // cel puțin 5 dispeceri pentru acoperire completă (4 lucrează + 1 liber)
 function cycleLength() { return Math.max(MIN_CYCLE_LEN, state.employees.length); }
-// Ore medii pe zi ale unui dispecer = 24h împărțite la lungimea ciclului (folosit la normă și CO/CM).
+// Ore medii pe zi ale unui dispecer = 24h împărțite la numărul de dispeceri (min. 5); folosit la normă și CO/CM.
 function avgHoursPerDay() { return 24 / cycleLength(); }
 
 let stateLoadCorrupted = false;
@@ -1217,35 +1531,67 @@ function generateDay(day) {
   saveState();
 }
 
-// Dispecer: rotație fixă T3→T2→T1→T4→L, cu faze distribuite round-robin pentru acoperire 24h.
-// Faza folosește indexul din lista COMPLETĂ de angajați (nu cea filtrată), ca CO/CM să nu
-// decaleze fazele celorlalți. `absDay` asigură continuitatea ciclului peste granița lunilor.
-function absDayOf(year, month, day) {
-  return Math.round(new Date(Date.UTC(year, month - 1, day)).getTime() / 86400000);
+// Dispecer: blocuri T3 → T2 → T1 → T4, un bloc nou în fiecare zi (vezi nota de la constante).
+const BLOCK_NEXT = { 3: 2, 2: 1, 1: 4, 4: 0 };        // tura de azi, dat fiind că ieri a fost cheia
+const BLOCK_REMAINING = { 3: 3, 2: 2, 1: 1, 4: 0 };   // zile rămase în bloc după tura respectivă
+const BLOCK_HOURS = 24;                                // un bloc T3+T2+T1+T4 = 6+6+4+8 ore
+
+// Ture T1–T4 lucrate în sâmbete/duminici/sărbători legale, în același an, ÎNAINTE de `dk` (report între luni).
+function weekendHolidayShifts(empId, dk) {
+  const year = dk.slice(0, 4);
+  const hol = new Set(getLegalHolidays(parseInt(year, 10)).map(h => h.date));
+  let n = 0;
+  for (const k in state.schedule) {
+    if (k.slice(0, 4) !== year || k >= dk) continue;
+    const v = state.schedule[k][String(empId)];
+    if (!(v >= 1 && v <= 4)) continue;
+    const dow = new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, +k.slice(8, 10)).getDay();
+    if (dow === 0 || dow === 6 || hol.has(k)) n++;
+  }
+  return n;
 }
 
-function cycleShiftFor(empId, absDay) {
-  const LEN = cycleLength();
-  const idx = state.employees.slice().sort((a, b) => a.id - b.id).findIndex(e => e.id === empId);
-  const pos = (((idx < 0 ? 0 : idx) + absDay) % LEN + LEN) % LEN;
-  return pos < BASE_CYCLE.length ? BASE_CYCLE[pos] : 0;
-}
-
+// 1) continuă blocurile în curs (ieri T3 → azi T2 ș.a.m.d.); 2) alege, dintre cei odihniți, cine începe
+// un bloc nou azi (T3): cel mai puțin încărcat în an (ore cu credit CO/CM), apoi cu cele mai puține
+// weekenduri/sărbători, apoi id-ul. Nu începe un bloc cine are CO/CM în următoarele 3 zile (l-ar rupe).
 function assignDispecerShifts(emps, dk, assigned, year, month, day) {
-  const absDay = absDayOf(year, month, day);
-  const pd = new Date(year, month - 1, day - 1);
-  const prev = state.schedule[dateKey(pd.getFullYear(), pd.getMonth() + 1, pd.getDate())] || {};
   const ctx = dayContext(year, month, day);
-  emps.forEach(emp => {
-    let sv = cycleShiftFor(emp.id, absDay);
-    // Siguranță la schimbarea numărului de dispeceri (ciclul se recalculează): fără 11h odihnă sau cu
-    // prea multe zile consecutive → liber (în ciclul normal nu se declanșează niciodată).
-    if (sv > 0 && (restBetween(prev[String(emp.id)] || 0, sv) < MIN_REST_H || ctx.runBefore(emp) >= MAX_CONSEC_DAYS)) sv = 0;
-    if (sv > 0) {
-      state.schedule[dk][String(emp.id)] = sv;
-      if (!assigned.includes(emp.id)) assigned.push(emp.id);
+  const prev = state.schedule[ctx.prevKey] || {};
+  const hasHistory = state.employees.some(e => prev[String(e.id)] >= 1 && prev[String(e.id)] <= 4);
+  // Fără istoric (prima zi generată): „ieri" virtual (T1, T2, T3 la primii trei) ca să pornească toate
+  // cele 4 ture din prima zi, nu abia după 3 zile.
+  const virtual = {};
+  if (!hasHistory) {
+    emps.slice().sort((a, b) => a.id - b.id).slice(0, 3).forEach((e, i) => { virtual[e.id] = i + 1; });
+  }
+  const yesterday = e => hasHistory ? (prev[String(e.id)] || 0) : (virtual[e.id] || 0);
+  const today = state.schedule[dk];
+  emps.forEach(e => {
+    const next = BLOCK_NEXT[yesterday(e)] || 0;
+    if (next > 0) {
+      today[String(e.id)] = next;
+      if (!assigned.includes(e.id)) assigned.push(e.id);
     }
   });
+  // fără CO/CM în următoarele 3 zile
+  const leaveSoon = e => [1, 2, 3].some(off => {
+    const v = (state.schedule[ctx.key(off)] || {})[String(e.id)];
+    return v === 5 || v === 6;
+  });
+  let pool = emps.filter(e => !assigned.includes(e.id) && yesterday(e) !== 4);
+  const rested = pool.filter(e => !leaveSoon(e));
+  if (rested.length) pool = rested;
+  if (!pool.length) return;
+  const hrs = {}, we = {};
+  pool.forEach(e => { hrs[e.id] = ctx.yearHours(e); we[e.id] = weekendHolidayShifts(e.id, dk); });
+  // Orele contează doar la nivel de bloc (24h): cine e cu cel mult un bloc peste cel mai puțin încărcat
+  // rămâne în joc, iar între ei decid weekendurile/sărbătorile. Altfel diferențe mici de ore ar impune o
+  // ordine fixă (coadă), care la 7 dispeceri se blochează pe aceleași zile ale săptămânii.
+  const minH = Math.min(...pool.map(e => hrs[e.id]));
+  const near = pool.filter(e => hrs[e.id] <= minH + BLOCK_HOURS);
+  near.sort((a, b) => we[a.id] - we[b.id] || hrs[a.id] - hrs[b.id] || a.id - b.id);
+  today[String(near[0].id)] = 3;
+  assigned.push(near[0].id);
 }
 
 // Orele de început/sfârșit ale turelor (față de miezul nopții zilei de start; T4 trece în ziua următoare).
@@ -1273,9 +1619,8 @@ function holidayShiftsYear(empId, y, uptoMonth) {
 function dayContext(year, month, day) {
   const dayDate = new Date(year, month - 1, day);
   const key = off => { const d = new Date(dayDate); d.setDate(d.getDate() + off); return dateKey(d.getFullYear(), d.getMonth() + 1, d.getDate()); };
-  const absDay = absDayOf(year, month, day);
   return {
-    absDay, key,
+    key,
     prevKey: key(-1), nextKey: key(1),
     // Ore acumulate de la 1 ianuarie până ieri (report între luni): ture lucrate + credit CO/CM
     // pe zile lucrătoare (media ciclului). Folosit ca să alegem uniform cine preia / cine e liber.
@@ -1301,27 +1646,15 @@ function dayContext(year, month, day) {
       }
       return r;
     },
-    // Zile consecutive lucrate care urmează azi, conform ciclului (se oprește la L / CO / CM).
-    runAfter(e) {
-      let r = 0;
-      for (let off = 1; off <= MAX_CONSEC_DAYS; off++) {
-        const v = (state.schedule[key(off)] || {})[String(e.id)];
-        if (v === 5 || v === 6) break;
-        if (cycleShiftFor(e.id, absDay + off) > 0) r++; else break;
-      }
-      return r;
+    // Dacă `e` ar lucra tura t azi (și apoi restul blocului): seria lui încape în maxim de zile la rând?
+    consecOk(e, t) {
+      return this.runBefore(e) + 1 + (BLOCK_REMAINING[t] || 0) <= MAX_CONSEC_DAYS;
     },
-    // Dacă `e` (liber azi) ar lucra azi: seria lui (înainte + azi + după, din ciclu) încape în maxim?
-    consecOk(e) {
-      return this.runBefore(e) + 1 + this.runAfter(e) <= MAX_CONSEC_DAYS;
-    },
-    // Poate `e` lucra tura `t` azi, respectând odihna față de ieri (real) și mâine (ciclu / CO/CM)?
+    // Poate `e` lucra tura t azi, respectând odihna minimă față de tura de ieri (reală)? Ziua următoare e
+    // continuarea blocului (T3→T2→T1→T4→L), care respectă mereu odihna.
     restOk(e, t) {
       const y = (state.schedule[this.prevKey] || {})[String(e.id)] || 0;
-      if (restBetween(y, t) < MIN_REST_H) return false;
-      const nv = (state.schedule[this.nextKey] || {})[String(e.id)];
-      const tomorrow = (nv === 5 || nv === 6) ? 0 : cycleShiftFor(e.id, absDay + 1);
-      return restBetween(t, tomorrow) >= MIN_REST_H;
+      return restBetween(y, t) >= MIN_REST_H;
     }
   };
 }
@@ -1331,10 +1664,9 @@ function dayContext(year, month, day) {
 // Se evaluează TOATE variantele legale (cel mult 4 ture × câțiva dispeceri) și se alege, în ordine:
 //   1. cât mai multe ture T1–T4 acoperite;
 //   2. orele acumulate în an cât mai uniforme între dispeceri (suma pătratelor orelor, după azi);
-//   3. cât mai puține schimbări față de ciclul fix.
-// Un dispecer poate prelua o tură doar dacă respectă odihna minimă (11h) față de ziua anterioară ȘI
-// față de tura planificată (ciclul sau CO/CM) a zilei următoare; cel în zi liberă mai trebuie să nu
-// depășească zilele consecutive. CO/CM nu se ating. Ce nu se poate acoperi legal rămâne gol
+//   3. cât mai puține schimbări față de alocarea inițială a zilei.
+// Un dispecer poate prelua o tură doar dacă respectă odihna minimă (11h) față de ziua anterioară și
+// seria lui (zile lucrate înainte + restul blocului) nu depășește zilele consecutive. CO/CM nu se ating. Ce nu se poate acoperi legal rămâne gol
 // (afișat ca avertisment sub tabel — se corectează manual din dropdown).
 function rebalanceCoverage(dk, year, month, day) {
   const emps = state.employees;
@@ -1349,7 +1681,7 @@ function rebalanceCoverage(dk, year, month, day) {
   avail.forEach(e => {
     can[e.id] = {};
     [1, 2, 3, 4].forEach(t => {
-      can[e.id][t] = val(e) === t || (ctx.restOk(e, t) && (val(e) !== 0 || ctx.consecOk(e)));
+      can[e.id][t] = val(e) === t || (ctx.restOk(e, t) && ctx.consecOk(e, t));
     });
   });
   const holderOf = {};
@@ -1531,17 +1863,33 @@ function closeModal() {
   clearTimeout(_deleteConfirmTimer);
   resetDeleteBtn();
 }
-function openHelp() {
+const HELP_DEFAULT_MODE = 'disp';
+
+function openHelp(mode) {
   document.getElementById('help-modal').style.display = 'flex';
-  showHelpTab('start', document.querySelector('.help-tab'));
+  showHelpMode(mode || HELP_DEFAULT_MODE);
 }
+
 function closeHelp() {
   document.getElementById('help-modal').style.display = 'none';
 }
-function showHelpTab(name, btn) {
-  document.querySelectorAll('.help-tab-panel').forEach(el => el.style.display = 'none');
-  document.querySelectorAll('.help-tab').forEach(el => el.classList.remove('active'));
-  document.getElementById('help-tab-' + name).style.display = '';
+
+// Manualul are două moduri (exp = Electricieni/Exploatare, disp = Dispecer), fiecare cu filele lui.
+function showHelpMode(mode) {
+  ['exp', 'disp'].forEach(m => {
+    const wrap = document.getElementById('help-mode-' + m);
+    if (wrap) wrap.style.display = m === mode ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.help-mode').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  const first = document.querySelector('#help-mode-' + mode + ' .help-tab');
+  if (first) showHelpTab(mode, 'start', first);
+}
+
+function showHelpTab(mode, name, btn) {
+  const wrap = document.getElementById('help-mode-' + mode);
+  wrap.querySelectorAll('.help-tab-panel').forEach(el => el.style.display = 'none');
+  wrap.querySelectorAll('.help-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('help-' + mode + '-' + name).style.display = '';
   btn.classList.add('active');
 }
 
