@@ -4,7 +4,7 @@
 // Modificările de aici se aplică tuturor modurilor — nu duplica în fișierele de mod.
 // ===========================================================================
 
-const COMMIT_COUNT = 114;
+const COMMIT_COUNT = 115;
 
 const DB_VERSION = 1;
 
@@ -985,4 +985,87 @@ function getEmployeeStats(empId) {
   const st = { counts, co, cm, hours, worked, total: worked + co };
   if (MODE.decorateStats) MODE.decorateStats(st);   // câmpuri denumite specifice modului
   return st;
+}
+
+function renderTable() {
+  const thead = document.getElementById('table-head');
+  const tbody = document.getElementById('table-body');
+  const emptyEl = document.getElementById('empty-msg');
+  const T = MODE.table;
+  const m = state.currentMonth;
+  const y = state.currentYear;
+  const dim = daysInMonth(y, m);
+  const emps = state.employees;
+  const labels = SHIFT_NAMES;
+  const colspan = dim + T.fixedCols;
+  // Sărbători legale ale lunii curente — Map<ziua, nume>, calculat o dată per randare, folosit
+  // atât pentru marcajul pe coloane cât și pentru lista de sub tabel (renderHolidayList). Doar
+  // informativ — nu influențează alocarea automată.
+  const prefix = y + '-' + pad(m);
+  const monthHolidays = getLegalHolidays(y).filter(h => h.date.startsWith(prefix));
+  const holidayByDay = new Map(monthHolidays.map(h => [parseInt(h.date.slice(-2), 10), h.name]));
+
+  let hhtml = '<tr><th style="min-width:180px;white-space:nowrap">Nume Prenume</th>' + (T.extraHeader || '');
+  for (let d = 1; d <= dim; d++) {
+    const dow = new Date(y, m - 1, d).getDay();
+    const dayName = ['D','L','M','M','J','V','S'][dow];
+    const holidayName = holidayByDay.get(d);
+    const cls = ['day-col', dow === 0 || dow === 6 ? 'th-weekend' : '', holidayName ? 'th-holiday' : ''].filter(Boolean).join(' ');
+    const tip = holidayName ? ' data-tooltip="' + escAttr(holidayName) + '"' : '';
+    hhtml += '<th class="' + cls + '"' + tip + '>' + d + '<br><small>' + dayName + '</small></th>';
+  }
+  hhtml += '<th style="min-width:48px;width:48px">Lucrate</th><th style="min-width:36px;width:36px;line-height:1.2">CO<br>CM</th><th style="min-width:44px;width:44px">Normă</th></tr>';
+  thead.innerHTML = hhtml;
+
+  renderLegend();
+  renderHolidayList(monthHolidays, y, m);
+  if (MODE.afterTableHead) MODE.afterTableHead(y, m);   // ex. avertismente sub tabel
+  if (emps.length === 0) {
+    tbody.innerHTML = '';
+    emptyEl.innerHTML = 'Adaugă ' + MODE.words.employeesPl + ' și generează graficul.';
+    return;
+  }
+  emptyEl.innerHTML = '';
+
+  const expected = expectedHours(y, m);
+  let bhtml = '';
+  T.sections(emps).forEach(sec => {
+    if (sec.emps.length === 0) return;
+    if (sec.header) bhtml += '<tr class="group-header ' + sec.cls + '"><td colspan="' + colspan + '">' + sec.header + '</td></tr>';
+    sec.emps.forEach(emp => {
+      const st = getEmployeeStats(emp.id);
+      const cls = hoursCellClass(st.hours, expected, st);
+      bhtml += '<tr>' + T.rowHead(emp, sec);
+      for (let d = 1; d <= dim; d++) {
+        const dow = new Date(y, m - 1, d).getDay();
+        const dk = dateKey(y, m, d);
+        let v = getShift(dk, emp.id);
+        if (v === null || v === undefined) v = 0;
+        const weekend = (dow === 0 || dow === 6);
+        // Valorile din weekendDisplayL (CO/CM etc.) se afișează ca L în weekend; valoarea reală rămâne în state.
+        const displayV = (weekend && T.weekendDisplayL.includes(v)) ? 0 : v;
+        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
+        bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
+        for (let si = 0; si < labels.length; si++) {
+          if (weekend && T.weekendHide.includes(si)) continue;
+          bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
+        }
+        bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span>'
+          + (T.cellExtra ? T.cellExtra(emp, dk, v, sec) : '') + '</td>';
+      }
+      bhtml += '<td class="' + cls + ' hours-cell">' + st.hours + 'h</td>';
+      bhtml += '<td class="hours" style="font-size:12px">' + leaveHours(st) + 'h</td>';
+      bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (expected !== null ? expected + 'h' : '—') + '</td></tr>';
+    });
+  });
+  tbody.innerHTML = bhtml;
+}
+
+function renderLegend() {
+  const legendEl = document.getElementById('table-legend');
+  if (!legendEl) return;
+  legendEl.innerHTML = '<span style="font-weight:700;color:var(--text-muted);margin-right:4px">Legendă:</span>'
+    + MODE.legend.map(([cls, txt, style]) =>
+      '<span class="shift-pill' + (cls ? ' ' + cls : '') + '" style="padding:2px 8px;font-size:11px' + (style ? ';' + style : '') + '">' + txt + '</span>'
+    ).join(' ');
 }

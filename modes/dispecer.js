@@ -43,7 +43,28 @@ const MODE = {
   assignDay({ dk, day, year, month, emps, hasCOCM, assigned }) {
     assignDispecerShifts(emps.filter(e => !hasCOCM.includes(String(e.id))), dk, assigned, year, month, day);
   },
-  afterDay({ dk, day, year, month }) { rebalanceCoverage(dk, year, month, day); }
+  afterDay({ dk, day, year, month }) { rebalanceCoverage(dk, year, month, day); },
+  // ── tabel și legendă ──
+  legend: [
+    ['pill-t1', 'T1 &nbsp;06:00–10:00 (4h)'],
+    ['pill-t2', 'T2 &nbsp;10:00–16:00 (6h)'],
+    ['pill-t3', 'T3 &nbsp;16:00–22:00 (6h)'],
+    ['pill-t4', 'T4 &nbsp;22:00–06:00 (8h)'],
+    ['pill-co', 'CO — Concediu Odihnă'],
+    ['pill-cm', 'CM — Concediu Medical'],
+    ['', 'L — Liber', 'background:var(--shift0-bg);color:var(--shift0-text)']
+  ],
+  afterTableHead(y, m) { renderGapList(y, m); },
+  table: {
+    extraHeader: '',
+    fixedCols: 4,
+    weekendHide: [5, 6],                   // CO/CM nu se oferă în dropdown pe S/D
+    weekendDisplayL: [5, 6],               // și se afișează ca L
+    sections(emps) { return [{ emps, cls: '', header: null }]; },
+    rowHead(emp) {
+      return '<td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + '</td>';
+    }
+  }
 };
 
 const CHANGELOG = {
@@ -375,72 +396,6 @@ function coverageGaps(year, month) {
 
 const HELP_DEFAULT_MODE = 'disp';
 
-function renderTable() {
-  const thead = document.getElementById('table-head');
-  const tbody = document.getElementById('table-body');
-  const emptyEl = document.getElementById('empty-msg');
-  const m = state.currentMonth;
-  const y = state.currentYear;
-  const dim = daysInMonth(y, m);
-  const emps = state.employees;
-  // Sărbători legale ale lunii curente — Map<ziua, nume>, calculat o dată per randare, folosit
-  // atât pentru marcajul pe coloane cât și pentru lista de sub tabel (renderHolidayList). Doar
-  // informativ — nu influențează alocarea (dispeceratul lucrează 24/7).
-  const prefix = y + '-' + pad(m);
-  const monthHolidays = getLegalHolidays(y).filter(h => h.date.startsWith(prefix));
-  const holidayByDay = new Map(monthHolidays.map(h => [parseInt(h.date.slice(-2), 10), h.name]));
-
-  let hhtml = '<tr><th style="min-width:180px;white-space:nowrap">Nume Prenume</th>';
-  for (let d = 1; d <= dim; d++) {
-    const dow = new Date(y, m - 1, d).getDay();
-    const dayName = ['D','L','M','M','J','V','S'][dow];
-    const holidayName = holidayByDay.get(d);
-    const cls = ['day-col', dow === 0 || dow === 6 ? 'th-weekend' : '', holidayName ? 'th-holiday' : ''].filter(Boolean).join(' ');
-    const tip = holidayName ? ' data-tooltip="' + escAttr(holidayName) + '"' : '';
-    hhtml += '<th class="' + cls + '"' + tip + '>' + d + '<br><small>' + dayName + '</small></th>';
-  }
-  hhtml += '<th style="min-width:48px;width:48px">Lucrate</th><th style="min-width:36px;width:36px;line-height:1.2">CO<br>CM</th><th style="min-width:44px;width:44px">Normă</th></tr>';
-  thead.innerHTML = hhtml;
-
-  renderLegend();
-  renderHolidayList(monthHolidays, y, m);
-  renderGapList(y, m);
-  if (emps.length === 0) {
-    tbody.innerHTML = '';
-    emptyEl.innerHTML = 'Adaugă dispeceri și generează graficul.';
-    return;
-  }
-  emptyEl.innerHTML = '';
-
-  const expected = expectedHours(y, m);
-  let bhtml = '';
-  emps.forEach(emp => {
-    const st = getEmployeeStats(emp.id);
-    const cls = hoursCellClass(st.hours, expected, st);
-    bhtml += '<tr><td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + '</td>';
-    for (let d = 1; d <= dim; d++) {
-      const dow = new Date(y, m - 1, d).getDay();
-      const dk = dateKey(y, m, d);
-      let v = getShift(dk, emp.id);
-      if (v === null || v === undefined) v = 0;
-      const weekend = (dow === 0 || dow === 6);
-      // CO/CM în weekend: se afișează ca L (nu se contorizează), valoarea reală rămâne în state.
-      const displayV = (weekend && WEEKEND_HIDE.includes(v)) ? 0 : v;
-      const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
-      bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
-      for (let si = 0; si < SHIFT_NAMES.length; si++) {
-        if (weekend && WEEKEND_HIDE.includes(si)) continue;
-        bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + SHIFT_NAMES[si] + '</option>';
-      }
-      bhtml += '</select><span class="print-shift shift-' + displayV + '">' + SHIFT_NAMES[displayV] + '</span></td>';
-    }
-    bhtml += '<td class="' + cls + ' hours-cell">' + st.hours + 'h</td>';
-    bhtml += '<td class="hours" style="font-size:12px">' + leaveHours(st) + 'h</td>';
-    bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (expected !== null ? expected + 'h' : '—') + '</td></tr>';
-  });
-  tbody.innerHTML = bhtml;
-}
-
 // Ture cu mai mulți dispeceri în aceeași zi (regula: cel mult unul pe tură) — apar doar din editare manuală.
 function duplicateShifts(year, month) {
   const out = [];
@@ -465,20 +420,6 @@ function renderGapList(y, m) {
   if (dups.length) lines.push('⚠️ Ture cu mai mulți dispeceri (regula: cel mult unul pe tură): '
     + dups.map(g => g.day + '.' + pad(m) + ' (' + g.shifts.join(', ') + ')').join(' • ') + '.');
   el.innerHTML = lines.map(esc).join('<br>');
-}
-
-function renderLegend() {
-  const legendEl = document.getElementById('table-legend');
-  if (!legendEl) return;
-  const pill = (cls, txt, style) => '<span class="shift-pill ' + cls + '" style="padding:2px 8px;font-size:11px;' + (style || '') + '">' + txt + '</span> ';
-  legendEl.innerHTML = '<span style="font-weight:700;color:var(--text-muted);margin-right:4px">Legendă:</span>'
-    + pill('pill-t1', 'T1 &nbsp;06:00–10:00 (4h)')
-    + pill('pill-t2', 'T2 &nbsp;10:00–16:00 (6h)')
-    + pill('pill-t3', 'T3 &nbsp;16:00–22:00 (6h)')
-    + pill('pill-t4', 'T4 &nbsp;22:00–06:00 (8h)')
-    + pill('pill-co', 'CO — Concediu Odihnă')
-    + pill('pill-cm', 'CM — Concediu Medical')
-    + pill('', 'L — Liber', 'background:var(--shift0-bg);color:var(--shift0-text)');
 }
 
 function renderSummary() {

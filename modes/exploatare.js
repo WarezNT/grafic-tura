@@ -168,6 +168,49 @@ const MODE = {
     st.t1 = st.counts[1] || 0; st.t2 = st.counts[2] || 0; st.t1a = st.counts[3] || 0; st.t2a = st.counts[4] || 0;
     st.c8 = st.counts[7] || 0; st.inst = st.counts[8] || 0;
   },
+  // ── tabel și legendă ──
+  legend: [   // [clasă, text, stil suplimentar]
+    ['pill-t1', 'T1 / T1A &nbsp;06:00–14:00'],
+    ['pill-t2', 'T2 / T2A &nbsp;14:00–22:00'],
+    ['pill-c8', '8h &nbsp;08:00–16:00'],
+    ['', 'INST — Instruire', 'background:#d5f5e3;color:#1a7a3a'],
+    ['pill-co', 'CO — Concediu Odihnă'],
+    ['pill-cm', 'CM — Concediu Medical'],
+    ['', 'L — Liber', 'background:var(--shift0-bg);color:var(--shift0-text)']
+  ],
+  table: {
+    extraHeader: '<th style="text-align:left;padding-left:4px;width:62px;min-width:62px;max-width:62px;overflow:hidden">Funcția</th>',
+    fixedCols: 5,                          // nume + funcție + 3 coloane finale
+    weekendHide: [3, 4, 5, 6, 7, 8],       // valori neoferite în dropdown pe S/D
+    weekendDisplayL: [5, 6, 7, 8],         // valori afișate ca L pe S/D
+    // secțiunile tabelului: grupuri Urban/Rural (sortate pe echipaj) + „Program 8 ore”
+    sections(emps) {
+      const out = [];
+      GROUPS.forEach(g => {
+        const gEmps = emps.filter(e => (e.category || 'urban') === g && !e.forced8);
+        gEmps.sort((a, b) => (a.crew || '').localeCompare(b.crew || ''));
+        out.push({ emps: gEmps, cls: 'group-' + g, header: catLabel(g) + ' — ' + gEmps.length + ' electricieni' });
+      });
+      const f8 = emps.filter(e => e.forced8);
+      out.push({ emps: f8, cls: 'group-f8', f8: true, header: 'Program 8 ore — ' + f8.length + ' electricieni' });
+      return out;
+    },
+    rowHead(emp, sec) {
+      const fnLabel = FUNC_NAMES[emp.functia || 'emitent'];
+      const fnCls = 'fn-' + (emp.functia || 'emitent');
+      let crewLabel = '';
+      if (!sec.f8 && emp.crew) crewLabel = '<span style="font-size:11px;font-weight:700;color:#555;display:block;text-align:center">' + esc(emp.crew) + '</span>';
+      return '<td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + ((sec.f8 || emp.forced8) ? ' <span class="forced-badge">F</span>' : '') + '</td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + crewLabel + '</td>';
+    },
+    cellExtra(emp, dk, v, sec) {   // indicator de echipaj când diferă de cel de bază (override pe dată)
+      if (sec.f8) return '';
+      const effectiveCrew = getCrewForDay(emp, dk);
+      if (v > 0 && v !== 5 && v !== 6 && v !== 8 && effectiveCrew && effectiveCrew !== (emp.crew || '')) {
+        return '<span class="crew-indicator">' + esc(effectiveCrew) + '</span>';
+      }
+      return '';
+    }
+  }
 };
 
 const CHANGELOG = {
@@ -923,141 +966,6 @@ function catLabel(c) { return { urban: 'Urban', rural: 'Rural' }[c] || c; }
 function catShort(c) { return { urban: 'U', rural: 'R' }[c] || '?'; }
 
 const HELP_DEFAULT_MODE = 'exp';
-
-function renderTable() {
-  const thead = document.getElementById('table-head');
-  const tbody = document.getElementById('table-body');
-  const emptyEl = document.getElementById('empty-msg');
-  const m = state.currentMonth;
-  const y = state.currentYear;
-  const dim = daysInMonth(y, m);
-  const emps = state.employees;
-  const labels = SHIFT_NAMES;
-  const groups = GROUPS;
-  const colspan = dim + 5;
-  // Sărbători legale ale lunii curente — Map<ziua, nume>, calculat o dată per randare, folosit
-  // atât pentru marcajul pe coloane cât și pentru lista de sub tabel (renderHolidayList). Doar
-  // informativ — nu influențează în niciun fel alocarea automată a echipajelor.
-  const prefix = y + '-' + pad(m);
-  const monthHolidays = getLegalHolidays(y).filter(h => h.date.startsWith(prefix));
-  const holidayByDay = new Map(monthHolidays.map(h => [parseInt(h.date.slice(-2), 10), h.name]));
-
-  let hhtml = '<tr><th style="min-width:180px;white-space:nowrap">Nume Prenume</th><th style="text-align:left;padding-left:4px;width:62px;min-width:62px;max-width:62px;overflow:hidden">Funcția</th>';
-  for (let d = 1; d <= dim; d++) {
-    const dt = new Date(y, m - 1, d);
-    const dow = dt.getDay();
-     const dayName = ['D','L','M','M','J','V','S'][dow];
-    const holidayName = holidayByDay.get(d);
-    const cls = ['day-col', dow === 0 || dow === 6 ? 'th-weekend' : '', holidayName ? 'th-holiday' : ''].filter(Boolean).join(' ');
-    const tip = holidayName ? ' data-tooltip="' + escAttr(holidayName) + '"' : '';
-    hhtml += '<th class="' + cls + '"' + tip + '>' + d + '<br><small>' + dayName + '</small></th>';
-  }
-  hhtml += '<th style="min-width:48px;width:48px">Lucrate</th><th style="min-width:36px;width:36px;line-height:1.2">CO<br>CM</th><th style="min-width:44px;width:44px">Normă</th></tr>';
-  thead.innerHTML = hhtml;
-
-  if (emps.length === 0) {
-    tbody.innerHTML = '';
-    emptyEl.innerHTML = 'Adaugă electricieni și generează graficul.';
-    renderLegend();
-    renderHolidayList(monthHolidays, y, m);
-    return;
-  }
-  emptyEl.innerHTML = '';
-  renderLegend();
-  renderHolidayList(monthHolidays, y, m);
-
-  const wdInfo = workingDays(y, m);
-  const expected = wdInfo !== null ? wdInfo * 8 : null;
-  let bhtml = '';
-  groups.forEach(g => {
-    const gEmps = emps.filter(e => (e.category || 'urban') === g && !e.forced8);
-    if (gEmps.length === 0) return;
-    bhtml += '<tr class="group-header group-' + g + '"><td colspan="' + colspan + '">' + catLabel(g) + ' — ' + gEmps.length + ' electricieni</td></tr>';
-    gEmps.sort((a,b) => (a.crew||'').localeCompare(b.crew||''));
-    gEmps.forEach(emp => {
-      const st = getEmployeeStats(emp.id);
-      const cls = hoursCellClass(st.hours, expected, st);
-      const fnLabel = FUNC_NAMES[emp.functia || 'emitent'];
-      const fnCls = 'fn-' + (emp.functia || 'emitent');
-      let crewLabel = '';
-      if (emp.crew) crewLabel = '<span style="font-size:11px;font-weight:700;color:#555;display:block;text-align:center">' + esc(emp.crew) + '</span>';
-      bhtml += '<tr><td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + (emp.forced8 ? ' <span class="forced-badge">F</span>' : '') + '</td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + crewLabel + '</td>';
-      for (let d = 1; d <= dim; d++) {
-        const dt = new Date(y, m - 1, d);
-        const dow = dt.getDay();
-        const dk = dateKey(y, m, d);
-        let v = getShift(dk, emp.id);
-        if (v === null || v === undefined) v = 0;
-        const weekend = (dow === 0 || dow === 6);
-        const displayV = (weekend && (v === 5 || v === 6 || v === 7 || v === 8)) ? 0 : v;
-        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
-        bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
-        for (let si = 0; si <= 8; si++) {
-          if (weekend && (si === 3 || si === 4 || si === 7)) continue;
-          if (weekend && (si === 5 || si === 6 || si === 8)) continue;
-          bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
-        }
-        bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span>';
-        const effectiveCrew = getCrewForDay(emp, dk);
-        if (v > 0 && v !== 5 && v !== 6 && v !== 8 && effectiveCrew && effectiveCrew !== (emp.crew||'')) {
-          bhtml += '<span class="crew-indicator">' + esc(effectiveCrew) + '</span>';
-        }
-        bhtml += '</td>';
-      }
-      const norma = wdInfo !== null ? wdInfo * 8 : null;
-      bhtml += '<td class="' + cls + ' hours-cell">' + st.hours + 'h</td>';
-      bhtml += '<td class="hours" style="font-size:12px">' + ((st.co + st.cm) * 8) + 'h</td>';
-      bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (norma !== null ? norma + 'h' : '—') + '</td></tr>';
-    });
-  });
-  const f8Emps = emps.filter(e => e.forced8);
-  if (f8Emps.length) {
-    bhtml += '<tr class="group-header group-f8"><td colspan="' + colspan + '">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
-    f8Emps.forEach(emp => {
-      const st = getEmployeeStats(emp.id);
-      const cls = hoursCellClass(st.hours, expected, st);
-      const fnLabel = FUNC_NAMES[emp.functia || 'emitent'];
-      const fnCls = 'fn-' + (emp.functia || 'emitent');
-      bhtml += '<tr><td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + ' <span class="forced-badge">F</span></td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + '</td>';
-      for (let d = 1; d <= dim; d++) {
-        const dt = new Date(y, m - 1, d);
-        const dow = dt.getDay();
-        const dk = dateKey(y, m, d);
-        let v = getShift(dk, emp.id);
-        if (v === null || v === undefined) v = 0;
-        const weekend = (dow === 0 || dow === 6);
-        const displayV = (weekend && (v === 5 || v === 6 || v === 7 || v === 8)) ? 0 : v;
-        const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
-        bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
-        for (let si = 0; si <= 8; si++) {
-          if (weekend && (si === 3 || si === 4 || si === 7)) continue;
-          if (weekend && (si === 5 || si === 6 || si === 8)) continue;
-          bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
-        }
-        bhtml += '</select><span class="print-shift shift-' + displayV + '">' + labels[displayV] + '</span></td>';
-      }
-      const norma = wdInfo !== null ? wdInfo * 8 : null;
-      bhtml += '<td class="' + cls + ' hours-cell">' + st.hours + 'h</td>';
-      bhtml += '<td class="hours" style="font-size:12px">' + ((st.co + st.cm) * 8) + 'h</td>';
-      bhtml += '<td class="hours" style="font-size:12px;color:var(--text-muted)">' + (norma !== null ? norma + 'h' : '—') + '</td></tr>';
-    });
-  }
-  renderLegend();
-  tbody.innerHTML = bhtml;
-}
-
-function renderLegend() {
-  const legendEl = document.getElementById('table-legend');
-  if (!legendEl) return;
-  legendEl.innerHTML = '<span style="font-weight:700;color:var(--text-muted);margin-right:4px">Legendă:</span>'
-    + '<span class="shift-pill pill-t1" style="padding:2px 8px;font-size:11px">T1 / T1A &nbsp;06:00–14:00</span> '
-    + '<span class="shift-pill pill-t2" style="padding:2px 8px;font-size:11px">T2 / T2A &nbsp;14:00–22:00</span> '
-    + '<span class="shift-pill pill-c8" style="padding:2px 8px;font-size:11px">8h &nbsp;08:00–16:00</span> '
-    + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:#d5f5e3;color:#1a7a3a">INST — Instruire</span> '
-    + '<span class="shift-pill pill-co" style="padding:2px 8px;font-size:11px">CO — Concediu Odihnă</span> '
-    + '<span class="shift-pill pill-cm" style="padding:2px 8px;font-size:11px">CM — Concediu Medical</span> '
-    + '<span class="shift-pill" style="padding:2px 8px;font-size:11px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>';
-}
 
 function workingDays(y, m) {
   const dim = daysInMonth(y, m);
