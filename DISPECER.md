@@ -101,7 +101,7 @@ Grupe Urban/Rural, ture T1A/T2A/8h/INST, „Forțat 8h", echipaje, cele 4 moduri
       continuitate între luni, CO pe interval, sărbători (30 Nov, 1 Dec...), import, export Excel
 - [x] Curățenie cod moștenit din Exploatare (V2026.10.2): echipaje, Urban/Rural, rotații,
       „Analiză moduri", coloana „Funcția", forced8, CSS și texte; `dispecer.html` 3260 → ~2230 linii
-- [ ] Redistribuire automată când CO/CM lasă o tură neacoperită (decizie deschisă — acum rămâne manual)
+- [x] Redistribuire automată când CO/CM lasă o tură neacoperită (`rebalanceCoverage`, vezi §12)
 
 ## 9. Note tehnice
 
@@ -118,8 +118,23 @@ valorile de tură 3/4 au alt sens acolo (T1A/T2A) și ar strica graficul.
 
 ## 11. Limitări cunoscute
 
-- Cu mai puțini de 5 dispeceri, sau cu CO/CM, unele ture pot rămâne neacoperite într-o zi
-  (ciclul nu redistribuie; se corectează manual din dropdown).
+- Cu mai puțini de 5 dispeceri disponibili sau mai multe CO/CM suprapuse, unele ture rămân
+  neacoperite chiar și după redistribuire — apar ca avertisment ⚠️ sub tabel (`coverageGaps`) și
+  se corectează manual din dropdown.
 - Sărbătorile legale sunt afișate (antet colorat, listă, coloană în statistici/Excel) dar nu
   modifică norma (24/7 — media ciclului, 4,8h/zi).
 - Norma CO/CM: 4,8h/zi (media ciclului), rotunjit la 0,1h.
+
+## 12. Redistribuire automată (`rebalanceCoverage`)
+
+Rulează la fiecare zi generată, DUPĂ ciclul fix. Pentru fiecare tură T1–T4 fără nimeni, alege
+un dispecer care:
+- nu e în CO/CM în ziua respectivă;
+- fie lucrează o tură acoperită de 2+ persoane, fie e în zi liberă (cu max. 4 zile consecutive);
+- are ≥ 11h de odihnă față de tura de IERI (reală) și față de tura de MÂINE (din ciclu sau CO/CM);
+- are cele mai puține ore în luna curentă (la egalitate, id-ul mai mic).
+
+Efecte: fără CO/CM rezultatul e identic cu ciclul pur (no-op). „T1 urmat de T4" poate fi încălcată
+când T1 e preluată de altcineva — acoperirea 24h are prioritate. Testat (nov. 2026): 7 dispeceri +
+CO 3 zile → 0 goluri, 0 încălcări de odihnă/consecutive; 5 dispeceri + CO → goluri inevitabile,
+raportate în `#gap-list`.
