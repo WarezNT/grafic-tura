@@ -189,10 +189,11 @@ const MODE = {
       GROUPS.forEach(g => {
         const gEmps = emps.filter(e => (e.category || 'urban') === g && !e.forced8);
         gEmps.sort((a, b) => (a.crew || '').localeCompare(b.crew || ''));
-        out.push({ emps: gEmps, cls: 'group-' + g, header: catLabel(g) + ' — ' + gEmps.length + ' electricieni' });
+        out.push({ emps: gEmps, cls: 'group-' + g, header: catLabel(g) + ' — ' + gEmps.length + ' electricieni',
+          xls: g === 'urban' ? { bg: 'D6EAF8', fg: '1A5276' } : { bg: 'FDEBD0', fg: '935116' } });
       });
       const f8 = emps.filter(e => e.forced8);
-      out.push({ emps: f8, cls: 'group-f8', f8: true, header: 'Program 8 ore — ' + f8.length + ' electricieni' });
+      out.push({ emps: f8, cls: 'group-f8', f8: true, header: 'Program 8 ore — ' + f8.length + ' electricieni', xls: { bg: '2C3E50', fg: 'FFFFFF' } });
       return out;
     },
     rowHead(emp, sec) {
@@ -286,6 +287,36 @@ const MODE = {
         f8Emps.forEach(emp => { html += statRow(emp, '<td style="font-size:11px;color:var(--text-muted)">—</td>'); });
       }
       return html + '</tbody></table>';
+    }
+  },
+  // ── export Excel ──
+  excel: {
+    extraHeaders: ['Funcția', 'Echipaj'],
+    extraWidths: [11, 7],
+    title: (mn, y) => 'Grafic de tură — ' + mn + ' ' + y,
+    subtitle: org => [org.formatia, 'Delgaz Grid S.A'].filter(Boolean).join(' — '),
+    normLine(mn, y, expected) {
+      const wd = workingDays(y, state.currentMonth);
+      return mn + ' ' + y + ' — ' + (wd || '?') + ' zile lucrătoare = ' + (expected !== null ? expected + 'h' : '? h') + ' normă/electrician';
+    },
+    weekendToL: [5, 6, 8],
+    extraCells(emp, sec) {
+      return [
+        { value: FUNC_NAMES[emp.functia || 'emitent'], fg: '444444' },
+        { value: sec.f8 ? '—' : (emp.crew || '—'), fg: '888888' }
+      ];
+    },
+    dayText(emp, dk, sv, sec) {
+      if (sec.f8) return SHIFT_NAMES[sv];
+      const crewForDay = getCrewForDay(emp, dk), defCrew = emp.crew || '';
+      return SHIFT_NAMES[sv] + (sv > 0 && sv !== 5 && sv !== 6 && sv !== 8 && crewForDay && crewForDay !== defCrew ? ' (' + crewForDay + ')' : '');
+    },
+    legend: [['T1 / T1A  06-14', 'D6EAF8', '1A5276'], ['T2 / T2A  14-22', 'FDEBD0', '935116'], ['8h  08-16', 'F0F4F8', '2C3E50'],
+             ['INST  Instruire', 'D5F5E3', '1A7A3A'], ['CO  Concediu', 'E8D5F5', '6C3483'], ['CM  Medical', 'E8E8E8', '555555'], ['L  Liber', 'F0F0F0', '666666']],
+    signatures() {
+      const o = getOrg();
+      const sefCore = 'Aprobat Șef CORE' + (o.judet ? ' ' + o.judet : '');
+      return [[' Șef FOL EM', o.sefFOL || '—'], ['Responsabil Tehnic', o.responsabilTehnic || '—'], [sefCore, o.aprobat || '—']];
     }
   }
 };
@@ -1152,199 +1183,6 @@ function applyJSON(text) {
   } catch (err) {
     setStatus('Eroare la citirea fișierului.', 'err');
   }
-}
-
-function exportExcel() {
-  if (typeof ExcelJS === 'undefined') { setStatus('Biblioteca Excel nu este disponibilă.', 'err'); return; }
-  const emps = state.employees;
-  const m = state.currentMonth, y = state.currentYear;
-  const dim = daysInMonth(y, m);
-  const mn = getMonthName(m);
-  if (emps.length === 0) { setStatus('Niciun electrician de exportat.', 'warn'); return; }
-  const wd = workingDays(y, m);
-  const expected = expectedHours(y, m);
-  const DAY_NAMES = ['D','L','M','M','J','V','S'];
-  const shiftFill = {
-    0:{bg:'F0F0F0',fg:'666666'}, 1:{bg:'D6EAF8',fg:'1A5276'}, 2:{bg:'FDEBD0',fg:'935116'},
-    3:{bg:'AED6F1',fg:'154360'}, 4:{bg:'FAD7A0',fg:'7E4D0E'}, 5:{bg:'E8D5F5',fg:'6C3483'},
-    6:{bg:'E8E8E8',fg:'555555'}, 7:{bg:'F0F4F8',fg:'2C3E50'}, 8:{bg:'D5F5E3',fg:'1A7A3A'}
-  };
-  const argb = c => 'FF' + c;
-  const fill = bg => ({ type:'pattern', pattern:'solid', fgColor:{ argb: argb(bg) } });
-  const fnt = (fg, bold, sz, italic) => ({ color:{ argb: argb(fg) }, bold:!!bold, size: sz||10, italic:!!italic });
-  const aln = (h, v, wrap) => ({ horizontal: h||'center', vertical: v||'middle', wrapText:!!wrap });
-  const firstDay = 3, lastDay = firstDay + dim - 1;
-  const colLucrate = lastDay + 1, colCOCM = lastDay + 2, colHoliday = lastDay + 3, colNorma = lastDay + 4;
-  const totalCols = colNorma + 1;
-  (async () => {
-    const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet(mn + ' ' + y, { pageSetup:{ paperSize:13, orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0 } });
-    ws.getColumn(1).width = 22; ws.getColumn(2).width = 11; ws.getColumn(3).width = 7;
-    for (let d = 1; d <= dim; d++) ws.getColumn(firstDay + d).width = 4.5;
-    ws.getColumn(colLucrate+1).width = 9; ws.getColumn(colCOCM+1).width = 7; ws.getColumn(colHoliday+1).width = 7; ws.getColumn(colNorma+1).width = 7;
-    // Logo
-    const logoId = wb.addImage({ base64: LOGO_B64, extension: 'png' });
-    ws.addImage(logoId, { tl:{ col:0, row:0 }, ext:{ width:160, height:52 } });
-    ws.getRow(1).height = 42;
-    // Title
-    const tc = ws.getCell(1, 4); tc.value = 'Grafic de tură — ' + mn + ' ' + y;
-    tc.font = fnt('2C3E50', true, 16); tc.alignment = aln('left','middle');
-    ws.mergeCells(1, 4, 1, totalCols);
-    // Subtitle
-    ws.getRow(2).height = 16;
-    const org = getOrg();
-    const sc = ws.getCell(2, 4); sc.value = [org.formatia, 'Delgaz Grid S.A'].filter(Boolean).join(' — ');
-    sc.font = fnt('7F8C8D', false, 10, true); sc.alignment = aln('left','middle');
-    ws.mergeCells(2, 4, 2, totalCols);
-    // Norm
-    ws.getRow(3).height = 14;
-    const nc0 = ws.getCell(3, 1); nc0.value = mn + ' ' + y + ' — ' + (wd||'?') + ' zile lucrătoare = ' + (expected!==null?expected+'h':'? h') + ' normă/electrician';
-    nc0.font = fnt('555555', false, 9); nc0.alignment = aln('left','middle');
-    ws.mergeCells(3, 1, 3, totalCols);
-    ws.getRow(4).height = 6;
-    // Headers
-    const HDR = 5; ws.getRow(HDR).height = 28;
-    // Antetul de sărbătoare folosea auriul pastel vechi (FDF3D0), rămas neactualizat când am
-    // întărit culoarea pe web/print (era prea „spălăcit" — feedback direct pe fișierul real
-    // exportat). Acum fundal auriu-bronz saturat + text alb, ca weekend-ul (4A2C2C+alb).
-    const setHdr = (r, c, v, wknd, holiday) => {
-      const cl = ws.getCell(r, c);
-      cl.value = v; cl.font = fnt('FFFFFF', true, 9);
-      cl.fill = fill(holiday ? '8A6510' : (wknd ? '4A2C2C' : '2C3E50'));
-      cl.alignment = aln('center','middle', true);
-    };
-    setHdr(HDR, 1, 'Nume Prenume'); setHdr(HDR, 2, 'Funcția'); setHdr(HDR, 3, 'Echipaj');
-    const yearHolidays = new Set(getLegalHolidays(y).map(h => h.date));
-    for (let d = 1; d <= dim; d++) {
-      const dow = new Date(y, m-1, d).getDay();
-      setHdr(HDR, firstDay + d, d + '\n' + DAY_NAMES[dow], dow===0||dow===6, yearHolidays.has(dateKey(y,m,d)));
-    }
-    setHdr(HDR, colLucrate+1, 'Lucrate'); setHdr(HDR, colCOCM+1, 'CO/CM'); setHdr(HDR, colHoliday+1, 'Sărb.'); setHdr(HDR, colNorma+1, 'Normă');
-    // Rows
-    let R = HDR + 1;
-    GROUPS.forEach(g => {
-      const gEmps = emps.filter(e => (e.category||'urban') === g && !e.forced8);
-      if (!gEmps.length) return;
-      const gc = g==='urban' ? {bg:'D6EAF8',fg:'1A5276'} : {bg:'FDEBD0',fg:'935116'};
-      const gLabel = (g==='urban'?'Urban':'Rural') + ' — ' + gEmps.length + ' electricieni';
-      ws.getRow(R).height = 16;
-      for (let c = 1; c <= totalCols; c++) {
-        const cell = ws.getCell(R, c);
-        cell.fill = fill(gc.bg); cell.font = fnt(gc.fg, true, 9);
-        cell.alignment = aln(c===1?'left':'center','middle');
-        if (c === 1) cell.value = gLabel;
-      }
-      ws.mergeCells(R, 1, R, totalCols); R++;
-      gEmps.forEach(emp => {
-        const st = getEmployeeStats(emp.id);
-        const effExpected = effectiveExpected(expected, st);
-        const diff = effExpected !== null ? st.hours - effExpected : 0;
-        const hBg = effExpected===null?'F8F9FB':diff===0?'E8F8F0':diff>0?'FDE8E8':diff>=-16?'FFF8E1':'FDE8E8';
-        const hFg = effExpected===null?'555555':diff===0?'1A7A3A':diff>0?'C0392B':diff>=-16?'B7770D':'C0392B';
-        ws.getRow(R).height = 15;
-        const c1=ws.getCell(R,1); c1.value=emp.name; c1.font=fnt('1A1A2E',true,9); c1.fill=fill('FFFFFF'); c1.alignment=aln('left','middle');
-        const c2=ws.getCell(R,2); c2.value=FUNC_NAMES[emp.functia||'emitent']; c2.font=fnt('444444',false,8); c2.fill=fill('F8F9FB'); c2.alignment=aln('center','middle');
-        const c3=ws.getCell(R,3); c3.value=emp.crew||'—'; c3.font=fnt('888888',false,8); c3.fill=fill('F8F9FB'); c3.alignment=aln('center','middle');
-        for (let d = 1; d <= dim; d++) {
-          const dow = new Date(y,m-1,d).getDay(), isW = dow===0||dow===6;
-          const dk = dateKey(y,m,d);
-          const v = getShift(dk, emp.id), rawSv = v!==null?v:0;
-          const sv = (isW && (rawSv===5||rawSv===6||rawSv===8)) ? 0 : rawSv;
-          const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
-          const dc = ws.getCell(R, firstDay+d);
-          var crewForDay=getCrewForDay(emp,dk);var defCrew=emp.crew||'';
-          dc.value=SHIFT_NAMES[sv]+(sv>0&&sv!==5&&sv!==6&&sv!==8&&crewForDay&&crewForDay!==defCrew?' ('+crewForDay+')':'');
-          dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
-          // Chenar auriu pe celulele din zilele de sărbătoare — mirror al td.td-holiday din grafic
-          if (yearHolidays.has(dk)) { const hb = { style:'thick', color:{argb:'FFD4A017'} }; dc.border = { top:hb, bottom:hb, left:hb, right:hb }; }
-        }
-        const lc=ws.getCell(R,colLucrate+1); lc.value=st.hours; lc.font=fnt(hFg,true,9); lc.fill=fill(hBg); lc.alignment=aln('center','middle');
-        const cc=ws.getCell(R,colCOCM+1); cc.value=(st.co+st.cm)*8; cc.font=fnt('6C3483',false,9); cc.fill=fill('F5EEF8'); cc.alignment=aln('center','middle');
-        const holCount1 = holidayShiftsCount(emp.id, y, m);
-        const hcc=ws.getCell(R,colHoliday+1); hcc.value=holCount1||0; hcc.font=fnt(holCount1?'8A6510':'AAAAAA', !!holCount1, 9); hcc.fill=fill(holCount1?'FDF3D0':'F8F9FB'); hcc.alignment=aln('center','middle');
-        const nc=ws.getCell(R,colNorma+1); nc.value=expected!==null?expected:'—'; nc.font=fnt('7F8C8D',false,9); nc.fill=fill('F8F9FB'); nc.alignment=aln('center','middle');
-        R++;
-      });
-    });
-    const f8Emps = emps.filter(e => e.forced8);
-    if (f8Emps.length) {
-      const f8Label = 'Program 8 ore — ' + f8Emps.length + ' electricieni';
-      ws.getRow(R).height = 16;
-      for (let c = 1; c <= totalCols; c++) {
-        const cell = ws.getCell(R, c);
-        cell.fill = fill('2C3E50'); cell.font = fnt('FFFFFF', true, 9);
-        cell.alignment = aln(c===1?'left':'center','middle');
-        if (c === 1) cell.value = f8Label;
-      }
-      ws.mergeCells(R, 1, R, totalCols); R++;
-      f8Emps.forEach(emp => {
-        const st = getEmployeeStats(emp.id);
-        const effExpected = effectiveExpected(expected, st);
-        const diff = effExpected !== null ? st.hours - effExpected : 0;
-        const hBg = effExpected===null?'F8F9FB':diff===0?'E8F8F0':diff>0?'FDE8E8':diff>=-16?'FFF8E1':'FDE8E8';
-        const hFg = effExpected===null?'555555':diff===0?'1A7A3A':diff>0?'C0392B':diff>=-16?'B7770D':'C0392B';
-        ws.getRow(R).height = 15;
-        const c1=ws.getCell(R,1); c1.value=emp.name; c1.font=fnt('1A1A2E',true,9); c1.fill=fill('FFFFFF'); c1.alignment=aln('left','middle');
-        const c2=ws.getCell(R,2); c2.value=FUNC_NAMES[emp.functia||'emitent']; c2.font=fnt('444444',false,8); c2.fill=fill('F8F9FB'); c2.alignment=aln('center','middle');
-        const c3=ws.getCell(R,3); c3.value='—'; c3.font=fnt('888888',false,8); c3.fill=fill('F8F9FB'); c3.alignment=aln('center','middle');
-        for (let d = 1; d <= dim; d++) {
-          const dow = new Date(y,m-1,d).getDay(), isW = dow===0||dow===6;
-          // Lipsea maparea de weekend (CO/CM/INST -> L) pe care bucla principală de mai sus deja
-          // o aplică — un angajat Forțat 8h cu CO/CM/INST manual pe weekend apărea colorat/
-          // etichetat ca atare în Excel, în loc de L (bug găsit la audit).
-          const dk2 = dateKey(y,m,d);
-          const v = getShift(dk2, emp.id), rawSv = v!==null?v:0;
-          const sv = (isW && (rawSv===5||rawSv===6||rawSv===8)) ? 0 : rawSv;
-          const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
-          const dc = ws.getCell(R, firstDay+d);
-          dc.value=SHIFT_NAMES[sv]; dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
-          if (yearHolidays.has(dk2)) { const hb = { style:'thick', color:{argb:'FFD4A017'} }; dc.border = { top:hb, bottom:hb, left:hb, right:hb }; }
-        }
-        const lc=ws.getCell(R,colLucrate+1); lc.value=st.hours; lc.font=fnt(hFg,true,9); lc.fill=fill(hBg); lc.alignment=aln('center','middle');
-        const cc=ws.getCell(R,colCOCM+1); cc.value=(st.co+st.cm)*8; cc.font=fnt('6C3483',false,9); cc.fill=fill('F5EEF8'); cc.alignment=aln('center','middle');
-        const holCount2 = holidayShiftsCount(emp.id, y, m);
-        const hcc2=ws.getCell(R,colHoliday+1); hcc2.value=holCount2||0; hcc2.font=fnt(holCount2?'8A6510':'AAAAAA', !!holCount2, 9); hcc2.fill=fill(holCount2?'FDF3D0':'F8F9FB'); hcc2.alignment=aln('center','middle');
-        const nc=ws.getCell(R,colNorma+1); nc.value=expected!==null?expected:'—'; nc.font=fnt('7F8C8D',false,9); nc.fill=fill('F8F9FB'); nc.alignment=aln('center','middle');
-        R++;
-      });
-    }
-    R++;
-    ws.getRow(R).height = 22;
-    var lc=ws.getCell(R,1); lc.value='Legendă:'; lc.font=fnt('2C3E50',true,10);
-    ws.mergeCells(R,1,R,2);
-    var li=[['T1 / T1A  06-14','D6EAF8','1A5276'],['T2 / T2A  14-22','FDEBD0','935116'],['8h  08-16','F0F4F8','2C3E50'],['INST  Instruire','D5F5E3','1A7A3A'],['CO  Concediu','E8D5F5','6C3483'],['CM  Medical','E8E8E8','555555'],['L  Liber','F0F0F0','666666']];
-    for(var i=0,ci=3;i<li.length;i++,ci+=3){ws.mergeCells(R,ci,R,ci+2);var cw=ws.getCell(R,ci);cw.value=li[i][0];cw.font=fnt(li[i][2],true,9);cw.fill=fill(li[i][1]);cw.alignment=aln('center','middle');}
-    // Sărbătorile legale ale lunii — lipseau complet din legenda Excel (bug raportat: „zilele
-    // nu apar în legendă"), deși coloanele respective erau deja marcate pe grafic (chenar auriu).
-    const monthHolidaysXls = getLegalHolidays(y).filter(h => h.date.startsWith(y+'-'+pad(m)));
-    if (monthHolidaysXls.length) {
-      R++;
-      ws.getRow(R).height = 18;
-      const hl = ws.getCell(R, 1); hl.value = '🎉 Sărbători ' + mn + ':'; hl.font = fnt('8A6510', true, 9);
-      ws.mergeCells(R, 1, R, 2);
-      const hv = ws.getCell(R, 3); hv.value = monthHolidaysXls.map(h => parseInt(h.date.slice(-2),10) + ' — ' + h.name).join('   •   ');
-      hv.font = fnt('8A6510', false, 9); hv.fill = fill('FDF3D0'); hv.alignment = aln('left', 'middle', true);
-      ws.mergeCells(R, 3, R, totalCols);
-    }
-    R += 2;
-    const org2 = getOrg();
-    const sefCoreXls = 'Aprobat Șef CORE' + (org2.judet ? ' ' + org2.judet : '');
-    const sigs=[[' Șef FOL EM', org2.sefFOL||'—'],['Responsabil Tehnic', org2.responsabilTehnic||'—'],[sefCoreXls, org2.aprobat||'—']];
-    const step = Math.floor(totalCols/3);
-    sigs.forEach((sig,i) => {
-      const c = 1 + i*step;
-      const r1=ws.getCell(R,c); r1.value=sig[0]; r1.font=fnt('2C3E50',true,9); r1.alignment=aln('center','middle');
-      ws.mergeCells(R,c,R,c+step-1);
-      const r2=ws.getCell(R+1,c); r2.value=sig[1]; r2.font=fnt('555555',false,9); r2.alignment=aln('center','middle');
-      ws.mergeCells(R+1,c,R+1,c+step-1);
-    });
-    const buffer = await wb.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href=url; a.download='grafic_ture_'+y+'_'+pad(m)+'.xlsx';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    setStatus('Excel generat cu logo și stiluri.', 'success');
-  })().catch(e => setStatus('Eroare Excel: ' + e.message, 'err'));
 }
 
 // ── Analiză moduri ──────────────────────────────────────────────────────
