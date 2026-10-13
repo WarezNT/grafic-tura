@@ -64,6 +64,55 @@ const MODE = {
     rowHead(emp) {
       return '<td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + '</td>';
     }
+  },
+  // ── carduri și statistici ──
+  summary: {
+    info(expected, mn) {
+      if (expected === null) return '';
+      return '<div style="font-size:13px;color:var(--text);padding:6px 10px;background:var(--ctrl-bg);border-radius:6px;display:inline-block">📅 ' + mn + ' ' + state.currentYear + ' — <strong>' + expected + 'h</strong> normă/dispecer</div>';
+    },
+    cardHeader(emp) { return '<span class="emp-card-name">' + esc(emp.name) + '</span>'; },
+    cardPills(emp, st, holCount) {
+      const pillCls = ['', 'pill-t1', 'pill-t2', 'pill-t3', 'pill-t4'];
+      const pills = [];
+      for (let i = 1; i <= 4; i++) { if (st.counts[i]) pills.push('<span class="shift-pill ' + pillCls[i] + '">' + SHIFT_NAMES[i] + ' ×' + st.counts[i] + '</span>'); }
+      if (st.co) pills.push('<span class="shift-pill pill-co">CO ×' + st.co + '</span>');
+      if (st.cm) pills.push('<span class="shift-pill pill-cm">CM ×' + st.cm + '</span>');
+      const holYear = holidayShiftsYear(emp.id, state.currentYear, state.currentMonth);
+      if (holCount || holYear) pills.push('<span class="shift-pill" style="background:var(--holiday-bg);color:var(--holiday-text)" data-tooltip="Ture lucrate în sărbători legale: în luna afișată și de la 1 ianuarie până la sfârșitul ei">🎉 Sărb.: ' + holCount + ' lună · ' + holYear + ' an</span>');
+      return pills;
+    },
+    statsTable(expected) {
+      let html = '<table class="stat-table"><thead><tr>'
+        + '<th style="text-align:left">Nume Prenume</th>'
+        + '<th title="Tura 1 (06:00–10:00)">T1</th><th title="Tura 2 (10:00–16:00)">T2</th>'
+        + '<th title="Tura 3 (16:00–22:00)">T3</th><th title="Tura 4 (22:00–06:00)">T4</th>'
+        + '<th title="Concediu Odihnă">CO</th><th title="Concediu Medical">CM</th>'
+        + '<th title="Ture lucrate în zile de sărbătoare legală, în luna curentă">🎉 Sărb.</th>'
+        + '<th title="Ture lucrate în sărbători legale de la 1 ianuarie până la sfârșitul lunii afișate">🎉 Sărb. an</th>'
+        + '<th title="Ore lucrate efectiv">Lucrate</th>'
+        + '<th title="Normă lunară">Normă</th>'
+        + '<th title="Diferență față de normă">±</th>'
+        + '</tr></thead><tbody>';
+      state.employees.forEach(emp => {
+        const { st, effExpected, diffStr, rowCls, hoursCls, holCount } = statRowInfo(emp, expected);
+        html += '<tr class="' + rowCls + '">'
+          + '<td>' + esc(emp.name) + '</td>'
+          + '<td>' + (st.counts[1] || '—') + '</td>'
+          + '<td>' + (st.counts[2] || '—') + '</td>'
+          + '<td>' + (st.counts[3] || '—') + '</td>'
+          + '<td>' + (st.counts[4] || '—') + '</td>'
+          + '<td>' + (st.co || '—') + '</td>'
+          + '<td>' + (st.cm || '—') + '</td>'
+          + '<td' + (holCount ? ' style="color:var(--holiday-text);font-weight:700"' : '') + '>' + (holCount || '—') + '</td>'
+          + '<td style="color:var(--text-muted)">' + (holidayShiftsYear(emp.id, state.currentYear, state.currentMonth) || '—') + '</td>'
+          + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
+          + '<td style="color:var(--text-muted)">' + (effExpected !== null ? effExpected + 'h' : '—') + '</td>'
+          + '<td class="' + hoursCls + '">' + diffStr + '</td>'
+          + '</tr>';
+      });
+      return html + '</tbody></table>';
+    }
   }
 };
 
@@ -420,96 +469,6 @@ function renderGapList(y, m) {
   if (dups.length) lines.push('⚠️ Ture cu mai mulți dispeceri (regula: cel mult unul pe tură): '
     + dups.map(g => g.day + '.' + pad(m) + ' (' + g.shifts.join(', ') + ')').join(' • ') + '.');
   el.innerHTML = lines.map(esc).join('<br>');
-}
-
-function renderSummary() {
-  const container = document.getElementById('summary');
-  if (state.employees.length === 0) { container.innerHTML = ''; return; }
-  const expected = expectedHours(state.currentYear, state.currentMonth);
-  const mn = getMonthName(state.currentMonth);
-  const sectionStyle = 'display:flex;align-items:center;gap:8px;margin:14px 0 6px;cursor:pointer;user-select:none';
-  const btnStyle = 'background:none;border:none;font-size:12px;cursor:pointer;color:var(--text-muted);padding:2px 6px;border-radius:4px;border:1px solid var(--border)';
-  const pillCls = ['', 'pill-t1', 'pill-t2', 'pill-t3', 'pill-t4'];
-  let html = '';
-  if (expected !== null) {
-    html += '<div style="font-size:13px;color:var(--text);padding:6px 10px;background:var(--ctrl-bg);border-radius:6px;display:inline-block">📅 ' + mn + ' ' + state.currentYear + ' — <strong>' + expected + 'h</strong> normă/dispecer</div>';
-  }
-  // Secțiunea Carduri
-  const cardsOpen = summaryCardsOpen;
-  html += '<div style="' + sectionStyle + '" onclick="toggleSummarySection(\'sum-cards\')">'
-    + '<button id="sum-cards-btn" style="' + btnStyle + '">' + (cardsOpen ? '▼' : '▶') + '</button>'
-    + '<span style="font-size:14px;font-weight:700;color:var(--heading)">Carduri dispeceri</span>'
-    + '</div>';
-  html += '<div id="sum-cards" style="display:' + (cardsOpen ? '' : 'none') + '">';
-  html += '<div class="summary-grid">';
-  state.employees.forEach(emp => {
-    const st = getEmployeeStats(emp.id);
-    const effExpected = effectiveExpected(expected, st);
-    const verdict = classifyHours(st.hours, effExpected);
-    const pct = effExpected ? Math.min(100, Math.round((st.hours / effExpected) * 100)) : null;
-    let cardCls = 'emp-card';
-    if (verdict === 'warn') cardCls += ' warn';
-    else if (verdict === 'over' || verdict === 'under') cardCls += ' bad';
-    const pills = [];
-    for (let i = 1; i <= 4; i++) { if (st.counts[i]) pills.push('<span class="shift-pill ' + pillCls[i] + '">' + SHIFT_NAMES[i] + ' ×' + st.counts[i] + '</span>'); }
-    if (st.co) pills.push('<span class="shift-pill pill-co">CO ×' + st.co + '</span>');
-    if (st.cm) pills.push('<span class="shift-pill pill-cm">CM ×' + st.cm + '</span>');
-    const holCount = holidayShiftsCount(emp.id, state.currentYear, state.currentMonth);
-    const holYear = holidayShiftsYear(emp.id, state.currentYear, state.currentMonth);
-    if (holCount || holYear) pills.push('<span class="shift-pill" style="background:var(--holiday-bg);color:var(--holiday-text)" data-tooltip="Ture lucrate în sărbători legale: în luna afișată și de la 1 ianuarie până la sfârșitul ei">🎉 Sărb.: ' + holCount + ' lună · ' + holYear + ' an</span>');
-    html += '<div class="' + cardCls + '">'
-      + '<div class="emp-card-header"><span class="emp-card-name">' + esc(emp.name) + '</span></div>'
-      + '<div class="emp-card-hours"><strong>' + st.hours + 'h</strong>' + (effExpected !== null ? ' / ' + effExpected + 'h (' + pct + '%)' : ' — normă necunoscută') + '</div>'
-      + '<div class="shift-pills">' + (pills.length ? pills.join('') : '<span style="color:var(--empty);font-size:11px">—</span>') + '</div>'
-      + '</div>';
-  });
-  html += '</div></div>'; // închide summary-grid + sum-cards
-
-  // Tabel statistici detaliate
-  const tableOpen = summaryTableOpen;
-  html += '<div style="' + sectionStyle + '" onclick="toggleSummarySection(\'sum-table\')">'
-    + '<button id="sum-table-btn" style="' + btnStyle + '">' + (tableOpen ? '▼' : '▶') + '</button>'
-    + '<span style="font-size:14px;font-weight:700;color:var(--heading)">Statistici ture — ' + mn + ' ' + state.currentYear + '</span>'
-    + '</div>';
-  html += '<div id="sum-table" style="display:' + (tableOpen ? '' : 'none') + '">';
-  html += '<table class="stat-table"><thead><tr>'
-    + '<th style="text-align:left">Nume Prenume</th>'
-    + '<th title="Tura 1 (06:00–10:00)">T1</th><th title="Tura 2 (10:00–16:00)">T2</th>'
-    + '<th title="Tura 3 (16:00–22:00)">T3</th><th title="Tura 4 (22:00–06:00)">T4</th>'
-    + '<th title="Concediu Odihnă">CO</th><th title="Concediu Medical">CM</th>'
-    + '<th title="Ture lucrate în zile de sărbătoare legală, în luna curentă">🎉 Sărb.</th>'
-    + '<th title="Ture lucrate în sărbători legale de la 1 ianuarie până la sfârșitul lunii afișate">🎉 Sărb. an</th>'
-    + '<th title="Ore lucrate efectiv">Lucrate</th>'
-    + '<th title="Normă lunară">Normă</th>'
-    + '<th title="Diferență față de normă">±</th>'
-    + '</tr></thead><tbody>';
-  state.employees.forEach(emp => {
-    const st = getEmployeeStats(emp.id);
-    const effExpected = effectiveExpected(expected, st);
-    const diff = effExpected !== null ? st.hours - effExpected : null;
-    const diffStr = diff === null ? '—' : (diff === 0 ? '=' : (diff > 0 ? '+'+diff+'h' : diff+'h'));
-    const verdict = classifyHours(st.hours, effExpected);
-    const rowCls = verdict === 'over' || verdict === 'under' ? 'stat-row-bad' : verdict === 'warn' ? 'stat-row-warn' : 'stat-row-ok';
-    const hoursCls = verdict === 'over' || verdict === 'under' ? 'stat-hours-bad' : verdict === 'warn' ? 'stat-hours-warn' : 'stat-hours-ok';
-    const holCount = holidayShiftsCount(emp.id, state.currentYear, state.currentMonth);
-    html += '<tr class="' + rowCls + '">'
-      + '<td>' + esc(emp.name) + '</td>'
-      + '<td>' + (st.counts[1]||'—') + '</td>'
-      + '<td>' + (st.counts[2]||'—') + '</td>'
-      + '<td>' + (st.counts[3]||'—') + '</td>'
-      + '<td>' + (st.counts[4]||'—') + '</td>'
-      + '<td>' + (st.co||'—') + '</td>'
-      + '<td>' + (st.cm||'—') + '</td>'
-      + '<td' + (holCount ? ' style="color:var(--holiday-text);font-weight:700"' : '') + '>' + (holCount||'—') + '</td>'
-      + '<td style="color:var(--text-muted)">' + (holidayShiftsYear(emp.id, state.currentYear, state.currentMonth) || '—') + '</td>'
-      + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
-      + '<td style="color:var(--text-muted)">' + (effExpected !== null ? effExpected + 'h' : '—') + '</td>'
-      + '<td class="' + hoursCls + '">' + diffStr + '</td>'
-      + '</tr>';
-  });
-  html += '</tbody></table></div>'; // închide sum-table
-
-  container.innerHTML = html;
 }
 
 // Fișierele din aplicația Exploatare (electricieni urban/rural, ture T1A/T2A/8/INST) au alt

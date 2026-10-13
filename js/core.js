@@ -4,7 +4,7 @@
 // Modificările de aici se aplică tuturor modurilor — nu duplica în fișierele de mod.
 // ===========================================================================
 
-const COMMIT_COUNT = 115;
+const COMMIT_COUNT = 116;
 
 const DB_VERSION = 1;
 
@@ -1068,4 +1068,67 @@ function renderLegend() {
     + MODE.legend.map(([cls, txt, style]) =>
       '<span class="shift-pill' + (cls ? ' ' + cls : '') + '" style="padding:2px 8px;font-size:11px' + (style ? ';' + style : '') + '">' + txt + '</span>'
     ).join(' ');
+}
+
+function renderSummary() {
+  const container = document.getElementById('summary');
+  if (state.employees.length === 0) { container.innerHTML = ''; return; }
+  const expected = expectedHours(state.currentYear, state.currentMonth);
+  const mn = getMonthName(state.currentMonth);
+  const sectionStyle = 'display:flex;align-items:center;gap:8px;margin:14px 0 6px;cursor:pointer;user-select:none';
+  const btnStyle = 'background:none;border:none;font-size:12px;cursor:pointer;color:var(--text-muted);padding:2px 6px;border-radius:4px;border:1px solid var(--border)';
+  let html = MODE.summary.info(expected, mn);   // linia „📅 luna — normă” (specifică modului)
+  // Secțiunea Carduri
+  const cardsOpen = summaryCardsOpen;
+  html += '<div style="' + sectionStyle + '" onclick="toggleSummarySection(\'sum-cards\')">'
+    + '<button id="sum-cards-btn" style="' + btnStyle + '">' + (cardsOpen ? '▼' : '▶') + '</button>'
+    + '<span style="font-size:14px;font-weight:700;color:var(--heading)">Carduri ' + MODE.words.employeesPl + '</span>'
+    + '</div>';
+  html += '<div id="sum-cards" style="display:' + (cardsOpen ? '' : 'none') + '">';
+  html += '<div class="summary-grid">';
+  state.employees.forEach(emp => {
+    const st = getEmployeeStats(emp.id);
+    const effExpected = effectiveExpected(expected, st);
+    const verdict = classifyHours(st.hours, effExpected);
+    const pct = effExpected !== null ? Math.min(100, Math.round((st.hours / effExpected) * 100)) : null;
+    let cardCls = 'emp-card';
+    if (verdict === 'warn') cardCls += ' warn';
+    else if (verdict === 'over' || verdict === 'under') cardCls += ' bad';
+    const holCount = holidayShiftsCount(emp.id, state.currentYear, state.currentMonth);
+    const pills = MODE.summary.cardPills(emp, st, holCount);
+    html += '<div class="' + cardCls + '">'
+      + '<div class="emp-card-header">' + MODE.summary.cardHeader(emp) + '</div>'
+      + '<div class="emp-card-hours"><strong>' + st.hours + 'h</strong>' + (effExpected !== null ? ' / ' + effExpected + 'h (' + pct + '%)' : ' — normă necunoscută') + '</div>'
+      + '<div class="shift-pills">' + (pills.length ? pills.join('') : '<span style="color:var(--empty);font-size:11px">—</span>') + '</div>'
+      + '</div>';
+  });
+  html += '</div></div>'; // închide summary-grid + sum-cards
+
+  // Tabel statistici detaliate (coloanele sunt specifice modului)
+  const tableOpen = summaryTableOpen;
+  html += '<div style="' + sectionStyle + '" onclick="toggleSummarySection(\'sum-table\')">'
+    + '<button id="sum-table-btn" style="' + btnStyle + '">' + (tableOpen ? '▼' : '▶') + '</button>'
+    + '<span style="font-size:14px;font-weight:700;color:var(--heading)">Statistici ture — ' + mn + ' ' + state.currentYear + '</span>'
+    + '</div>';
+  html += '<div id="sum-table" style="display:' + (tableOpen ? '' : 'none') + '">';
+  html += MODE.summary.statsTable(expected);
+  html += '</div>'; // închide sum-table
+
+  container.innerHTML = html;
+}
+
+// Calcule comune pentru un rând din tabelul de statistici (verdict, diferență, clase).
+function statRowInfo(emp, expected) {
+  const st = getEmployeeStats(emp.id);
+  // effExpected scade orele de CO/CM din normă (bug audit: un angajat cu concediu aprobat
+  // apărea "-32h" roșu, deși nu are nicio problemă reală) — un singur helper (classifyHours),
+  // aceleași reguli ca în tabel și în carduri.
+  const effExpected = effectiveExpected(expected, st);
+  const diff = effExpected !== null ? st.hours - effExpected : null;
+  const diffStr = diff === null ? '—' : (diff === 0 ? '=' : (diff > 0 ? '+' + diff + 'h' : diff + 'h'));
+  const verdict = classifyHours(st.hours, effExpected);
+  const rowCls = verdict === 'over' || verdict === 'under' ? 'stat-row-bad' : verdict === 'warn' ? 'stat-row-warn' : 'stat-row-ok';
+  const hoursCls = verdict === 'over' || verdict === 'under' ? 'stat-hours-bad' : verdict === 'warn' ? 'stat-hours-warn' : 'stat-hours-ok';
+  const holCount = holidayShiftsCount(emp.id, state.currentYear, state.currentMonth);
+  return { st, effExpected, diffStr, rowCls, hoursCls, holCount };
 }

@@ -210,6 +210,83 @@ const MODE = {
       }
       return '';
     }
+  },
+  // ── carduri și statistici ──
+  summary: {
+    info(expected, mn) {
+      const wd = workingDays(state.currentYear, state.currentMonth);
+      if (wd === null) return '';
+      return '<div style="font-size:13px;color:var(--text);padding:6px 10px;background:var(--ctrl-bg);border-radius:6px;display:inline-block">📅 ' + mn + ' ' + state.currentYear + ' — <strong>' + wd + ' zile lucrătoare</strong> = <strong>' + expected + 'h</strong> normă/electrician</div>';
+    },
+    cardHeader(emp) {
+      const cat = emp.category || 'urban';
+      return '<span class="cat-badge cat-' + cat + '" style="margin-left:0">' + catShort(cat) + '</span><span class="emp-card-name">' + esc(emp.name) + (emp.forced8 ? ' <span class="forced-badge">F</span>' : '') + '</span>';
+    },
+    cardPills(emp, st, holCount) {
+      const pills = [];
+      if (st.t1)  pills.push('<span class="shift-pill pill-t1">T1 ×' + st.t1 + '</span>');
+      if (st.t2)  pills.push('<span class="shift-pill pill-t2">T2 ×' + st.t2 + '</span>');
+      if (st.t1a) pills.push('<span class="shift-pill pill-t1a">T1A ×' + st.t1a + '</span>');
+      if (st.t2a) pills.push('<span class="shift-pill pill-t2a">T2A ×' + st.t2a + '</span>');
+      if (st.c8)  pills.push('<span class="shift-pill pill-c8">8h ×' + st.c8 + '</span>');
+      if (st.inst) pills.push('<span class="shift-pill" style="padding:2px 6px;font-size:10px;border-radius:4px;background:#d5f5e3;color:#1a7a3a;font-weight:600">INST ×' + st.inst + '</span>');
+      if (st.co)  pills.push('<span class="shift-pill pill-co">CO ×' + st.co + '</span>');
+      if (st.cm)  pills.push('<span class="shift-pill pill-cm">CM ×' + st.cm + '</span>');
+      if (holCount) pills.push('<span class="shift-pill" style="background:var(--holiday-bg);color:var(--holiday-text)">🎉 Sărb. ×' + holCount + '</span>');
+      return pills;
+    },
+    statsTable(expected) {
+      const fnLabel = e => FUNC_NAMES[e.functia || 'emitent'];
+      const statRow = (emp, crewCell) => {
+        const { st, effExpected, diffStr, rowCls, hoursCls, holCount } = statRowInfo(emp, expected);
+        const cocmH = leaveHours(st);
+        return '<tr class="' + rowCls + '">'
+          + '<td>' + esc(emp.name) + '</td>'
+          + '<td><span class="fn-' + (emp.functia || 'emitent') + '" style="font-size:11px;padding:1px 6px;border-radius:4px;font-weight:600">' + fnLabel(emp) + '</span></td>'
+          + crewCell
+          + '<td>' + (st.t1 || '—') + '</td>'
+          + '<td>' + (st.t2 || '—') + '</td>'
+          + '<td>' + (st.t1a || '—') + '</td>'
+          + '<td>' + (st.t2a || '—') + '</td>'
+          + '<td>' + (st.c8 || '—') + '</td>'
+          + '<td>' + (st.inst || '—') + '</td>'
+          + '<td>' + (st.co || '—') + '</td>'
+          + '<td>' + (st.cm || '—') + '</td>'
+          + '<td' + (holCount ? ' style="color:var(--holiday-text);font-weight:700"' : '') + '>' + (holCount || '—') + '</td>'
+          + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
+          + '<td style="color:var(--text-muted)">' + cocmH + 'h</td>'
+          + '<td style="color:var(--text-muted)">' + (effExpected !== null ? effExpected + 'h' : '—') + '</td>'
+          + '<td class="' + hoursCls + '">' + diffStr + '</td>'
+          + '</tr>';
+      };
+      let html = '<table class="stat-table"><thead><tr>'
+        + '<th style="text-align:left">Nume Prenume</th>'
+        + '<th>Funcția</th><th>Echipaj</th>'
+        + '<th title="Tura 1">T1</th><th title="Tura 2">T2</th>'
+        + '<th title="Tura 1 Alternativă">T1A</th><th title="Tura 2 Alternativă">T2A</th>'
+        + '<th title="8 ore">8h</th>'
+        + '<th title="Instruire">INST</th>'
+        + '<th title="Concediu Odihnă (zile lucrătoare)">CO</th>'
+        + '<th title="Concediu Medical (zile lucrătoare)">CM</th>'
+        + '<th title="Ture lucrate în zile de sărbătoare legală">🎉 Sărb.</th>'
+        + '<th title="Ore lucrate efectiv">Lucrate</th>'
+        + '<th title="Ore CO+CM">CO/CM</th>'
+        + '<th title="Normă lunară">Normă</th>'
+        + '<th title="Diferență față de normă">±</th>'
+        + '</tr></thead><tbody>';
+      GROUPS.forEach(g => {
+        const gEmps = state.employees.filter(e => (e.category || 'urban') === g && !e.forced8);
+        if (!gEmps.length) return;
+        html += '<tr class="stat-group-header"><td colspan="16">' + (g === 'urban' ? 'Urban' : 'Rural') + ' — ' + gEmps.length + ' electricieni</td></tr>';
+        gEmps.forEach(emp => { html += statRow(emp, '<td style="font-size:11px;color:var(--text-muted)">' + (emp.crew || '—') + '</td>'); });
+      });
+      const f8Emps = state.employees.filter(e => e.forced8);
+      if (f8Emps.length) {
+        html += '<tr class="stat-group-header"><td colspan="16">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
+        f8Emps.forEach(emp => { html += statRow(emp, '<td style="font-size:11px;color:var(--text-muted)">—</td>'); });
+      }
+      return html + '</tbody></table>';
+    }
   }
 };
 
@@ -980,153 +1057,6 @@ function workingDays(y, m) {
     wd++;
   }
   return wd;
-}
-
-function renderSummary() {
-  const container = document.getElementById('summary');
-  if (state.employees.length === 0) { container.innerHTML = ''; return; }
-  const wd = workingDays(state.currentYear, state.currentMonth);
-  const expected = expectedHours(state.currentYear, state.currentMonth);
-  const mn = getMonthName(state.currentMonth);
-  const sectionStyle = 'display:flex;align-items:center;gap:8px;margin:14px 0 6px;cursor:pointer;user-select:none';
-  const btnStyle = 'background:none;border:none;font-size:12px;cursor:pointer;color:var(--text-muted);padding:2px 6px;border-radius:4px;border:1px solid var(--border)';
-  let html = '';
-  if (wd !== null) {
-    html += '<div style="font-size:13px;color:var(--text);padding:6px 10px;background:var(--ctrl-bg);border-radius:6px;display:inline-block">📅 ' + mn + ' ' + state.currentYear + ' — <strong>' + wd + ' zile lucrătoare</strong> = <strong>' + expected + 'h</strong> normă/electrician</div>';
-  }
-  // Secțiunea Carduri
-  const cardsOpen = summaryCardsOpen;
-  html += '<div style="' + sectionStyle + '" onclick="toggleSummarySection(\'sum-cards\')">'
-    + '<button id="sum-cards-btn" style="' + btnStyle + '">' + (cardsOpen ? '▼' : '▶') + '</button>'
-    + '<span style="font-size:14px;font-weight:700;color:var(--heading)">Carduri electricieni</span>'
-    + '</div>';
-  html += '<div id="sum-cards" style="display:' + (cardsOpen ? '' : 'none') + '">';
-  html += '<div class="summary-grid">';
-  state.employees.forEach(emp => {
-    const st = getEmployeeStats(emp.id);
-    const cat = emp.category || 'urban';
-    const effExpected = effectiveExpected(expected, st);
-    const verdict = classifyHours(st.hours, effExpected);
-    const pct = effExpected !== null ? Math.min(100, Math.round((st.hours / effExpected) * 100)) : null;
-    let cardCls = 'emp-card';
-    if (verdict === 'warn') cardCls += ' warn';
-    else if (verdict === 'over' || verdict === 'under') cardCls += ' bad';
-    const pills = [];
-    if (st.t1)  pills.push('<span class="shift-pill pill-t1">T1 ×' + st.t1 + '</span>');
-    if (st.t2)  pills.push('<span class="shift-pill pill-t2">T2 ×' + st.t2 + '</span>');
-    if (st.t1a) pills.push('<span class="shift-pill pill-t1a">T1A ×' + st.t1a + '</span>');
-    if (st.t2a) pills.push('<span class="shift-pill pill-t2a">T2A ×' + st.t2a + '</span>');
-    if (st.c8)  pills.push('<span class="shift-pill pill-c8">8h ×' + st.c8 + '</span>');
-    if (st.inst) pills.push('<span class="shift-pill" style="padding:2px 6px;font-size:10px;border-radius:4px;background:#d5f5e3;color:#1a7a3a;font-weight:600">INST ×' + st.inst + '</span>');
-    if (st.co)  pills.push('<span class="shift-pill pill-co">CO ×' + st.co + '</span>');
-    if (st.cm)  pills.push('<span class="shift-pill pill-cm">CM ×' + st.cm + '</span>');
-    const holCount = holidayShiftsCount(emp.id, state.currentYear, state.currentMonth);
-    if (holCount) pills.push('<span class="shift-pill" style="background:var(--holiday-bg);color:var(--holiday-text)">🎉 Sărb. ×' + holCount + '</span>');
-    html += '<div class="' + cardCls + '">'
-      + '<div class="emp-card-header"><span class="cat-badge cat-' + cat + '" style="margin-left:0">' + catShort(cat) + '</span><span class="emp-card-name">' + esc(emp.name) + (emp.forced8 ? ' <span class="forced-badge">F</span>' : '') + '</span></div>'
-      + '<div class="emp-card-hours"><strong>' + st.hours + 'h</strong>' + (effExpected !== null ? ' / ' + effExpected + 'h (' + pct + '%)' : ' — normă necunoscută') + '</div>'
-      + '<div class="shift-pills">' + (pills.length ? pills.join('') : '<span style="color:var(--empty);font-size:11px">—</span>') + '</div>'
-      + '</div>';
-  });
-  html += '</div></div>'; // închide summary-grid + sum-cards
-
-  // Tabel statistici detaliate
-  const fnLabel = e => FUNC_NAMES[e.functia||'emitent'];
-  const groups = GROUPS;
-  const tableOpen = summaryTableOpen;
-  html += '<div style="' + sectionStyle + '" onclick="toggleSummarySection(\'sum-table\')">'
-    + '<button id="sum-table-btn" style="' + btnStyle + '">' + (tableOpen ? '▼' : '▶') + '</button>'
-    + '<span style="font-size:14px;font-weight:700;color:var(--heading)">Statistici ture — ' + mn + ' ' + state.currentYear + '</span>'
-    + '</div>';
-  html += '<div id="sum-table" style="display:' + (tableOpen ? '' : 'none') + '">';
-  html += '<table class="stat-table"><thead><tr>'
-    + '<th style="text-align:left">Nume Prenume</th>'
-    + '<th>Funcția</th><th>Echipaj</th>'
-    + '<th title="Tura 1">T1</th><th title="Tura 2">T2</th>'
-    + '<th title="Tura 1 Alternativă">T1A</th><th title="Tura 2 Alternativă">T2A</th>'
-    + '<th title="8 ore">8h</th>'
-    + '<th title="Instruire">INST</th>'
-    + '<th title="Concediu Odihnă (zile lucrătoare)">CO</th>'
-    + '<th title="Concediu Medical (zile lucrătoare)">CM</th>'
-    + '<th title="Ture lucrate în zile de sărbătoare legală">🎉 Sărb.</th>'
-    + '<th title="Ore lucrate efectiv">Lucrate</th>'
-    + '<th title="Ore CO+CM">CO/CM</th>'
-    + '<th title="Normă lunară">Normă</th>'
-    + '<th title="Diferență față de normă">±</th>'
-    + '</tr></thead><tbody>';
-  groups.forEach(g => {
-    const gEmps = state.employees.filter(e => (e.category||'urban') === g && !e.forced8);
-    if (!gEmps.length) return;
-    html += '<tr class="stat-group-header"><td colspan="16">' + (g==='urban'?'Urban':'Rural') + ' — ' + gEmps.length + ' electricieni</td></tr>';
-    gEmps.forEach(emp => {
-      const st = getEmployeeStats(emp.id);
-      // effExpected scade orele de CO/CM din normă (bug audit: un angajat cu concediu aprobat
-      // apărea "-32h" roșu, deși nu are nicio problemă reală) — un singur helper (classifyHours),
-      // aceleași reguli ca în tabel și în carduri.
-      const effExpected = effectiveExpected(expected, st);
-      const diff = effExpected !== null ? st.hours - effExpected : null;
-      const diffStr = diff === null ? '—' : (diff === 0 ? '=' : (diff > 0 ? '+'+diff+'h' : diff+'h'));
-      const verdict = classifyHours(st.hours, effExpected);
-      const rowCls = verdict === 'over' || verdict === 'under' ? 'stat-row-bad' : verdict === 'warn' ? 'stat-row-warn' : 'stat-row-ok';
-      const hoursCls = verdict === 'over' || verdict === 'under' ? 'stat-hours-bad' : verdict === 'warn' ? 'stat-hours-warn' : 'stat-hours-ok';
-      const cocmH = (st.co + st.cm) * 8;
-      const holCount = holidayShiftsCount(emp.id, state.currentYear, state.currentMonth);
-      html += '<tr class="' + rowCls + '">'
-        + '<td>' + esc(emp.name) + '</td>'
-        + '<td><span class="fn-' + (emp.functia||'emitent') + '" style="font-size:11px;padding:1px 6px;border-radius:4px;font-weight:600">' + fnLabel(emp) + '</span></td>'
-        + '<td style="font-size:11px;color:var(--text-muted)">' + (emp.crew || '—') + '</td>'
-        + '<td>' + (st.t1||'—') + '</td>'
-        + '<td>' + (st.t2||'—') + '</td>'
-        + '<td>' + (st.t1a||'—') + '</td>'
-        + '<td>' + (st.t2a||'—') + '</td>'
-        + '<td>' + (st.c8||'—') + '</td>'
-        + '<td>' + (st.inst||'—') + '</td>'
-        + '<td>' + (st.co||'—') + '</td>'
-        + '<td>' + (st.cm||'—') + '</td>'
-        + '<td' + (holCount ? ' style="color:var(--holiday-text);font-weight:700"' : '') + '>' + (holCount||'—') + '</td>'
-        + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
-        + '<td style="color:var(--text-muted)">' + cocmH + 'h</td>'
-        + '<td style="color:var(--text-muted)">' + (effExpected !== null ? effExpected + 'h' : '—') + '</td>'
-        + '<td class="' + hoursCls + '">' + diffStr + '</td>'
-        + '</tr>';
-    });
-  });
-  const f8Emps = state.employees.filter(e => e.forced8);
-  if (f8Emps.length) {
-    html += '<tr class="stat-group-header"><td colspan="16">Program 8 ore — ' + f8Emps.length + ' electricieni</td></tr>';
-    f8Emps.forEach(emp => {
-      const st = getEmployeeStats(emp.id);
-      const effExpected = effectiveExpected(expected, st);
-      const diff = effExpected !== null ? st.hours - effExpected : null;
-      const diffStr = diff === null ? '—' : (diff === 0 ? '=' : (diff > 0 ? '+'+diff+'h' : diff+'h'));
-      const verdict = classifyHours(st.hours, effExpected);
-      const rowCls = verdict === 'over' || verdict === 'under' ? 'stat-row-bad' : verdict === 'warn' ? 'stat-row-warn' : 'stat-row-ok';
-      const hoursCls = verdict === 'over' || verdict === 'under' ? 'stat-hours-bad' : verdict === 'warn' ? 'stat-hours-warn' : 'stat-hours-ok';
-      const cocmH = (st.co + st.cm) * 8;
-      const holCount = holidayShiftsCount(emp.id, state.currentYear, state.currentMonth);
-      html += '<tr class="' + rowCls + '">'
-        + '<td>' + esc(emp.name) + '</td>'
-        + '<td><span class="fn-' + (emp.functia||'emitent') + '" style="font-size:11px;padding:1px 6px;border-radius:4px;font-weight:600">' + fnLabel(emp) + '</span></td>'
-        + '<td style="font-size:11px;color:var(--text-muted)">—</td>'
-        + '<td>' + (st.t1||'—') + '</td>'
-        + '<td>' + (st.t2||'—') + '</td>'
-        + '<td>' + (st.t1a||'—') + '</td>'
-        + '<td>' + (st.t2a||'—') + '</td>'
-        + '<td>' + (st.c8||'—') + '</td>'
-        + '<td>' + (st.inst||'—') + '</td>'
-        + '<td>' + (st.co||'—') + '</td>'
-        + '<td>' + (st.cm||'—') + '</td>'
-        + '<td' + (holCount ? ' style="color:var(--holiday-text);font-weight:700"' : '') + '>' + (holCount||'—') + '</td>'
-        + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
-        + '<td style="color:var(--text-muted)">' + cocmH + 'h</td>'
-        + '<td style="color:var(--text-muted)">' + (effExpected !== null ? effExpected + 'h' : '—') + '</td>'
-        + '<td class="' + hoursCls + '">' + diffStr + '</td>'
-        + '</tr>';
-    });
-  }
-  html += '</tbody></table></div>'; // închide sum-table
-
-  container.innerHTML = html;
 }
 
 function applyJSON(text) {
