@@ -1,31 +1,35 @@
-# Modul Dispecer — design și proces de implementare
+# Modul Dispecer — design și implementare
 
-Aplicația Grafic de Tură deservea inițial un singur modul („Exploatare" — electricieni,
-2 grupe Urban/Rural, ture de 8h). Acest document descrie al doilea modul, **Dispecer**,
-adăugat în același fișier `index.html`, fără să afecteze modulul existent (în producție).
+Aplicația de planificare a turelor deservea inițial un singur modul („Exploatare" — electricieni,
+grupe Urban/Rural, ture de 8h). S-a adăugat un al doilea modul, **Dispecer**, ca **aplicație
+separată** (`dispecer.html`), accesibilă printr-un selector de modul.
 
-## 1. Scop
+## 1. Arhitectură: două aplicații separate
 
-Modulul Dispecer planifică turele dispecerilor (dispecerat), care lucrează în ture cu
-durate diferite, pe o schemă de rotație continuă pentru acoperire 24h.
+| Fișier | Modul | Descriere |
+|--------|-------|-----------|
+| `index.html` | **Exploatare** | Aplicația existentă, neschimbată funcțional |
+| `dispecer.html` | **Dispecer** | Aplicație nouă, standalone, pentru graficul dispecerilor |
 
-## 2. Decizii luate (cu utilizatorul)
+### Selectorul de modul
+- În antetul fiecărei aplicații există un selector permanent **„Modul"** (`Exploatare` / `Dispecer`).
+- Pe `index.html`: alegerea „Dispecer" face `window.location.href = 'dispecer.html'`.
+- Pe `dispecer.html`: alegerea „Exploatare" face `window.location.href = 'index.html'`.
+- Cele două aplicații sunt complet independente (fără stare partajată).
 
-| Subiect | Decizie |
-|---|---|
-| Comutare module | Selector **„Modul"** în bara de sus |
-| Angajați | **Listă separată** complet de electricienii de exploatare |
-| Structura | **Un singur grup** (fără Urban/Rural) |
-| Ciclu de rotație | **T3 → T2 → T1 → T4 → [liber]**, apoi se repetă |
-| Început | Ciclul începe cu T3 |
-| După T4 | Minim o zi liberă până la următorul T3 (variabil) |
-| Legătură T1↔T4 | Persoana care a fost în **T1 este întotdeauna și în T4** (T1 urmat direct de T4) |
-| Număr pe tură | **Automat:** acoperire 24h cu cele 4 ture |
-| Ore pe tură | T1=4h, T2=6h, T3=6h, T4=8h (concediu CO/CM = 0h) |
-| Coduri speciale (AUT/EXM/PND/IN) | **Nu se implementează acum** — manual, ulterior |
-| Afișare T4 (22:00–06:00) | **O singură celulă**, în ziua de start |
+### Persistență separată
+Fiecare aplicație are propriile chei, ca să nu se amestece datele:
 
-## 3. Tipurile de tură
+| | Exploatare (`index.html`) | Dispecer (`dispecer.html`) |
+|---|---|---|
+| State principal | `graficTura` | `graficTura_dispecer` |
+| Organizație | `graficTura_org` | `graficTura_dispecer_org` |
+| Versiune văzută | `graficTura_version` | `graficTura_dispecer_version` |
+| IndexedDB | `GraficTuraDB` / `main` | `GraficTuraDispecerDB` / `main` |
+
+Organizația (formație, șef, responsabil) este **distinctă** între cele două aplicații.
+
+## 2. Tipurile de tură (Dispecer)
 
 | Val | Cod | Ore | Interval | Observații |
 |-----|-----|-----|----------|-----------|
@@ -37,9 +41,9 @@ durate diferite, pe o schemă de rotație continuă pentru acoperire 24h.
 | 5 | CO | 0 | — | Concediu odihnă (manual) |
 | 6 | CM | 0 | — | Concediu medical (manual) |
 
-Total 24h acoperite de T1+T2+T3+T4.
+T1+T2+T3+T4 = 24h (acoperire completă a zilei).
 
-## 4. Ciclul de rotație
+## 3. Ciclul de rotație
 
 Fiecare dispecer parcurge ciclul de 5 poziții:
 
@@ -48,75 +52,56 @@ T3 → T2 → T1 → T4 → L → (repetă)
 ```
 
 - Poziția avansează cu 1 în fiecare zi.
-- T1 este întotdeauna urmat de T4 (aceeași persoană).
-- Ziua liberă (L) este poziția 4 din ciclu; poate fi modificată manual
-  (variabil — ex. concediu, zile suplimentare libere).
+- **T1 este întotdeauna urmat de T4** (aceeași persoană).
+- După T4 urmează cel puțin o zi liberă până la următorul T3.
+- Ciclul curge **continuu** peste granița dintre luni (fără resetare).
 
-## 5. Algoritmul de acoperire (24h)
+## 4. Algoritm de acoperire 24h
 
-Fiecare dispecer primește o „fază" de start în ciclu, distribuită round-robin:
+Faza de start se distribuie round-robin după indexul din lista completă de dispeceri:
 
 ```
-faza(i) = i % 5            // i = index în lista sortată de dispeceri
-tura(i, ziAbs) = CICLU[(faza(i) + ziAbs) % 5]
-CICLU = [T3, T2, T1, T4, L]   // valori [3, 2, 1, 4, 0]
+faza(dispecer i, ziAbs) = (i + ziAbs) % 5
+tura = CICLU[faza],  CICLU = [T3, T2, T1, T4, L]  (valori [3, 2, 1, 4, 0])
 ```
 
-- `ziAbs` = numărul absolut de zile de la o dată de referință (flux continuu peste
-  granița dintre luni, la fel ca la exploatare).
-- Cu 5 dispeceri, fiecare zi are exact câte 1 pe fiecare tură (acoperire perfectă).
-- Cu alt număr, distribuția round-robin garantează **cel puțin 1** pe fiecare tură.
-- CO/CM introduse manual sunt păstrate (algoritmul nu le suprascrie).
+- `ziAbs` = zile absolute de la o dată de referință (continuitate între luni).
+- Indexul e luat din lista COMPLETĂ de dispeceri, ca CO/CM să nu decaleze fazele celorlalți.
+- Cu 5 dispeceri → exact 1 pe fiecare tură în fiecare zi (acoperire perfectă).
+- Cu alt număr → round-robin garantează cel puțin 1 pe fiecare tură.
+- CO/CM introduse manual sunt păstrate (nu sunt suprascrise).
 
-## 6. Arhitectură (integrare în index.html)
+## 5. Norma (Dispecer)
 
-Pentru a nu atinge logica modulului Exploatare, se introduce un strat de „module":
+- Norma lunară = media ciclului: `rotunjit(zile_din_lună × 24 / 5)`.
+- CO/CM reduc norma cu orele medii pe zi (`24 / 5`).
 
-- `MODULE_DEFS` — registru cu, pentru fiecare modul: `label`, `groups`, `groupNames`,
-  `shiftNames`, `shiftHours`, `storageKey`, `dbKey`.
-- `CURRENT_MODULE` — 'exploatare' (implicit) sau 'dispecer', salvat în
-  `localStorage['graficTura_module']`.
-- `GROUPS`, `SHIFT_NAMES`, `SHIFT_HOURS` devin variabile (nu `const`) și sunt setate
-  din `MODULE_DEFS[CURRENT_MODULE]` la pornire și la schimbarea modulului.
-- Datele fiecărui modul se păstrează **separat**:
-  - Exploatare: `graficTura` (compatibil cu versiunile existente)
-  - Dispecer: `graficTura_dispecer`
-  - IndexedDB: chei `main` / `main_dispecer`
-- Organizația (formație, șef, etc.) rămâne **comună** (`graficTura_org`).
+## 6. Interfață (Dispecer)
 
-### Puncte care devin module-aware
+- Antet: logo, titlu „Grafic dispecer", selector Modul, ⚙️ organizație, 🌙 mod întunecat.
+- Bara de sus: navigare lună/an, etichetă informativă „Acoperire 24h automată", butoane
+  `▶ Generare` / `✕ Curăță` / `+ Dispecer`.
+- Tabel: un rând pe dispecer, o coloană pe zi, dropdown per celulă (`L, T1, T2, T3, T4, CO, CM`).
+  În weekend CO/CM nu sunt oferite. Coloane finale: Lucrate, CO/CM, Normă.
+- Sub tabel: legendă, sărbători legale, carduri + tabel statistici (T1–T4, CO, CM, ore).
+- Bara de jos: Fișiere (JSON), Excel, Print/PDF, Manual, versiune.
 
-1. `getEmployeeStats()` — orele se calculează din `SHIFT_HOURS[v]`, nu `v * 8`.
-2. `renderTable()` — numărul de ture din `SHIFT_NAMES.length`, grupe din `GROUPS`,
-   ore din `SHIFT_HOURS`.
-3. `renderLegend()` — legendă specifică modulului.
-4. `renderSummary()` — pastile/tabel din `counts[]` (index de tură), generic.
-5. `generateDay()` — ramură Dispecer (`assignDispecerShifts`).
-6. `exportExcel()` — culori/legende/totaluri module-aware.
-7. Bara de configurare — câmpuri diferite per modul.
-8. Modalul adaugă/editează angajat — categorie unică pentru Dispecer.
+## 7. Funcții eliminate din Dispecer (specifice Exploatare)
 
-## 7. Pași de implementare (checklist)
+Grupe Urban/Rural, ture T1A/T2A/8h/INST, „Forțat 8h", echipaje, cele 4 moduri de generare
+și „Analiză moduri". CO/CM rămân.
 
-- [x] Definiții module (`MODULE_DEFS`, `CURRENT_MODULE`, `GROUPS`/`SHIFT_NAMES`/`SHIFT_HOURS` mutabile)
-- [ ] `defaultState()` module-aware (câmp `module`, config Dispecer `{t1,t2,t3,t4}`)
-- [ ] Persistență separată (`loadState`/`saveState`/`initStateFromDB` cu chei per modul)
-- [ ] `migrateState()` module-aware
-- [ ] `getEmployeeStats()` cu `SHIFT_HOURS`
-- [ ] Selector „Modul" în bara de sus + `switchModule()`
-- [ ] `assignDispecerShifts()` + ramură în `generateDay()`
-- [ ] `renderTable()` generic (ture, grupe, ore)
-- [ ] `renderLegend()` per modul
-- [ ] `renderSummary()` generic (counts)
-- [ ] Config UI per modul (Dispecer: doar t1–t4)
-- [ ] Modale angajat per modul
-- [ ] Export Excel + Print module-aware
-- [ ] Secțiune în manual + intrare în changelog
+## 8. Stare implementare
 
-## 8. Riscuri / atenționări
+- [x] `index.html` — selector de modul în antet (redirect)
+- [x] `dispecer.html` — aplicație completă (ture, ciclu, acoperire, tabel, statistici, export, manual)
+- [x] Persistență separată + organizație distinctă
+- [x] Manual rescris pentru Dispecer
+- [ ] Verificare finală în browser (încărcare, generare, export, redirect, dark mode)
 
-- Aplicația este în producție — modulul Exploatare nu trebuie să se schimbe.
-- `SHIFT_NAMES`/`GROUPS` erau `const`; devin variabile — de verificat că nicio funcție
-  nu le captează valoarea la definire.
-- Export/print trebuie testate în ambele module.
-- Codurile speciale (AUT/EXM/PND/IN) se adaugă ulterior, manual, ca CO/CM.
+## 9. Note tehnice
+
+- Ambele aplicații sunt single-file (fără build step), consistent cu restul proiectului.
+- Print/PDF folosește mereu tema deschisă (indiferent de dark mode) — la fel ca Exploatare.
+- Codurile speciale (AUT/EXM/PND/IN) din exemplul inițial NU au fost implementate (la cerere);
+  pot fi adăugate ulterior ca CO/CM (manuale).

@@ -312,6 +312,12 @@ td.emp-name-cell:hover{text-decoration:underline}
       <span>Grafic de tură — <span id="month-title"></span></span>
       <span id="org-subtitle" style="font-size:13px;font-weight:500;color:var(--text-muted)">Delgaz Grid S.A</span>
     </span>
+    <label class="ctrl-label no-print" style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;margin-right:6px" title="Comută modulul aplicației (Exploatare / Dispecer)">Modul
+      <select id="sel-app" onchange="switchApp(this.value)" style="font-size:12px;padding:4px 6px;font-weight:700">
+        <option value="exploatare" selected>Exploatare</option>
+        <option value="dispecer">Dispecer</option>
+      </select>
+    </label>
     <button class="btn btn-outline btn-sm no-print" onclick="openOrgModal()" title="Setări organizație" style="margin-right:6px;font-size:16px;padding:4px 10px">⚙️</button>
     <button class="dark-toggle no-print" onclick="toggleDarkMode()" title="Comută modul întunecat" id="dark-toggle-btn">🌙</button>
   </h1>
@@ -1074,42 +1080,13 @@ const CHANGELOG = {
 };
 const DB_STORE = 'state';
 let db = null;
-
-// ── Module (Exploatare / Dispecer) ────────────────────────────────────────
-const MODULE_DEFS = {
-  exploatare: {
-    label: 'Exploatare',
-    legendName: 'Exploatare — electricieni',
-    groups: ['urban', 'rural'],
-    groupNames: { urban: 'Urban', rural: 'Rural' },
-    shiftNames: ['L', 'T1', 'T2', 'T1A', 'T2A', 'CO', 'CM', '8', 'INST'],
-    shiftHours: [0, 8, 8, 8, 8, 0, 0, 8, 8],
-    storageKey: 'graficTura',
-    dbKey: 'main'
-  },
-  dispecer: {
-    label: 'Dispecer',
-    legendName: 'Dispeceri',
-    groups: ['dispecer'],
-    groupNames: { dispecer: 'Dispeceri' },
-    shiftNames: ['L', 'T1', 'T2', 'T3', 'T4', 'CO', 'CM'],
-    shiftHours: [0, 4, 6, 6, 8, 0, 0],
-    storageKey: 'graficTura_dispecer',
-    dbKey: 'main_dispecer'
-  }
-};
-let CURRENT_MODULE = localStorage.getItem('graficTura_module');
-if (!CURRENT_MODULE || !MODULE_DEFS[CURRENT_MODULE]) CURRENT_MODULE = 'exploatare';
-let GROUPS = MODULE_DEFS[CURRENT_MODULE].groups.slice();
-let SHIFT_NAMES = MODULE_DEFS[CURRENT_MODULE].shiftNames.slice();
-let SHIFT_HOURS = MODULE_DEFS[CURRENT_MODULE].shiftHours.slice();
-function moduleDef() { return MODULE_DEFS[CURRENT_MODULE]; }
-
 let stateLoadCorrupted = false;
 let state = loadState();
 let savedFileHandle = null;
 let genDay = state.genDay || 0, genStats = state.genStats || null, genCOCM = state.preservedCOCM || {}, genYear = state.genYear || 0, genMonth = state.genMonth || 0, genDim = state.genDim || 0;
 
+const GROUPS = ['urban', 'rural'];
+const SHIFT_NAMES = ['L', 'T1', 'T2', 'T1A', 'T2A', 'CO', 'CM', '8', 'INST'];
 const FUNC_NAMES = { emitent: 'Emitent', admitent: 'Admitent', electrician: 'Electrician', seftura: 'Șef tură' };
 const PREDEFINED_CREWS = ['U1','U2','U3','U4','U5','R1','R2','R3','R4','R5'];
 
@@ -3512,6 +3489,11 @@ function toggleDarkMode() {
   document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
   const btn = document.getElementById('dark-toggle-btn');
   if (btn) btn.textContent = isDark ? '🌙' : '☀️';
+}
+
+// Selector de modul: Exploatare rămâne aici, Dispecer redirecționează la aplicația separată.
+function switchApp(v) {
+  if (v === 'dispecer') window.location.href = 'dispecer.html';
 }
 
 document.addEventListener('click', e => {
