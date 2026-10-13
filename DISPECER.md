@@ -139,32 +139,17 @@ când T1 e preluată de altcineva — acoperirea 24h are prioritate. Testat (nov
 CO 3 zile → 0 goluri, 0 încălcări de odihnă/consecutive; 5 dispeceri + CO → goluri inevitabile,
 raportate în `#gap-list`.
 
-## 13. Sărbători legale: raționalizare + echilibrare (`rationalizeHoliday`)
+## 13. Sărbători legale: contor informativ (decizie manuală)
 
-Scop: în sărbători lucrează doar minimul, iar orele rămân cât mai uniforme între dispeceri.
-Rulează după `rebalanceCoverage`, doar în zilele din `getLegalHolidays(an)`:
-1. **Raționalizare** — o tură acoperită de 2+ persoane rămâne cu una singură (câte unul pe
-   T1–T4); ceilalți primesc L. Rămâne la lucru cel cu cele mai puține ore acumulate în an
-   (`ctx.yearHours`: ture lucrate + credit CO/CM pe zile lucrătoare, report între luni), apoi cel cu
-   cele mai puține ture de sărbătoare (`holidayShiftsBefore`), apoi id-ul mai mic.
-2. **Echilibrare** — dacă titularul unei ture are cu mai mult de o tură de ore peste un coleg în
-   zi liberă, tura se mută la coleg (doar cu 11h odihnă și seria de zile consecutive ≤ 4, inclusiv
-   zilele următoare din ciclu — `ctx.consecOk`). CO/CM nu se ating.
-3. `rebalanceCoverage` (goluri din CO/CM) alege tot după ore în an, apoi după sărbători.
+Echilibrarea automată din sărbători (V2026.10.3: raționalizare + comutator) a fost **scoasă** în
+V2026.10.4 — decizia cine lucrează în sărbători o ia cine face graficul, din dropdown.
 
-Fără evidențieri speciale în tabel și fără ajustarea normei (decizie utilizator). Coloana
-„🎉 Sărb. an" din Statistici = `holidayShiftsYear` (informativ).
+Ce rămâne:
+- cardurile arată `🎉 Sărb.: N lună · M an` (`holidayShiftsCount` pe lună, `holidayShiftsYear` de la
+  1 ianuarie până la sfârșitul lunii afișate);
+- Statistici: coloanele „🎉 Sărb." (lună) și „🎉 Sărb. an";
+- `rebalanceCoverage` (§12) alege după ore acumulate în an, apoi id — fără criteriu de sărbători;
+- Excel: coloana „Sărb." (lună) și chenar auriu pe zilele de sărbătoare, ca înainte.
 
-**Comutator** „🎉 Raționalizare sărbători" (bara de sus, `#holiday-balance`): `state.holidayBalance`,
-implicit `true`, persistat odată cu starea (localStorage + IndexedDB + backup JSON). Oprit → toți
-lucrează conform ciclului: ore perfect egale, dar 5–7 oameni lucrează într-o sărbătoare. Se aplică
-la următoarea generare (lunile deja generate nu se schimbă singure — „Curăță" + „▶ Generare").
-
-Rezultate testate (2026 întreg, 17 sărbători, fără CO), spread ore pe an / max. spread lunar:
-- n=5: 0h / 8h (neschimbat — fără surplus, nu se poate raționaliza);
-- n=6: 0 → 10h / 14h; n=7: 0 → 12h / 18h; n=8: 0 → 16h / 20h; câte 4 persoane în fiecare sărbătoare;
-- 0 goluri noi, 0 încălcări de odihnă, 0 încălcări de zile consecutive.
-
-Compromis: raționalizarea ia ore celor eliberați, deci spread-ul de ore crește față de ciclul
-pur (0h) — alegerea după ore în an îl menține la 1–2 ture pe an. Raționalizarea și uniformitatea
-perfectă a orelor se exclud reciproc.
+Istoric: în V2026.10.3 raționalizarea ținea 4 persoane/sărbătoare cu spread ore 10–16h/an (vs 0h
+fără); scoasă la cerere, fiindcă utilizatorul preferă control manual.

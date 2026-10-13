@@ -297,9 +297,6 @@ td.emp-name-cell:hover{text-decoration:underline}
       <button class="btn btn-outline btn-sm" onclick="nextMonth()" title="Luna următoare" style="padding:4px 8px;font-size:14px">›</button>
       <span style="width:1px;height:24px;background:var(--border);display:inline-block"></span>
       <span style="font-size:11px;font-weight:600;color:var(--text-muted);padding:4px 10px;border-radius:6px;background:var(--ctrl-bg)" data-tooltip="Acoperirea celor 4 ture (24h) este asigurată automat prin rotația T3→T2→T1→T4→liber.">🔁 Acoperire 24h automată — T1 (06–10), T2 (10–16), T3 (16–22), T4 (22–06)</span>
-      <label id="holiday-balance-wrap" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--text-muted);padding:4px 10px;border-radius:6px;background:var(--ctrl-bg);cursor:pointer" data-tooltip="Activ: în sărbătorile legale lucrează doar minimul (câte unul pe tură), iar cine rămâne la lucru se alege după orele din an — orele rămân aproape uniforme (diferențe de 1–2 ture pe an). Inactiv: toți lucrează conform ciclului, orele sunt perfect egale, dar în sărbători lucrează mai mulți. Se aplică la următoarea generare.">
-        <input type="checkbox" id="holiday-balance" onchange="setHolidayBalance(this.checked)" style="margin:0"> 🎉 Raționalizare sărbători
-      </label>
       <span style="flex:1"></span>
       <button class="btn btn-primary btn-sm" onclick="startGeneration()" data-tooltip="Pornește generarea graficului pentru luna și anul selectate">▶ Generare</button>
       <button class="btn btn-outline btn-sm" id="btn-prev-day" onclick="prevDay()" style="display:none" data-tooltip="Întoarce cu o zi înapoi, pentru a regenera ultima zi dacă rezultatul nu e satisfăcător">←</button>
@@ -580,7 +577,6 @@ td.emp-name-cell:hover{text-decoration:underline}
             <li><strong>Acoperire 24h</strong> — fazele sunt distribuite automat, astfel încât fiecare din cele 4 ture să aibă cel puțin un dispecer.</li>
             <li><strong>Ciclu continuu</strong> — rotația curge peste granița dintre luni (fără resetare).</li>
             <li><strong>CO / CM existente</strong> se păstrează la generare și regenerare.</li>
-            <li><strong>Sărbători legale: raționalizare + echilibrare</strong> (comutator „🎉 Raționalizare sărbători” în bara de sus; se aplică la următoarea generare) — în zilele de sărbătoare legală lucrează doar minimul necesar (câte unul pe fiecare tură); ceilalți dispeceri au zi liberă. Cine lucrează se alege după orele acumulate în <em>acel an</em> (report între luni): cine are mai puține ore rămâne la lucru, cine are mai multe primește ziua liberă — așa orele rămân cât mai uniforme între dispeceri. CO/CM nu se ating. Coloana „🎉 Sărb. an” din Statistici arată câte ture de sărbătoare a avut fiecare. Cu comutatorul <strong>oprit</strong>, toți lucrează conform ciclului: orele sunt perfect egale, dar în sărbători lucrează mai mulți dispeceri.</li>
             <li><strong>Redistribuire automată</strong> — dacă CO/CM lasă o tură fără nimeni într-o zi, un dispecer disponibil o preia (din altă tură acoperită de 2+ persoane sau din zi liberă), cu cele mai puține ore din lună. Se respectă <strong>11h de odihnă</strong> față de ziua anterioară și cea următoare și maximum <strong>4 zile consecutive</strong>.</li>
           </ul>
         </div>
@@ -596,7 +592,7 @@ td.emp-name-cell:hover{text-decoration:underline}
           <ul class="help-list">
             <li>Numărul de dispeceri determină acoperirea: cu 5 dispeceri, fiecare zi are exact unul pe fiecare tură.</li>
             <li>Când nu se poate acoperi o tură fără să încalce odihna minimă (ex. 5 dispeceri și unul în CO), ziua rămâne cu tura goală — apare un avertisment ⚠️ sub tabel și o corectezi manual.</li>
-            <li>Norma lunară nu se ajustează pentru sărbători; diferențele de ore dintr-o lună se compensează în lunile următoare (report în an).</li>
+            <li>Sărbătorile legale nu influențează alocarea automată. Pe carduri și în Statistici vezi câte ture de sărbătoare a lucrat fiecare (în lună și de la 1 ianuarie), ca să decizi manual, din dropdown, cine lucrează în sărbători.</li>
             <li>Regulile se aplică doar generării automate; la editare manuală ai libertate deplină.</li>
           </ul>
         </div>
@@ -722,12 +718,19 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura_dispecer';
 const VERSION_KEY = 'graficTura_dispecer_version';
 const ORG_KEY = 'graficTura_dispecer_org';
-const APP_VERSION = 'V2026.10.3';
+const APP_VERSION = 'V2026.10.4';
 const COMMIT_COUNT = 108;
 const DB_NAME = 'GraficTuraDispecerDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.10.4': {
+    title: 'Sărbători legale: decizi tu',
+    items: [
+      { icon: '🧹', text: 'Scoasă raționalizarea/echilibrarea automată din sărbători (și comutatorul ei) — graficul rămâne exact pe ciclul fix' },
+      { icon: '🎉', text: 'Pe carduri apare acum câte ture de sărbătoare legală a lucrat fiecare, în lună și în an, ca să poți decide manual' }
+    ]
+  },
   'V2026.10.3': {
     title: 'Sărbători legale: raționalizare și echilibrare',
     items: [
@@ -778,7 +781,6 @@ function defaultState() {
   const now = new Date();
   return {
     module: 'dispecer',
-    holidayBalance: true,
     schedule: {},
     preservedCOCM: {},
     genDay: 0, genStats: null, genYear: 0, genMonth: 0, genDim: 0,
@@ -886,7 +888,7 @@ function migrateState(s) {
   if (s.genMonth === undefined) s.genMonth = 0;
   if (s.genDim === undefined) s.genDim = 0;
   if (!s.org) s.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
-  if (s.holidayBalance === undefined) s.holidayBalance = true;
+  delete s.holidayBalance; // comutator scos în V2026.10.4
 }
 
 async function initStateFromDB() {
@@ -1190,7 +1192,6 @@ function generateDay(day) {
     if (!assigned.includes(e.id)) state.schedule[dk][String(e.id)] = 0;
   });
   rebalanceCoverage(dk, year, month, day);
-  rationalizeHoliday(dk, year, month, day);
   saveState();
 }
 
@@ -1222,40 +1223,10 @@ function assignDispecerShifts(emps, dk, assigned, year, month, day) {
 const SHIFT_SPAN = { 1: [6, 10], 2: [10, 16], 3: [16, 22], 4: [22, 30] };
 const MIN_REST_H = 11; // odihnă minimă între două ture consecutive
 const MAX_CONSEC_DAYS = 4; // maxim zile lucrate la rând (ca ciclul T3→T2→T1→T4)
-// Comutator „Raționalizare sărbători” — în state.holidayBalance (implicit activ), setat din bara de sus.
-function holidayBalanceEnabled() { return state.holidayBalance !== false; }
-
-function setHolidayBalance(on) {
-  state.holidayBalance = !!on;
-  saveState();
-  setStatus('Raționalizare sărbători ' + (on ? 'activată' : 'dezactivată') + '. Se aplică la următoarea generare — apasă „Curăță” apoi „▶ Generare” pentru luna curentă.', 'info');
-}
-
-function applyHolidayBalanceToDOM() {
-  const cb = document.getElementById('holiday-balance');
-  if (cb) cb.checked = holidayBalanceEnabled();
-}
-
 // Odihna dintre două ture din zile consecutive (prev ieri → cur azi). 0/CO/CM = fără constrângere.
 function restBetween(prev, cur) {
   if (!SHIFT_SPAN[prev] || !SHIFT_SPAN[cur]) return Infinity;
   return 24 + SHIFT_SPAN[cur][0] - SHIFT_SPAN[prev][1];
-}
-
-function isLegalHoliday(dk) {
-  return getLegalHolidays(parseInt(dk.slice(0, 4), 10)).some(h => h.date === dk);
-}
-
-// Ture lucrate (T1–T4) în sărbători legale, în același an, ÎNAINTE de data `dk` — „report între
-// luni”: cine a lucrat mai puține sărbători până acum e primul chemat la următoarele.
-function holidayShiftsBefore(empId, dk) {
-  let n = 0;
-  getLegalHolidays(parseInt(dk.slice(0, 4), 10)).forEach(h => {
-    if (h.date >= dk) return;
-    const v = (state.schedule[h.date] || {})[String(empId)];
-    if (v >= 1 && v <= 4) n++;
-  });
-  return n;
 }
 
 // La fel, dar de la 1 ianuarie până la sfârșitul lunii `uptoMonth` (pt. coloana din statistici).
@@ -1331,7 +1302,7 @@ function dayContext(year, month, day) {
 // fie din zi liberă — doar dacă respectă odihna minimă față de ziua anterioară ȘI față de tura
 // planificată (ciclul sau CO/CM) a zilei următoare, și nu depășește zilele consecutive.
 // La alegere: cel cu cele mai puține ore acumulate în an (uniformizează orele între dispeceri),
-// apoi cel cu cele mai puține ture de sărbătoare, apoi id-ul. Ce nu se poate acoperi legal
+// apoi id-ul. Ce nu se poate acoperi legal
 // rămâne gol (afișat ca avertisment sub tabel — se corectează manual din dropdown).
 function rebalanceCoverage(dk, year, month, day) {
   const emps = state.employees;
@@ -1339,11 +1310,11 @@ function rebalanceCoverage(dk, year, month, day) {
   const val = e => today[String(e.id)] || 0;
   const count = t => emps.filter(e => val(e) === t).length;
   const ctx = dayContext(year, month, day);
-  const hrs = {}, holCnt = {};
+  const hrs = {};
   let loaded = false;
   for (const t of [1, 2, 3, 4]) {
     if (count(t) > 0) continue;
-    if (!loaded) { emps.forEach(e => { hrs[e.id] = ctx.yearHours(e); holCnt[e.id] = holidayShiftsBefore(e.id, dk); }); loaded = true; }
+    if (!loaded) { emps.forEach(e => { hrs[e.id] = ctx.yearHours(e); }); loaded = true; }
     const cands = emps.filter(e => {
       const v = val(e);
       if (v === 5 || v === 6) return false;                 // în concediu
@@ -1352,40 +1323,8 @@ function rebalanceCoverage(dk, year, month, day) {
       return ctx.restOk(e, t);
     });
     if (!cands.length) continue;
-    cands.sort((a, b) => hrs[a.id] - hrs[b.id] || holCnt[a.id] - holCnt[b.id] || a.id - b.id);
+    cands.sort((a, b) => hrs[a.id] - hrs[b.id] || a.id - b.id);
     today[String(cands[0].id)] = t;
-  }
-}
-
-// Raționalizare + echilibrare în sărbători legale, cu scopul de a păstra orele cât mai uniforme:
-//  1. Raționalizare — o tură acoperită de 2+ persoane rămâne cu UNA singură (minimul necesar);
-//     ceilalți au zi liberă. Rămâne la lucru cel cu cele mai puține ore acumulate în an (report
-//     între luni) — deci zilele libere „în plus" ajung la cei care au deja cel mai mult de lucrat —,
-//     apoi cel cu cele mai puține ture de sărbătoare, apoi id-ul.
-//  2. Echilibrare — dacă titularul unei ture are cu mai multe ore decât tura însăși peste un
-//     coleg aflat în zi liberă, tura se mută la colegul respectiv (doar cu odihnă 11h și max. 4 zile
-//     consecutive). CO/CM rămân neatinse.
-function rationalizeHoliday(dk, year, month, day) {
-  if (!holidayBalanceEnabled() || !isLegalHoliday(dk)) return;
-  const emps = state.employees;
-  const today = state.schedule[dk];
-  const val = e => today[String(e.id)] || 0;
-  const ctx = dayContext(year, month, day);
-  const hrs = {}, cnt = {};
-  emps.forEach(e => { hrs[e.id] = ctx.yearHours(e); cnt[e.id] = holidayShiftsBefore(e.id, dk); });
-  const order = (a, b) => hrs[a.id] - hrs[b.id] || cnt[a.id] - cnt[b.id] || a.id - b.id;
-  for (const t of [1, 2, 3, 4]) {
-    const group = emps.filter(e => val(e) === t).sort(order);
-    group.slice(1).forEach(e => { today[String(e.id)] = 0; });
-  }
-  for (const t of [1, 2, 3, 4]) {
-    const holder = emps.find(e => val(e) === t);
-    if (!holder) continue;
-    const cands = emps.filter(e => val(e) === 0 && hrs[holder.id] - hrs[e.id] > SHIFT_HOURS[t]
-      && ctx.consecOk(e) && ctx.restOk(e, t)).sort(order);
-    if (!cands.length) continue;
-    today[String(cands[0].id)] = t;
-    today[String(holder.id)] = 0;
   }
 }
 
@@ -1822,7 +1761,8 @@ function renderSummary() {
     if (st.co) pills.push('<span class="shift-pill pill-co">CO ×' + st.co + '</span>');
     if (st.cm) pills.push('<span class="shift-pill pill-cm">CM ×' + st.cm + '</span>');
     const holCount = holidayShiftsCount(emp.id, state.currentYear, state.currentMonth);
-    if (holCount) pills.push('<span class="shift-pill" style="background:var(--holiday-bg);color:var(--holiday-text)">🎉 Sărb. ×' + holCount + '</span>');
+    const holYear = holidayShiftsYear(emp.id, state.currentYear, state.currentMonth);
+    if (holCount || holYear) pills.push('<span class="shift-pill" style="background:var(--holiday-bg);color:var(--holiday-text)" data-tooltip="Ture lucrate în sărbători legale: în luna afișată și de la 1 ianuarie până la sfârșitul ei">🎉 Sărb.: ' + holCount + ' lună · ' + holYear + ' an</span>');
     html += '<div class="' + cardCls + '">'
       + '<div class="emp-card-header"><span class="emp-card-name">' + esc(emp.name) + '</span></div>'
       + '<div class="emp-card-hours"><strong>' + st.hours + 'h</strong>' + (effExpected !== null ? ' / ' + effExpected + 'h (' + pct + '%)' : ' — normă necunoscută') + '</div>'
@@ -1844,7 +1784,7 @@ function renderSummary() {
     + '<th title="Tura 3 (16:00–22:00)">T3</th><th title="Tura 4 (22:00–06:00)">T4</th>'
     + '<th title="Concediu Odihnă">CO</th><th title="Concediu Medical">CM</th>'
     + '<th title="Ture lucrate în zile de sărbătoare legală, în luna curentă">🎉 Sărb.</th>'
-    + '<th title="Ture lucrate în sărbători legale de la 1 ianuarie până la sfârșitul lunii — baza echilibrării automate (report între luni)">🎉 Sărb. an</th>'
+    + '<th title="Ture lucrate în sărbători legale de la 1 ianuarie până la sfârșitul lunii afișate">🎉 Sărb. an</th>'
     + '<th title="Ore lucrate efectiv">Lucrate</th>'
     + '<th title="Normă lunară">Normă</th>'
     + '<th title="Diferență față de normă">±</th>'
@@ -2130,8 +2070,7 @@ function applyJSON(text) {
     saveState();
     document.getElementById('sel-month').value = state.currentMonth || 1;
     document.getElementById('sel-year').value = state.currentYear || new Date().getFullYear();
-    applyHolidayBalanceToDOM();
-    render();
+      render();
     updateButtons();
     setStatus('Baza de date restaurată din fișier.', 'success');
   } catch (err) {
@@ -2433,8 +2372,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // migrate org from state to dedicated ORG_KEY if not yet migrated
     if (!loadOrg() && state.org && state.org.sefFOL) saveOrg(state.org);
     applyOrgToDOM();
-    applyHolidayBalanceToDOM();
-    render();
+      render();
     updateButtons();
     if (dbEl) dbEl.textContent = loaded ? '💾 IndexedDB: date încărcate' : '💾 IndexedDB: date noi';
     checkVersion();
@@ -2444,8 +2382,7 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
     updateButtons();
     applyOrgToDOM();
-    applyHolidayBalanceToDOM();
-    if (dbEl) dbEl.textContent = '💾 IndexedDB: eroare';
+      if (dbEl) dbEl.textContent = '💾 IndexedDB: eroare';
   });
 });
 </script>
