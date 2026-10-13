@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_dispecer_version';
 
 const ORG_KEY = 'graficTura_dispecer_org';
 
-const APP_VERSION = 'V2026.10.8';
+const APP_VERSION = 'V2026.10.9';
 
 const DB_NAME = 'GraficTuraDispecerDB';
 
@@ -128,10 +128,61 @@ const MODE = {
     legend: [['T1  06-10 (4h)', 'D6EAF8', '1A5276'], ['T2  10-16 (6h)', 'FDEBD0', '935116'], ['T3  16-22 (6h)', 'AED6F1', '154360'],
              ['T4  22-06 (8h)', 'FAD7A0', '7E4D0E'], ['CO  Concediu', 'E8D5F5', '6C3483'], ['CM  Medical', 'E8E8E8', '555555'], ['L  Liber', 'F0F0F0', '666666']],
     signatures: () => orgSignatures(getOrg()).map(s => [s.label, s.name || '—'])
+  },
+  helpMode: 'disp',                // modul de manual deschis implicit (cheia din MANUALS),
+  // ── markup specific modului (inserat în șablonul din js/shell.js) ──
+  shell: {
+    titleLine: `      <span>Grafic dispecer — <span id="month-title"></span></span>`,
+    controlsAndAddModal: `      <span style="font-size:11px;font-weight:600;color:var(--text-muted);padding:4px 10px;border-radius:6px;background:var(--ctrl-bg)" data-tooltip="Acoperirea celor 4 ture (24h) este asigurată automat prin rotația T3→T2→T1→T4→liber.">🔁 Acoperire 24h automată — T1 (06–10), T2 (10–16), T3 (16–22), T4 (22–06)</span>
+      <span style="flex:1"></span>
+      <button class="btn btn-primary btn-sm" onclick="startGeneration()" data-tooltip="Pornește generarea graficului pentru luna și anul selectate">▶ Generare</button>
+      <button class="btn btn-outline btn-sm" id="btn-prev-day" onclick="prevDay()" style="display:none" data-tooltip="Întoarce cu o zi înapoi, pentru a regenera ultima zi dacă rezultatul nu e satisfăcător">←</button>
+      <button class="btn btn-outline btn-sm" id="btn-next-day" onclick="generateNextDay()" style="display:none" data-tooltip="Generează doar ziua curentă și avansează — verificare pas cu pas">Ziua →</button>
+      <button class="btn btn-success btn-sm" id="btn-generate-all" onclick="generateAll()" style="display:none" data-tooltip="Generează dintr-odată toate zilele rămase din lună">Generare totală →</button>
+      <button class="btn btn-warning btn-sm" onclick="clearSchedule()" data-tooltip="Șterge turele generate pentru luna curentă; CO și CM introduse se păstrează (dispecerii rămân)">✕ Curăță</button>
+      <button class="btn btn-success btn-sm" id="add-emp-btn" onclick="openAddEmployeeModal()" data-tooltip="Adaugă un dispecer nou">+ Dispecer</button>
+    </div>
+  </div>
+
+  <!-- Modal adăugare dispecer -->
+  <div id="add-emp-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeAddEmployeeModal()">
+    <div class="modal-content">
+      <h3>Adaugă dispecer</h3>
+      <label data-tooltip="Numele complet al dispecerului — apare în tabel, carduri și exporturi.">Nume<input type="text" id="new-emp" placeholder="Nume dispecer" onkeydown="if(event.key==='Enter')addEmployee()"></label>`,
+    orgAndExtraModals: `  <!-- Modal setări organizație: denumirile câmpurilor sunt editabile, iar fiecare câmp se poate dezactiva -->
+  <div id="org-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeOrgModal()">
+    <div class="modal-content" style="max-width:460px;max-height:90vh;overflow-y:auto">
+      <h3>⚙️ Setări organizație</h3>
+      <label>Entitate (apare în antet, titlu și Excel)
+        <input type="text" id="org-entitate" placeholder="ex: Delgaz Grid S.A">
+      </label>
+      <div class="org-hint">Bifa din stânga fiecărui câmp îl activează / dezactivează (dezactivat = nu apare în antet, print și Excel). Denumirea câmpului se poate edita.</div>
+      <div id="org-fields"></div>
+      <div class="modal-buttons">
+        <button class="btn btn-outline" onclick="closeOrgModal()">Anulează</button>
+        <button class="btn btn-success" onclick="saveOrgSettings()">Salvează</button>`,
+    gapList: `    <div id="gap-list" class="no-print" style="padding:0 0 8px;font-size:12px;color:#b45309;font-weight:600"></div>`,
+    exportTooltips: `        <button onclick="closeTbDropdowns();exportMonthJSON()" data-tooltip="Exportă DOAR luna afișată acum (grafic + dispeceri) într-un fișier mic, ușor de trimis cuiva">💾 Descarcă doar luna curentă <span class="tb-dd-hint">JSON</span></button>
+        <button onclick="closeTbDropdowns();exportFullJSON()" data-tooltip="Exportă TOATE lunile salvate, toți dispecerii și toate setările — backup complet al aplicației">💿 Descarcă tot (backup complet) <span class="tb-dd-hint">JSON</span></button>
+        <div class="tb-dd-sep"></div>
+        <button onclick="closeTbDropdowns();loadJSON()" data-tooltip="Deschide un fișier JSON exportat de aici — recunoaște automat dacă e o lună sau un backup complet">📂 Încarcă fișier (lună sau backup)</button>
+        <button onclick="closeTbDropdowns();importEmployees()" data-tooltip="Adaugă electricieni dintr-un alt fișier JSON, fără să șteargă graficul sau dispecerii existenți">👥 Adaugă dispeceri din fișier</button>`,
+    devNote: ``,
+    editModalBody: `    <h3>Editează dispecer</h3>
+    <label data-tooltip="Numele complet al dispecerului — apare în tabel, carduri și exporturi.">Nume: <input type="text" id="modal-emp-name"></label>
+    <div id="leave-interval-section" style="margin-bottom:12px">
+      <div data-tooltip="Setează CO sau CM pentru toate zilele din interval dintr-o dată, în loc să dai click pe fiecare celulă. Suprascrie orice era setat înainte în acele zile." style="font-size:13px;font-weight:600;margin-bottom:6px;color:#374151;cursor:help;display:inline-block">🏖️ CO / CM pe interval: ℹ️</div>`
   }
 };
 
 const CHANGELOG = {
+  'V2026.10.9': {
+    title: 'Cod modular',
+    items: [
+      { icon: '🧱', text: 'Cod reorganizat (nucleu comun + fișier pe mod); fără schimbări de comportament — adăugarea unui mod nou devine mult mai simplă' },
+      { icon: '🔒', text: 'Exploatarea refuză acum fișierele exportate din Dispecer (și invers)' }
+    ]
+  },
   'V2026.10.8': {
     title: 'Distribuție echitabilă, setări editabile, manual în două moduri',
     items: [
@@ -452,8 +503,6 @@ function coverageGaps(year, month) {
   }
   return gaps;
 }
-
-const HELP_DEFAULT_MODE = 'disp';
 
 // Ture cu mai mulți dispeceri în aceeași zi (regula: cel mult unul pe tură) — apar doar din editare manuală.
 function duplicateShifts(year, month) {

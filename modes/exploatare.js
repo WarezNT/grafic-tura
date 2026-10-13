@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_version';
 
 const ORG_KEY = 'graficTura_org';
 
-const APP_VERSION = 'V2026.10.2';
+const APP_VERSION = 'V2026.10.3';
 
 const DB_NAME = 'GraficTuraDB';
 
@@ -350,10 +350,154 @@ const MODE = {
       document.getElementById('cfg-' + g + '-t2a').value = c.t2a || 0;
       document.getElementById('cfg-' + g + '-c8').value = c.c8 || 0;
     });
+  },
+  helpMode: 'exp',                // modul de manual deschis implicit (cheia din MANUALS),
+  // ── markup specific modului (inserat în șablonul din js/shell.js) ──
+  shell: {
+    titleLine: `      <span>Grafic de tură — <span id="month-title"></span></span>`,
+    controlsAndAddModal: `      <span class="ctrl-group-label ctrl-urban-label" style="font-size:11px;font-weight:700;white-space:nowrap" data-tooltip="Configurare pentru grupul Urban — câți electricieni pe fiecare tură">Urban:</span>
+      <span class="ctrl-group-wrap ctrl-urban-wrap" style="display:flex;gap:3px;align-items:center;padding:3px 7px;border-radius:6px">
+        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T1 (06:00–14:00) — se alocă automat în toate modurile">T1<input type="number" id="cfg-urban-t1" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label ta-field" id="cfg-urban-t1a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T1A (variantă T1, doar L–V) — folosită doar de modurile care o susțin">T1A<input type="number" id="cfg-urban-t1a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2 (14:00–22:00) — se alocă automat în toate modurile">T2<input type="number" id="cfg-urban-t2" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label ta-field" id="cfg-urban-t2a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2A (variantă T2, doar L–V) — folosită doar de modurile care o susțin">T2A<input type="number" id="cfg-urban-t2a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label c8-field" id="cfg-urban-c8-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Program normal 8h (08:00–16:00, doar L–V) — folosit doar de modurile care o susțin (1, 2), plus pentru electricienii cu Forțat 8h">8h<input type="number" id="cfg-urban-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+      </span>
+      <span class="ctrl-group-label ctrl-rural-label" style="font-size:11px;font-weight:700;white-space:nowrap" data-tooltip="Configurare pentru grupul Rural — câți electricieni pe fiecare tură">Rural:</span>
+      <span class="ctrl-group-wrap ctrl-rural-wrap" style="display:flex;gap:3px;align-items:center;padding:3px 7px;border-radius:6px">
+        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T1 (06:00–14:00) — se alocă automat în toate modurile">T1<input type="number" id="cfg-rural-t1" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label ta-field" id="cfg-rural-t1a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T1A (variantă T1, doar L–V) — folosită doar de modurile care o susțin">T1A<input type="number" id="cfg-rural-t1a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2 (14:00–22:00) — se alocă automat în toate modurile">T2<input type="number" id="cfg-rural-t2" min="0" max="20" value="2" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label ta-field" id="cfg-rural-t2a-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Tura T2A (variantă T2, doar L–V) — folosită doar de modurile care o susțin">T2A<input type="number" id="cfg-rural-t2a" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+        <label class="ctrl-label c8-field" id="cfg-rural-c8-field" style="font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:1px;align-items:center" data-tooltip="Program normal 8h (08:00–16:00, doar L–V) — folosit doar de modurile care o susțin (1, 2), plus pentru electricienii cu Forțat 8h">8h<input type="number" id="cfg-rural-c8" min="0" max="20" value="0" style="width:38px;font-size:11px;padding:2px 4px"></label>
+      </span>
+      <label class="ctrl-label" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;white-space:nowrap" data-tooltip="Strategia de generare a graficului — schimbă complet cum sunt alocate turele">Mod
+        <select id="gen-mode" onchange="state.genMode=this.value;saveState();updateModeFieldVisibility()" style="font-size:11px;padding:3px 5px">
+          <option value="full">1) T1/T2 + T1A/T2A</option>
+          <option value="t12">2) Zilnic T1/T2</option>
+          <option value="rotation">3) Rotație 8 zile</option>
+          <option value="rotation3">4) Rotație T1-T2-L</option>
+        </select>
+      </label>
+      <span style="flex:1"></span>
+      <button class="btn btn-primary btn-sm" onclick="startGeneration()" data-tooltip="Pornește generarea graficului pentru luna și anul selectate, cu modul și configurația de mai sus">▶ Generare</button>
+      <button class="btn btn-outline btn-sm" id="btn-prev-day" onclick="prevDay()" style="display:none" data-tooltip="Întoarce cu o zi înapoi, pentru a regenera ultima zi dacă rezultatul nu e satisfăcător">←</button>
+      <button class="btn btn-outline btn-sm" id="btn-next-day" onclick="generateNextDay()" style="display:none" data-tooltip="Generează doar ziua curentă și avansează — verificare pas cu pas">Ziua →</button>
+      <button class="btn btn-success btn-sm" id="btn-generate-all" onclick="generateAll()" style="display:none" data-tooltip="Generează dintr-odată toate zilele rămase din lună">Generare totală →</button>
+      <button class="btn btn-warning btn-sm" onclick="clearSchedule()" data-tooltip="Șterge turele generate pentru luna curentă; CO, CM și Instruire introduse se păstrează (electricienii rămân)">✕ Curăță</button>
+      <button class="btn btn-success btn-sm" onclick="openAddEmployeeModal()" data-tooltip="Adaugă un electrician nou în formație">+ Electrician</button>
+    </div>
+  </div>
+
+  <!-- Modal adăugare electrician -->
+  <div id="add-emp-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeAddEmployeeModal()">
+    <div class="modal-content">
+      <h3>Adaugă electrician</h3>
+      <label data-tooltip="Numele complet al electricianului — apare în tabel, carduri și exporturi.">Nume<input type="text" id="new-emp" placeholder="Nume electrician" onkeydown="if(event.key==='Enter')addEmployee()"></label>
+      <label data-tooltip="Grupul de ture: Urban sau Rural. Electricienii din fiecare grup sunt alocați separat conform configurației.">Categorie<select id="new-emp-cat"><option value="urban">Urban</option><option value="rural">Rural</option></select></label>
+      <label data-tooltip="Funcția în cadrul formației — apare în tabel și statistici.">Funcția<select id="new-emp-fn"><option value="emitent">Emitent</option><option value="admitent">Admitent</option><option value="electrician">Electrician</option><option value="seftura">Șef tură</option></select></label>
+      <label data-tooltip="Membrii aceluiași echipaj primesc aceeași tură în aceeași zi. Poți adăuga un echipaj custom din câmpul alăturat.">Echipă
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="new-emp-crew" style="font-size:13px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none;flex:1"></select>
+          <input type="text" id="new-emp-crew-custom" placeholder="Echipaj nou…" style="font-size:13px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none;width:110px">
+          <button class="btn btn-outline" onclick="addCustomCrewFromAdd()" style="font-size:12px;padding:5px 10px;white-space:nowrap">+ Adaugă</button>
+        </div>
+      </label>
+      <label data-tooltip="Angajatul primește mereu tura 8h (08:00–16:00) în zilele lucrătoare, indiferent de configurația turelor. În weekend primește liber (L)." style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="new-emp-forced"> Forțat 8h</label>`,
+    orgAndExtraModals: `  <!-- Modal setări organizație -->
+  <div id="org-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeOrgModal()">
+    <div class="modal-content">
+      <h3>⚙️ Setări organizație</h3>
+      <label>Formația / Unitatea
+        <input type="text" id="org-formatia" placeholder="ex: Formația Exploatare Măsură Piatra Neamț/Bicaz">
+      </label>
+      <label>Șef FOL EM — Nume Prenume
+        <input type="text" id="org-sef" placeholder="ex: Popescu Ion">
+      </label>
+      <label>Responsabil Tehnic — Nume Prenume
+        <input type="text" id="org-resp" placeholder="ex: Ionescu Maria">
+      </label>
+      <label>Județ (pentru Șef CORE)
+        <input type="text" id="org-judet" placeholder="ex: Neamț">
+      </label>
+      <label>Aprobat Șef CORE — Nume Prenume
+        <input type="text" id="org-aprobat" placeholder="ex: Georgescu Dan">
+      </label>
+      <div class="modal-buttons">
+        <button class="btn btn-outline" onclick="closeOrgModal()">Anulează</button>
+        <button class="btn btn-success" onclick="saveOrgSettings()">Salvează</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal analiză moduri -->
+  <div id="analyze-modal" class="modal-overlay no-print" style="display:none" onclick="if(event.target===this)closeAnalyzeModal()">
+    <div class="modal-content" style="max-width:900px;width:96%;max-height:86vh;overflow:auto">
+      <h3>📈 Analiză moduri — utilizare echipaje pe lună</h3>
+      <div id="analyze-body" style="font-size:13px"></div>
+      <div class="modal-buttons">
+        <button class="btn btn-outline" onclick="closeAnalyzeModal()">Închide</button>`,
+    exportTooltips: `        <button onclick="closeTbDropdowns();exportMonthJSON()" data-tooltip="Exportă DOAR luna afișată acum (grafic + electricieni + config) într-un fișier mic, ușor de trimis cuiva">💾 Descarcă doar luna curentă <span class="tb-dd-hint">JSON</span></button>
+        <button onclick="closeTbDropdowns();exportFullJSON()" data-tooltip="Exportă TOATE lunile salvate, toți electricienii și toate setările — backup complet al aplicației">💿 Descarcă tot (backup complet) <span class="tb-dd-hint">JSON</span></button>
+        <div class="tb-dd-sep"></div>
+        <button onclick="closeTbDropdowns();loadJSON()" data-tooltip="Deschide un fișier JSON exportat de aici — recunoaște automat dacă e o lună sau un backup complet">📂 Încarcă fișier (lună sau backup)</button>
+        <button onclick="closeTbDropdowns();importEmployees()" data-tooltip="Adaugă electricieni dintr-un alt fișier JSON, fără să șteargă graficul sau electricienii existenți">👥 Adaugă electricieni din fișier</button>`,
+    toolbarExtra: `    </div>
+    <div class="tb-sep"></div>
+    <!-- Analiză moduri -->
+    <div class="tb-group">
+      <button class="btn btn-outline btn-sm" onclick="analyzeModes()" data-tooltip="Compară cele 4 moduri de generare pe baza echipajelor detectate automat și a configurației curente — care mod utilizează cel mai bine echipajele pe lună">📈 Analiză moduri</button>`,
+    devNote: `<!-- bulk-toolbar removed (not implemented) -->
+
+`,
+    editModalBody: `    <h3>Editează electrician</h3>
+    <label data-tooltip="Numele complet al electricianului — apare în tabel, carduri și exporturi.">Nume: <input type="text" id="modal-emp-name"></label>
+    <label data-tooltip="Grupul de ture: Urban sau Rural. Electricienii din fiecare grup sunt alocați separat conform configurației.">Mediu:
+      <select id="modal-emp-cat">
+        <option value="urban">Urban</option>
+        <option value="rural">Rural</option>
+      </select>
+    </label>
+    <label data-tooltip="Funcția în cadrul formației — apare în tabel și statistici (Emitent, Admitent, Electrician, Șef tură).">Funcția:
+      <select id="modal-emp-fn">
+        <option value="emitent">Emitent</option>
+        <option value="admitent">Admitent</option>
+        <option value="electrician">Electrician</option>
+        <option value="seftura">Șef tură</option>
+      </select>
+    </label>
+    <label data-tooltip="Echipajul implicit al angajatului. Membrii aceluiași echipaj primesc mereu aceeași tură în aceeași zi — sunt tratați ca un bloc la generare. Poți adăuga un echipaj nou tastând în câmpul alăturat.">Echipaj (implicit):
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="modal-emp-crew" style="font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;outline:none;flex:1"></select>
+        <input type="text" id="modal-emp-crew-custom" placeholder="Echipaj nou…" style="font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;outline:none;width:110px">
+        <button class="btn btn-outline" onclick="addCustomCrewToList()" style="font-size:12px;padding:5px 10px;white-space:nowrap">+ Adaugă</button>
+      </div>
+    </label>
+    <div id="crew-overrides-section" style="margin-bottom:12px">
+      <div data-tooltip="De la data specificată, angajatul este mutat în noul echipaj. Echipajul implicit se aplică înainte de prima schimbare. Poți adăuga oricâte schimbări." style="font-size:13px;font-weight:600;margin-bottom:6px;color:#374151;cursor:help;display:inline-block">Schimbări echipaj pe dată: ℹ️</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+        <input type="date" id="override-date" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none">
+        <input type="text" id="override-crew" list="crew-datalist-override" placeholder="Echipaj nou" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none;width:100px">
+        <datalist id="crew-datalist-override"></datalist>
+        <button class="btn btn-outline" onclick="addCrewOverride()" style="font-size:12px;padding:5px 10px">+ Adaugă</button>
+      </div>
+      <div id="crew-overrides-list"></div>
+    </div>
+    <div id="leave-interval-section" style="margin-bottom:12px">
+      <div data-tooltip="Setează CO, CM sau Instruire pentru toate zilele din interval dintr-o dată, în loc să dai click pe fiecare celulă. Suprascrie orice era setat înainte în acele zile. Instruirea sare automat peste zilele de weekend (nu e permisă acolo)." style="font-size:13px;font-weight:600;margin-bottom:6px;color:#374151;cursor:help;display:inline-block">🏖️ CO / CM / Instruire pe interval: ℹ️</div>`,
+    leaveInstOption: `          <option value="8">INST — Instruire</option>`,
+    forced8Field: `    <label data-tooltip="Angajatul primește mereu tura 8h (08:00–16:00) în zilele lucrătoare, indiferent de configurația turelor. În weekend primește liber (L)." style="font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:12px"><input type="checkbox" id="modal-emp-forced"> Forțat 8 ore</label>`
   }
 };
 
 const CHANGELOG = {
+  'V2026.10.3': {
+    title: 'Cod modular',
+    items: [
+      { icon: '🧱', text: 'Cod reorganizat (nucleu comun + fișier pe mod); fără schimbări de comportament — adăugarea unui mod nou devine mult mai simplă' },
+      { icon: '🔒', text: 'Exploatarea refuză acum fișierele exportate din Dispecer (și invers)' }
+    ]
+  },
   'V2026.10.2': {
     title: 'Manualul, împărțit în două moduri',
     items: [
@@ -1104,8 +1248,6 @@ function rebuildGenStats(year, month, uptoDayExclusive) {
 function catLabel(c) { return { urban: 'Urban', rural: 'Rural' }[c] || c; }
 
 function catShort(c) { return { urban: 'U', rural: 'R' }[c] || '?'; }
-
-const HELP_DEFAULT_MODE = 'exp';
 
 function workingDays(y, m) {
   const dim = daysInMonth(y, m);

@@ -4,7 +4,10 @@
 // Modificările de aici se aplică tuturor modurilor — nu duplica în fișierele de mod.
 // ===========================================================================
 
-const COMMIT_COUNT = 118;
+// Construiește markup-ul paginii (antet, controale, modale, manual) din șablon + MODE.shell.
+document.body.insertAdjacentHTML('afterbegin', buildShell());
+
+const COMMIT_COUNT = 119;
 
 const DB_VERSION = 1;
 
@@ -209,7 +212,7 @@ function closeModal() {
 
 function openHelp(mode) {
   document.getElementById('help-modal').style.display = 'flex';
-  showHelpMode(mode || HELP_DEFAULT_MODE);
+  showHelpMode(mode || MODE.helpMode);
 }
 
 function closeHelp() {

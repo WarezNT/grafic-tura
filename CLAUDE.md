@@ -4,7 +4,51 @@ Aplicație single-file (`index.html`, ~200KB, fără build step). Deploy prin Gi
 direct din `main`. Editare directă a fișierului, testare în browser (local file:// sau preview),
 apoi commit + push.
 
-## Două aplicații: Exploatare (`index.html`) și Dispecer (`dispecer.html`)
+## Arhitectură (modulară, fără build): nucleu comun + câte un fișier pe mod
+
+```
+index.html / dispecer.html   pagini de intrare (~30 linii: head + <script src>)
+css/app.css                  CSS comun
+js/logo.js                   LOGO_B64
+js/modes-registry.js         APP_MODES (id, etichetă, pagină) + MANUALS (registrul manualelor)
+js/manual-<mod>.js           manualul unui mod (7 file HTML) — se vede din ORICE aplicație
+modes/<mod>.js               constante + const MODE (contractul față de nucleu) + funcții specifice
+js/shell.js                  șablonul markup-ului paginii (slot-uri din MODE.shell) + manualul asamblat
+js/core.js                   TOT ce e comun: persistență, calendar, sărbători, tabel, carduri, statistici,
+                             generare (cadru), import/export, Excel, print, bootstrap
+modes/_template.js           ghid pentru un mod nou (nu e încărcat)
+tests/snapshot.js            test de instantanee (vezi „Testare”)
+```
+Ordinea scripturilor: logo → modes-registry → manual-* → modes/<mod> → shell → core. Scripturi clasice (merg și pe
+`file://`, și pe GitHub Pages). `modes/<mod>.js` NU apelează funcții din core la încărcare.
+
+**Regula de aur**: o corecție comună se face O SINGURĂ DATĂ, în `js/core.js`; ce diferă între moduri stă în
+`MODE` (hook-uri/date) sau în `MODE.shell` (markup). Nu copia cod între fișierele de mod.
+
+**Contractul `MODE`** (vezi `modes/_template.js`): `id, dbKey, stateModule, helpMode, words, keepOnClear, leaveTypes,
+leaveSkipWeekend, leaveHoursPerDay, isWorkShift, expectedHours`; formulare (`readAddForm, resetAddForm, afterAdd,
+addedMessage, fillEditForm, readEditForm, applyEditForm, importEmployee`), garda la import (`looksForeign,
+foreignMessage, foreignFileMessage`), generare (`beginGeneration, commitGeneration, initGenStats, resyncGenStats,
+assignDay, afterDay, decorateStats`), pornire (`afterLoad, syncConfigUI, beforeRestoreSave, afterRestoreUI`),
+`legend`, `table{extraHeader, fixedCols, weekendHide, weekendDisplayL, sections, rowHead, cellExtra}`,
+`summary{info, cardHeader, cardPills, statsTable}`, `excel{...}`, `shell{...}`. Funcții obligatorii în fișierul de
+mod: `defaultState()`, `migrateState(s)`; organizația (`getOrg/applyOrgToDOM/openOrgModal/saveOrgSettings`) e încă
+specifică modului (Dispecer = configurabilă, Exploatare = câmpuri fixe).
+
+**Cum adaug un mod nou** (ore, nu zile): (1) intrare în `APP_MODES`; (2) copiază `modes/_template.js` →
+`modes/<mod>.js` și completează `MODE`, `assignDay`, `defaultState`, `migrateState`; (3) `js/manual-<mod>.js`
+(`MANUALS.<cheie> = {label, panels}`) și adaugă-l în TOATE paginile; (4) `<mod>.html` = copie a `dispecer.html` cu
+`modes/<mod>.js`; (5) un scenariu în `tests/snapshot.js`; (6) versiune/changelog proprii în fișierul de mod.
+Valorile numerice ale turelor sunt LOCALE modului (3/4 înseamnă T3/T4 în Dispecer, T1A/T2A în Exploatare) — de aceea
+fiecare mod are `STORAGE_KEY` propriu și garda `looksForeign` la import.
+
+**Testare (obligatorie la orice refactor)**: `python -m http.server`, apoi în Browser pane
+`eval(await (await fetch('/tests/snapshot.js',{cache:'reload'})).text()); JSON.stringify(await compareSnapshot())`.
+Compară ~12 chei (grafice, tabel, sumar, legendă, modale, Excel, acțiuni interactive, amprenta markup-ului) cu
+`tests/_baseline-<mod>.json` (local, ignorat de git — se generează rulând `runSnapshot()` pe versiunea de
+referință). `diffs: []` = comportament identic. Atenție la cache: JS-urile se cer cu `{cache:'reload'}`.
+
+## Moduri: Exploatare (`index.html`) și Dispecer (`dispecer.html`)
 
 `dispecer.html` e o aplicație SEPARATĂ, single-file, pentru graficul dispecerilor. Detalii complete
 (algoritmi, teste, rezultate) în `DISPECER.md` — citește-l înainte de orice modificare acolo.
@@ -97,7 +141,7 @@ cu 1 la fiecare bump din aceeași lună. (Corectat pe 2026-09-16: `MM` rămăses
 timp de mai multe sesiuni, deși eram deja în septembrie — bump-urile anterioare doar
 incrementaseră `N` fără să actualizeze luna.)
 
-`COMMIT_COUNT` (afișat în footer lângă versiune) se auto-actualizează la fiecare commit
+`COMMIT_COUNT` (în `js/core.js`, afișat în footer lângă versiune) se auto-actualizează la fiecare commit
 via git hook `.githooks/pre-commit` (activat prin `git config core.hooksPath .githooks`
 — setare LOCALĂ, trebuie rulată o dată pe orice clone nou).
 

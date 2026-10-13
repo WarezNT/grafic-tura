@@ -202,3 +202,9 @@ Butonul 📖 Manual din **ambele** aplicații deschide același manual cu două 
 (`help-exp-*` / `help-disp-*`). Aplicațiile sunt single-file, deci conținutul ambelor moduri e DUPLICAT în `index.html` și
 `dispecer.html` — orice modificare de manual se face în ambele fișiere (aceeași structură, ID-uri prefixate cu modul).
 CSS-ul claselor `pill-*` folosite de manualul celuilalt mod e inclus în ambele fișiere.
+
+## 17. Structura codului (V2026.10.9 / index V2026.10.3)
+
+`dispecer.html` e acum o pagină de ~30 linii: logica stă în `js/core.js` (comună cu Exploatarea) și `modes/dispecer.js`
+(ce e specific: blocuri, redistribuire, organizație configurabilă, `MODE`). Manualul e în `js/manual-dispecer.js`.
+Detalii și ghidul „cum adaug un mod" în CLAUDE.md.

@@ -189,12 +189,34 @@ async function runSnapshot() {
   return out;
 }
 
+/* Amprenta markup-ului STATIC al paginii (shell + modale + manual), fără conținutul dinamic.
+ * Se calculează pe pagina proaspăt încărcată (înainte de acțiuni). */
+function shellFingerprint() {
+  const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); };
+  const b = document.body.cloneNode(true);
+  b.querySelectorAll('script').forEach(s => s.remove());
+  ['month-title', 'org-subtitle', 'table-head', 'table-body', 'table-legend', 'holiday-list', 'gap-list', 'empty-msg', 'status',
+   'db-status', 'summary', 'sig-sef', 'sig-resp', 'sig-aprobat', 'app-version-badge', 'commit-badge', 'org-fields',
+   'cl-items', 'cl-version', 'cl-title', 'btn-prev-day', 'btn-next-day', 'btn-generate-all', 'analyze-body',
+   'modal-emp-crew', 'new-emp-crew', 'crew-datalist-override', 'crew-overrides-list'].forEach(id => {
+    const e = b.querySelector('#' + id); if (e) e.innerHTML = '';
+  });
+  ['status', 'btn-prev-day', 'btn-next-day', 'btn-generate-all', 'header-logo'].forEach(id => {
+    const e = b.querySelector('#' + id); if (e) { e.removeAttribute('style'); e.removeAttribute('src'); }
+  });
+  b.querySelectorAll('.ta-field,.c8-field').forEach(e => e.removeAttribute('style'));
+  const html = b.innerHTML.replace(/>\s+</g, '><').trim();
+  return { hash: hash(html), len: html.length };
+}
+
 /* Compară cu referința locală tests/_baseline-<mod>.json (generată din versiunea de referință).
  * Utilizare: eval(await (await fetch('/tests/snapshot.js')).text()); JSON.stringify(await compareSnapshot())
  * Întoarce lista diferențelor (goală = comportament identic). Rulează de două ori (prima rulare „încălzește”). */
 async function compareSnapshot() {
+  const shell = shellFingerprint();
   await runSnapshot();
   const s = await runSnapshot();
+  s.shell = shell;
   const isD = typeof assignDispecerShifts === 'function';
   const base = await (await fetch('/tests/_baseline-' + (isD ? 'dispecer' : 'exploatare') + '.json')).json();
   const diffs = [];

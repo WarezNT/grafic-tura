@@ -17,3 +17,4 @@ AUDIT.md
 
 # referințe locale pentru tests/snapshot.js (se regenerează din versiunea de referință)
 tests/_baseline-*.json
+tests/_ref/

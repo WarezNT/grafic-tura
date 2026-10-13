@@ -7,3 +7,7 @@ const APP_MODES = [
   { id: 'exploatare', label: 'Exploatare', page: 'index.html' },
   { id: 'dispecer', label: 'Dispecer', page: 'dispecer.html' }
 ];
+
+// Manualele modurilor (cheie → {label, panels}); fiecare js/manual-<mod>.js își adaugă intrarea.
+// Ordinea de încărcare a fișierelor = ordinea butoanelor din manual.
+const MANUALS = {};
