@@ -577,20 +577,20 @@ td.emp-name-cell:hover{text-decoration:underline}
             <li><strong>Acoperire 24h</strong> — fazele sunt distribuite automat, astfel încât fiecare din cele 4 ture să aibă cel puțin un dispecer.</li>
             <li><strong>Ciclu continuu</strong> — rotația curge peste granița dintre luni (fără resetare).</li>
             <li><strong>CO / CM existente</strong> se păstrează la generare și regenerare.</li>
-            <li><strong>Redistribuire automată</strong> — dacă CO/CM lasă o tură fără nimeni într-o zi, un dispecer disponibil o preia (din altă tură acoperită de 2+ persoane sau din zi liberă), cu cele mai puține ore din lună. Se respectă <strong>11h de odihnă</strong> față de ziua anterioară și cea următoare și maximum <strong>4 zile consecutive</strong>.</li>
+            <li><strong>Redistribuire automată</strong> — dacă CO/CM lasă o tură (T1–T4) fără nimeni într-o zi, aplicația caută cea mai bună reasignare a zilei (inclusiv lanțuri de mutări: A preia tura goală, B preia tura lui A ș.a.m.d.). Se aleg, în ordine: cât mai multe ture acoperite, orele din an cât mai uniforme între dispeceri, cât mai puține schimbări. Se respectă <strong>11h de odihnă</strong> față de ziua anterioară și cea următoare și maximum <strong>4 zile consecutive</strong>. CO/CM nu se ating.</li>
           </ul>
         </div>
         <div class="help-section">
           <div class="help-section-title">🏖️ CO și CM în calcule</div>
           <ul class="help-list">
             <li><strong>CO/CM nu se contorizează în weekend</strong> — se afișează ca L, dar valoarea rămâne memorată.</li>
-            <li><strong>CO/CM reduc norma</strong> dispecerului cu orele medii pe zi (24h/5 zile), ca să nu apară „sub normă” pentru zilele de concediu.</li>
+            <li><strong>CO/CM reduc norma</strong> dispecerului cu orele medii pe zi (24h împărțite la numărul de dispeceri, minim 5), ca să nu apară „sub normă” pentru zilele de concediu.</li>
           </ul>
         </div>
         <div class="help-section">
           <div class="help-section-title">⚠️ Limitări cunoscute</div>
           <ul class="help-list">
-            <li>Numărul de dispeceri determină acoperirea: cu 5 dispeceri, fiecare zi are exact unul pe fiecare tură.</li>
+            <li><strong>Cel mult un dispecer pe tură</strong> într-o zi: cu 5 dispeceri fiecare lucrează 4 zile din 5; cu mai mulți (ex. 7), ciclul se prelungește cu zile libere (4 zile lucrate, 3 libere), deci cei în plus nu dublează o tură. Cu mai puțin de 5 dispeceri nu toate turele pot fi acoperite.</li>
             <li>Când nu se poate acoperi o tură fără să încalce odihna minimă (ex. 5 dispeceri și unul în CO), ziua rămâne cu tura goală — apare un avertisment ⚠️ sub tabel și o corectezi manual.</li>
             <li>Sărbătorile legale nu influențează alocarea automată. Pe carduri și în Statistici vezi câte ture de sărbătoare a lucrat fiecare (în lună și de la 1 ianuarie), ca să decizi manual, din dropdown, cine lucrează în sărbători.</li>
             <li>Regulile se aplică doar generării automate; la editare manuală ai libertate deplină.</li>
@@ -633,7 +633,7 @@ td.emp-name-cell:hover{text-decoration:underline}
           <ul class="help-list">
             <li><strong>Lucrate</strong> — suma orelor reale pe ture (T1=4h, T2=6h, T3=6h, T4=8h).</li>
             <li><strong>CO/CM</strong> — orele de concediu (doar zile lucrătoare).</li>
-            <li><strong>Normă</strong> — media ciclului (24h la 5 zile) pe zilele lunii.</li>
+            <li><strong>Normă</strong> — zilele lunii × 24h împărțite la lungimea ciclului (cel puțin 5; cu 7 dispeceri ≈ 3,4h/zi).</li>
           </ul>
           <p><strong>Culorile orelor:</strong> verde = exact norma, galben = sub normă cu cel mult 16h, roșu = peste normă sau cu mai mult de 16h sub normă.</p>
         </div>
@@ -718,12 +718,22 @@ td.emp-name-cell:hover{text-decoration:underline}
 const STORAGE_KEY = 'graficTura_dispecer';
 const VERSION_KEY = 'graficTura_dispecer_version';
 const ORG_KEY = 'graficTura_dispecer_org';
-const APP_VERSION = 'V2026.10.4';
-const COMMIT_COUNT = 108;
+const APP_VERSION = 'V2026.10.6';
+const COMMIT_COUNT = 109;
 const DB_NAME = 'GraficTuraDispecerDB';
 const DB_VERSION = 1;
 
 const CHANGELOG = {
+  'V2026.10.6': {
+    title: 'Cel mult un dispecer pe tură + redistribuire la concedii',
+    items: [
+      { icon: '1️⃣', text: 'În fiecare zi, fiecare tură (T1–T4) are cel mult un dispecer — cu mai mult de 5 dispeceri, cei în plus au zile libere, nu dublează o tură' },
+      { icon: '🧮', text: 'Norma lunară se calculează acum la 24h împărțite la numărul de dispeceri (minim 5); CO/CM reduc norma la fel' },
+      { icon: '🔁', text: 'Când CO/CM lasă o tură neacoperită, aplicația caută lanțuri de mutări (cu 11h odihnă și max. 4 zile la rând) și ține orele din an cât mai uniforme' },
+      { icon: '⚠️', text: 'Avertisment sub tabel pentru ture neacoperite și pentru ture cu mai mulți dispeceri introduse manual' },
+      { icon: '🧹', text: 'Datele salvate mai vechi sunt curățate automat de câmpurile rămase din Exploatare' }
+    ]
+  },
   'V2026.10.4': {
     title: 'Sărbători legale: decizi tu',
     items: [
@@ -767,8 +777,13 @@ const SHIFT_NAMES = ['L', 'T1', 'T2', 'T3', 'T4', 'CO', 'CM'];
 const SHIFT_HOURS = [0, 4, 6, 6, 8, 0, 0];
 const WEEKEND_HIDE = [5, 6]; // CO/CM nu se oferă în dropdown pe S/D (se afișează ca L)
 const DB_KEY = 'main_dispecer';
-const CYCLE = [3, 2, 1, 4, 0]; // T3 → T2 → T1 → T4 → L
-const AVG_HOURS_PER_DAY = 24 / CYCLE.length; // 4,8h — media ciclului, folosită la normă și la CO/CM
+// Ciclu: T3 → T2 → T1 → T4, apoi zile libere. Lungimea ciclului = max(5, număr de dispeceri), deci
+// fiecare tură are CEL MULT UN dispecer pe zi (cei în plus față de 4 sunt liberi, nu dublează o tură).
+const BASE_CYCLE = [3, 2, 1, 4];
+const MIN_CYCLE_LEN = 5; // cel puțin o zi liberă după T4
+function cycleLength() { return Math.max(MIN_CYCLE_LEN, state.employees.length); }
+// Ore medii pe zi ale unui dispecer = 24h împărțite la lungimea ciclului (folosit la normă și CO/CM).
+function avgHoursPerDay() { return 24 / cycleLength(); }
 
 let stateLoadCorrupted = false;
 let state = loadState();
@@ -879,7 +894,12 @@ function applyLeaveInterval() {
 
 function migrateState(s) {
   s.module = 'dispecer';
-  s.employees.forEach(e => { e.category = 'dispecer'; });
+  // Câmpuri rămase din vechea copie a Exploatării (config Urban/Rural, mod de generare, echipaje).
+  ['config', 'genMode', 'customCrews', 'holidayBalance'].forEach(k => { delete s[k]; });
+  s.employees.forEach(e => {
+    e.category = 'dispecer';
+    ['functia', 'crew', 'forced8', 'crewOverrides'].forEach(k => { delete e[k]; });
+  });
   if (!s.schedule) s.schedule = {};
   if (!s.preservedCOCM) s.preservedCOCM = {};
   if (s.genDay === undefined) s.genDay = 0;
@@ -888,7 +908,6 @@ function migrateState(s) {
   if (s.genMonth === undefined) s.genMonth = 0;
   if (s.genDim === undefined) s.genDim = 0;
   if (!s.org) s.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
-  delete s.holidayBalance; // comutator scos în V2026.10.4
 }
 
 async function initStateFromDB() {
@@ -1203,15 +1222,22 @@ function absDayOf(year, month, day) {
 }
 
 function cycleShiftFor(empId, absDay) {
+  const LEN = cycleLength();
   const idx = state.employees.slice().sort((a, b) => a.id - b.id).findIndex(e => e.id === empId);
-  const LEN = CYCLE.length;
-  return CYCLE[(((idx < 0 ? 0 : idx) + absDay) % LEN + LEN) % LEN];
+  const pos = (((idx < 0 ? 0 : idx) + absDay) % LEN + LEN) % LEN;
+  return pos < BASE_CYCLE.length ? BASE_CYCLE[pos] : 0;
 }
 
 function assignDispecerShifts(emps, dk, assigned, year, month, day) {
   const absDay = absDayOf(year, month, day);
+  const pd = new Date(year, month - 1, day - 1);
+  const prev = state.schedule[dateKey(pd.getFullYear(), pd.getMonth() + 1, pd.getDate())] || {};
+  const ctx = dayContext(year, month, day);
   emps.forEach(emp => {
-    const sv = cycleShiftFor(emp.id, absDay);
+    let sv = cycleShiftFor(emp.id, absDay);
+    // Siguranță la schimbarea numărului de dispeceri (ciclul se recalculează): fără 11h odihnă sau cu
+    // prea multe zile consecutive → liber (în ciclul normal nu se declanșează niciodată).
+    if (sv > 0 && (restBetween(prev[String(emp.id)] || 0, sv) < MIN_REST_H || ctx.runBefore(emp) >= MAX_CONSEC_DAYS)) sv = 0;
     if (sv > 0) {
       state.schedule[dk][String(emp.id)] = sv;
       if (!assigned.includes(emp.id)) assigned.push(emp.id);
@@ -1259,7 +1285,7 @@ function dayContext(year, month, day) {
         if (v >= 1 && v <= 4) h += SHIFT_HOURS[v];
         else if (v === 5 || v === 6) {
           const dow = new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, +k.slice(8, 10)).getDay();
-          if (dow !== 0 && dow !== 6) h += AVG_HOURS_PER_DAY;
+          if (dow !== 0 && dow !== 6) h += avgHoursPerDay();
         }
       }
       return h;
@@ -1297,35 +1323,75 @@ function dayContext(year, month, day) {
   };
 }
 
-// Redistribuire automată: când CO/CM (sau un număr mic de dispeceri) lasă o tură T1–T4 fără
-// nimeni într-o zi, un dispecer disponibil o preia — fie dintr-o tură acoperită de 2+ persoane,
-// fie din zi liberă — doar dacă respectă odihna minimă față de ziua anterioară ȘI față de tura
-// planificată (ciclul sau CO/CM) a zilei următoare, și nu depășește zilele consecutive.
-// La alegere: cel cu cele mai puține ore acumulate în an (uniformizează orele între dispeceri),
-// apoi id-ul. Ce nu se poate acoperi legal
-// rămâne gol (afișat ca avertisment sub tabel — se corectează manual din dropdown).
+// Redistribuire automată: când CO/CM (sau prea puțini dispeceri) lasă o tură T1–T4 fără nimeni
+// într-o zi, se caută cea mai bună reasignare a turelor zilei. Fiecare tură are cel mult UN dispecer.
+// Se evaluează TOATE variantele legale (cel mult 4 ture × câțiva dispeceri) și se alege, în ordine:
+//   1. cât mai multe ture T1–T4 acoperite;
+//   2. orele acumulate în an cât mai uniforme între dispeceri (suma pătratelor orelor, după azi);
+//   3. cât mai puține schimbări față de ciclul fix.
+// Un dispecer poate prelua o tură doar dacă respectă odihna minimă (11h) față de ziua anterioară ȘI
+// față de tura planificată (ciclul sau CO/CM) a zilei următoare; cel în zi liberă mai trebuie să nu
+// depășească zilele consecutive. CO/CM nu se ating. Ce nu se poate acoperi legal rămâne gol
+// (afișat ca avertisment sub tabel — se corectează manual din dropdown).
 function rebalanceCoverage(dk, year, month, day) {
   const emps = state.employees;
   const today = state.schedule[dk];
   const val = e => today[String(e.id)] || 0;
-  const count = t => emps.filter(e => val(e) === t).length;
+  if ([1, 2, 3, 4].every(t => emps.filter(e => val(e) === t).length === 1)) return;
   const ctx = dayContext(year, month, day);
+  const avail = emps.filter(e => val(e) !== 5 && val(e) !== 6);
   const hrs = {};
-  let loaded = false;
-  for (const t of [1, 2, 3, 4]) {
-    if (count(t) > 0) continue;
-    if (!loaded) { emps.forEach(e => { hrs[e.id] = ctx.yearHours(e); }); loaded = true; }
-    const cands = emps.filter(e => {
-      const v = val(e);
-      if (v === 5 || v === 6) return false;                 // în concediu
-      if (v === 0 && !ctx.consecOk(e)) return false;        // ar depăși zilele consecutive
-      if (v !== 0 && count(v) < 2) return false;            // nu golim altă tură
-      return ctx.restOk(e, t);
+  avail.forEach(e => { hrs[e.id] = ctx.yearHours(e); });
+  const can = {}; // can[e.id][t]: poate `e` lucra tura t azi? (tura lui curentă — întotdeauna)
+  avail.forEach(e => {
+    can[e.id] = {};
+    [1, 2, 3, 4].forEach(t => {
+      can[e.id][t] = val(e) === t || (ctx.restOk(e, t) && (val(e) !== 0 || ctx.consecOk(e)));
     });
-    if (!cands.length) continue;
-    cands.sort((a, b) => hrs[a.id] - hrs[b.id] || a.id - b.id);
-    today[String(cands[0].id)] = t;
-  }
+  });
+  const holderOf = {};
+  [1, 2, 3, 4].forEach(t => { holderOf[t] = avail.find(e => val(e) === t) || null; });
+  let best = null;
+  const pick = {}, used = new Set();
+  const evaluate = () => {
+    const final = {};
+    avail.forEach(e => { final[e.id] = 0; });
+    const taken = new Set();
+    for (const t of [1, 2, 3, 4]) {
+      if (pick[t]) { final[pick[t].id] = t; taken.add(pick[t].id); }
+    }
+    for (const t of [1, 2, 3, 4]) {            // tura nereasignată rămâne la titularul ei, dacă nu a plecat
+      const h = holderOf[t];
+      if (!pick[t] && h && !taken.has(h.id)) { final[h.id] = t; taken.add(h.id); }
+    }
+    const covered = [1, 2, 3, 4].filter(t => avail.some(e => final[e.id] === t)).length;
+    let sq = 0, changes = 0;
+    avail.forEach(e => {
+      const h = hrs[e.id] + (SHIFT_HOURS[final[e.id]] || 0);
+      sq += h * h;
+      if (final[e.id] !== val(e)) changes++;
+    });
+    const key = [4 - covered, sq, changes];
+    if (!best || key[0] < best.key[0] || (key[0] === best.key[0] && (key[1] < best.key[1] || (key[1] === best.key[1] && key[2] < best.key[2])))) {
+      best = { key, final: Object.assign({}, final) };
+    }
+  };
+  const rec = t => {
+    if (t > 4) { evaluate(); return; }
+    pick[t] = null;
+    rec(t + 1);                                // tura t: nereasignată
+    for (const e of avail) {
+      if (used.has(e.id) || !can[e.id][t]) continue;
+      used.add(e.id); pick[t] = e;
+      rec(t + 1);
+      used.delete(e.id); pick[t] = null;
+    }
+  };
+  rec(1);
+  if (!best) return;
+  avail.forEach(e => {
+    if (best.final[e.id] !== val(e)) today[String(e.id)] = best.final[e.id];
+  });
 }
 
 // Zilele (deja generate) din luna dată în care cel puțin o tură T1–T4 nu are pe nimeni.
@@ -1544,16 +1610,30 @@ function renderTable() {
 }
 
 
-// Avertisment: zile cu ture neacoperite (după redistribuirea automată) — de corectat manual.
+// Ture cu mai mulți dispeceri în aceeași zi (regula: cel mult unul pe tură) — apar doar din editare manuală.
+function duplicateShifts(year, month) {
+  const out = [];
+  for (let d = 1; d <= daysInMonth(year, month); d++) {
+    const day = state.schedule[dateKey(year, month, d)];
+    if (!day) continue;
+    const dup = [1, 2, 3, 4].filter(t => state.employees.filter(e => day[String(e.id)] === t).length > 1);
+    if (dup.length) out.push({ day: d, shifts: dup.map(t => SHIFT_NAMES[t]) });
+  }
+  return out;
+}
+
+// Avertismente sub tabel: ture neacoperite (după redistribuirea automată) și ture cu mai mulți dispeceri.
 function renderGapList(y, m) {
   const el = document.getElementById('gap-list');
   if (!el) return;
   const gaps = coverageGaps(y, m);
-  el.textContent = gaps.length
-    ? '⚠️ Ture neacoperite (nu se pot acoperi respectând odihna minimă de ' + MIN_REST_H + 'h): '
-      + gaps.map(g => g.day + '.' + pad(m) + ' (' + g.shifts.join(', ') + ')').join(' • ')
-      + ' — corectează manual din dropdown.'
-    : '';
+  const dups = duplicateShifts(y, m);
+  const lines = [];
+  if (gaps.length) lines.push('⚠️ Ture neacoperite (nu se pot acoperi respectând odihna minimă de ' + MIN_REST_H + 'h): '
+    + gaps.map(g => g.day + '.' + pad(m) + ' (' + g.shifts.join(', ') + ')').join(' • ') + ' — corectează manual din dropdown.');
+  if (dups.length) lines.push('⚠️ Ture cu mai mulți dispeceri (regula: cel mult unul pe tură): '
+    + dups.map(g => g.day + '.' + pad(m) + ' (' + g.shifts.join(', ') + ')').join(' • ') + '.');
+  el.innerHTML = lines.map(esc).join('<br>');
 }
 
 function renderLegend() {
@@ -1677,20 +1757,20 @@ function holidayShiftsCount(empId, y, m) {
 // (găsit la audit). Acum practic mereu un număr real, calculat corect.
 
 function expectedHours(y, m) {
-  // Dispecer: normă = media ciclului (24h la 5 zile) pe zilele lunii.
-  return Math.round(daysInMonth(y, m) * AVG_HOURS_PER_DAY);
+  // Dispecer: normă = zilele lunii × 24h / lungimea ciclului (max(5, nr. dispeceri)).
+  return Math.round(daysInMonth(y, m) * avgHoursPerDay());
 }
 
-// Ore de concediu (CO/CM) ale unui dispecer, la media ciclului (4,8h/zi), rotunjite la 0,1h.
+// Ore de concediu (CO/CM) ale unui dispecer, la media pe zi a ciclului (24h / lungimea ciclului), rotunjite la 0,1h.
 function leaveHours(st) {
-  return Math.round((st.co + st.cm) * AVG_HOURS_PER_DAY * 10) / 10;
+  return Math.round((st.co + st.cm) * avgHoursPerDay() * 10) / 10;
 }
 
 // CO/CM aprobate reduc legitim norma așteptată — un angajat cu concediu nu ar trebui să apară
 // „sub normă" doar pentru zilele în care a fost în concediu (bug găsit la audit: cineva cu 4 zile
 // CO + restul lucrat corect apărea cu „-32h", card roșu, deși nu are nicio problemă reală).
 function effectiveExpected(expected, st) {
-  return expected === null ? null : Math.max(0, Math.round((expected - (st.co + st.cm) * AVG_HOURS_PER_DAY) * 10) / 10);
+  return expected === null ? null : Math.max(0, Math.round((expected - (st.co + st.cm) * avgHoursPerDay()) * 10) / 10);
 }
 
 // Un singur loc care decide culoarea/verdictul — folosit ȘI de tabel ȘI de sumar (înainte,

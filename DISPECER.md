@@ -45,36 +45,34 @@ T1+T2+T3+T4 = 24h (acoperire completă a zilei).
 
 ## 3. Ciclul de rotație
 
-Fiecare dispecer parcurge ciclul de 5 poziții:
+Regulă de bază (V2026.10.6): **într-o tură (T1–T4) nu poate fi mai mult de un dispecer într-o zi — ceilalți sunt
+liberi**. Ciclul fiecărui dispecer are lungimea `max(5, nr. dispeceri)`:
 
 ```
-T3 → T2 → T1 → T4 → L → (repetă)
+T3 → T2 → T1 → T4 → L → (L ... până la lungimea ciclului) → repetă
 ```
-
-- Poziția avansează cu 1 în fiecare zi.
-- **T1 este întotdeauna urmat de T4** (aceeași persoană).
-- După T4 urmează cel puțin o zi liberă până la următorul T3.
-- Ciclul curge **continuu** peste granița dintre luni (fără resetare).
+- n = 5: T3,T2,T1,T4,L (4 zile lucrate, 1 liberă). n = 7: T3,T2,T1,T4,L,L,L. n = 10: 4 lucrate + 6 libere.
+- Poziția avansează cu 1 pe zi; ciclul curge continuu peste luni/ani (fără resetare).
+- T1 e urmat de T4; după T4 cel puțin o zi liberă; max 4 zile lucrate la rând.
+- n < 5: ciclul rămâne de 5, deci nu toate turele pot fi acoperite (inevitabil).
 
 ## 4. Algoritm de acoperire 24h
 
-Faza de start se distribuie round-robin după indexul din lista completă de dispeceri:
-
 ```
-faza(dispecer i, ziAbs) = (i + ziAbs) % 5
-tura = CICLU[faza],  CICLU = [T3, T2, T1, T4, L]  (valori [3, 2, 1, 4, 0])
+poz(dispecer i, ziAbs) = (i + ziAbs) % lungimeCiclu        i = indexul în lista COMPLETĂ (după id)
+tura = poz < 4 ? [T3, T2, T1, T4][poz] : L
 ```
-
-- `ziAbs` = zile absolute de la o dată de referință (continuitate între luni).
-- Indexul e luat din lista COMPLETĂ de dispeceri, ca CO/CM să nu decaleze fazele celorlalți.
-- Cu 5 dispeceri → exact 1 pe fiecare tură în fiecare zi (acoperire perfectă).
-- Cu alt număr → round-robin garantează cel puțin 1 pe fiecare tură.
-- CO/CM introduse manual sunt păstrate (nu sunt suprascrise).
+- `ziAbs` = zile absolute (continuitate între luni). Indexul e din lista completă, ca CO/CM să nu decaleze fazele.
+- Pentru n ≥ 4 fazele sunt distincte → fiecare tură are exact un dispecer în fiecare zi (n ≥ 5).
+- CO/CM introduse manual sunt păstrate; golurile rezultate se completează prin §12.
+- Siguranță la schimbarea numărului de dispeceri (ciclul se recalculează): dacă tura din ciclu ar încălca
+  odihna de 11h față de ieri sau ar depăși 4 zile la rând, dispecerul primește L (`assignDispecerShifts`).
 
 ## 5. Norma (Dispecer)
 
-- Norma lunară = media ciclului: `rotunjit(zile_din_lună × 24 / 5)`.
-- CO/CM reduc norma cu orele medii pe zi (`24 / 5`).
+- Ore medii pe zi = `24 / max(5, nr. dispeceri)` (`avgHoursPerDay()`); norma lunară = `round(zile × ore_medii)`.
+  Ex. 7 dispeceri: 3,43h/zi → ~103h/lună, ~1250h/an (nu 144h ca la 5 dispeceri).
+- CO/CM reduc norma cu orele medii pe zi (doar zile lucrătoare).
 
 ## 6. Interfață (Dispecer)
 
@@ -119,25 +117,46 @@ valorile de tură 3/4 au alt sens acolo (T1A/T2A) și ar strica graficul.
 ## 11. Limitări cunoscute
 
 - Cu mai puțini de 5 dispeceri disponibili sau mai multe CO/CM suprapuse, unele ture rămân
-  neacoperite chiar și după redistribuire — apar ca avertisment ⚠️ sub tabel (`coverageGaps`) și
+  neacoperite chiar și după redistribuire (§12). Cu 6–7 dispeceri și concedii multe, limita de 4 zile
+  consecutive e principala cauză (vezi sensibilitatea din §12) — apar ca avertisment ⚠️ sub tabel (`coverageGaps`) și
   se corectează manual din dropdown.
-- Norma lunară nu scade pentru sărbători (24/7 — media ciclului, 4,8h/zi): cine are zi liberă
+- Norma lunară nu scade pentru sărbători (24/7 — 24h / lungimea ciclului pe zi): cine are zi liberă
   într-o sărbătoare poate apărea sub normă în luna respectivă (§13).
-- Norma CO/CM: 4,8h/zi (media ciclului), rotunjit la 0,1h.
+- Norma CO/CM: ore medii pe zi (`avgHoursPerDay`, ex. 3,4h la 7 dispeceri), rotunjit la 0,1h.
 
 ## 12. Redistribuire automată (`rebalanceCoverage`)
 
-Rulează la fiecare zi generată, DUPĂ ciclul fix. Pentru fiecare tură T1–T4 fără nimeni, alege
-un dispecer care:
-- nu e în CO/CM în ziua respectivă;
-- fie lucrează o tură acoperită de 2+ persoane, fie e în zi liberă (cu max. 4 zile consecutive);
-- are ≥ 11h de odihnă față de tura de IERI (reală) și față de tura de MÂINE (din ciclu sau CO/CM);
-- are cele mai puține ore în luna curentă (la egalitate, id-ul mai mic).
+Rulează la fiecare zi generată, DUPĂ ciclul fix, doar dacă o tură T1–T4 e goală. Evaluează TOATE
+reasignările legale ale zilei (≤ 4 ture × dispecerii disponibili; căutare exhaustivă, câteva mii de
+variante) și alege, în ordine: (1) cât mai multe ture acoperite; (2) suma pătratelor orelor din an
+(`ctx.yearHours`, cu credit CO/CM) după azi cât mai mică = ore uniforme; (3) cât mai puține schimbări.
 
-Efecte: fără CO/CM rezultatul e identic cu ciclul pur (no-op). „T1 urmat de T4" poate fi încălcată
-când T1 e preluată de altcineva — acoperirea 24h are prioritate. Testat (nov. 2026): 7 dispeceri +
-CO 3 zile → 0 goluri, 0 încălcări de odihnă/consecutive; 5 dispeceri + CO → goluri inevitabile,
-raportate în `#gap-list`.
+Un dispecer poate prelua o tură t doar dacă: nu e în CO/CM; are ≥ 11h odihnă față de tura de IERI (reală)
+și față de tura de MÂINE (din ciclu sau CO/CM) — `ctx.restOk`; iar dacă era în zi liberă, seria de
+zile consecutive ≤ 4 inclusiv zilele următoare din ciclu — `ctx.consecOk`.
+
+Efecte: fără CO/CM rezultatul e identic cu ciclul pur (no-op, ore egale). „T1 urmat de T4" poate fi
+încălcată — acoperirea 24h are prioritate. Lanțurile (A preia golul, B preia tura lui A) apar des:
+de ex. T4 poate fi preluat doar de cine are T1 azi (mâine tot T4), iar T1 rămas gol e preluat de altul.
+
+Testat (2026, ore efective = ture + credit CO/CM; fără dubluri: 0 zile cu 2 pe aceeași tură în toate scenariile):
+
+| n | fără concedii | 30 zile CO/dispecer, eșalonat | idem, aleator |
+|---|---|---|---|
+| 5 | 0 goluri, 0h spread | 133 zile cu goluri* | 114* |
+| 6 | 0 goluri, 8h | 130 | 103 |
+| **7** | **0 goluri, 8h (~1250h/an)** | **0 goluri, 35h** | **23 zile, 18h** |
+| 8 | 0 goluri, 18h | 0 goluri, 35h | 3 zile, 39h |
+| 10 | 0 goluri, 24h | – | – |
+
+\* cu 5 dispeceri un singur concediu lasă o tură fără înlocuitor legal.
+
+Sensibilitate la „max zile consecutive" (`MAX_CONSEC_DAYS`, azi 4) când cineva e chemat din zi liberă,
+zile cu goluri pe an (eșalonat / aleator): n=6: 130/103 (max 4) → 1/26 (max 5) → 0/21 (max 6);
+n=7: 0/23 → 0/9 → 0/2; n=8: 0/3 → 0/1 → 0/1. Decizie de business (regulamentul intern).
+
+Zero încălcări de odihnă (11h); CO/CM păstrate 100%; ~170 ms pentru un an întreg. Golurile rămase apar când
+nu există variantă legală în ziua respectivă (se corectează manual).
 
 ## 13. Sărbători legale: contor informativ (decizie manuală)
 
@@ -153,3 +172,8 @@ Ce rămâne:
 
 Istoric: în V2026.10.3 raționalizarea ținea 4 persoane/sărbătoare cu spread ore 10–16h/an (vs 0h
 fără); scoasă la cerere, fiindcă utilizatorul preferă control manual.
+
+## 14. Cel mult un dispecer pe tură — avertisment la editare manuală
+
+Algoritmul nu produce niciodată dubluri. Dacă cineva pune manual doi dispeceri pe aceeași tură în aceeași zi,
+sub tabel apare „⚠️ Ture cu mai mulți dispeceri (regula: cel mult unul pe tură)" cu zilele (`duplicateShifts`).

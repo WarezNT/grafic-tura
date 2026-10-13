@@ -6,20 +6,58 @@ apoi commit + push.
 
 ## Două aplicații: Exploatare (`index.html`) și Dispecer (`dispecer.html`)
 
-`dispecer.html` e o aplicație SEPARATĂ, single-file, pentru graficul dispecerilor (ture T1 4h,
-T2 6h, T3 6h, T4 8h, ciclu T3→T2→T1→T4→L, acoperire 24h). Detalii complete în `DISPECER.md`.
+`dispecer.html` e o aplicație SEPARATĂ, single-file, pentru graficul dispecerilor. Detalii complete
+(algoritmi, teste, rezultate) în `DISPECER.md` — citește-l înainte de orice modificare acolo.
+
+**Ture (valori numerice în `state.schedule`)**: 0 L · 1 T1 (06–10, 4h) · 2 T2 (10–16, 6h) · 3 T3
+(16–22, 6h) · 4 T4 (22–06, 8h; o singură celulă, trece miezul nopții) · 5 CO · 6 CM. Atenție:
+valorile 3/4 înseamnă T3/T4 aici, dar T1A/T2A în Exploatare — de aici garda la import.
+
+**Cum generează**
+- Regulă dură: într-o tură (T1–T4) cel mult UN dispecer pe zi; ceilalți sunt liberi. Ciclu:
+  T3→T2→T1→T4 apoi zile libere, lungime `max(5, nr. dispeceri)` (7 dispeceri: 4 lucrate + 3 libere).
+  Faza = `(index în lista completă + zi absolută) % lungime` (`cycleShiftFor`, `cycleLength`, `absDayOf`);
+  curge continuu peste luni/ani; CO/CM nu decalează fazele. Nu reintroduce dubluri „pentru acoperire".
+- Dacă CO/CM (sau < 5 dispeceri) lasă o tură goală, `rebalanceCoverage` caută cea mai bună
+  reasignare a zilei (căutare exhaustivă, lanțuri de mutări): acoperire → ore uniforme în an →
+  puține schimbări; cu 11h odihnă (față de ieri real și mâine din ciclu) și max 4 zile consecutive
+  (`MAX_CONSEC_DAYS` — decizie de business, vezi sensibilitatea din DISPECER.md §12).
+  Ce nu se poate acoperi legal rămâne gol și apare ca ⚠️ sub tabel (`coverageGaps`); dublurile introduse
+  manual apar tot ca ⚠️ (`duplicateShifts`).
+- Norma lunară = `round(zile × 24 / max(5, nr. dispeceri))` (`avgHoursPerDay`; 7 dispeceri ≈ 103h/lună);
+  CO/CM reduc norma cu aceleași ore/zi; CO/CM în weekend nu se contorizează și se afișează ca L.
+- Sărbătorile legale sunt DOAR informative: marcaj pe coloane, listă, carduri „🎉 Sărb.: N lună · M an”
+  și coloanele din Statistici. Raționalizarea/echilibrarea automată din sărbători a fost implementată
+  (V2026.10.3) și SCOASĂ la cerere (V2026.10.4) — utilizatorul vrea să decidă manual. Nu o reintroduce
+  fără cerere explicită.
+- Fără echipaje, Urban/Rural, rotații, forced8, INST, „Analiză moduri” — eliminate (V2026.10.2). „Instruire”
+  nu există în Dispecer (doar CO/CM).
+
+**Infrastructură**
 - Selector „Modul" în antetul ambelor: redirect între `index.html` ↔ `dispecer.html`.
 - Chei de storage separate: `graficTura_dispecer`, `graficTura_dispecer_org`,
-  `graficTura_dispecer_version`, IndexedDB `GraficTuraDispecerDB` / `main_dispecer`.
-- Are propriul `APP_VERSION`/`CHANGELOG` (V2026.10.x) și `COMMIT_COUNT` (hook-ul pre-commit le
-  actualizează pe ambele fișiere).
-- A pornit ca o copie a `index.html`; codul de echipaje/rotații/Urban-Rural a fost ELIMINAT
-  (V2026.10.2). Fix-urile din secțiunile de mai jos pentru Exploatare NU se aplică acolo — nu le
-  porta. Invers, orice fix de infrastructură comună (print, import, org, Excel) trebuie făcut
-  manual în ambele fișiere.
-- Importul refuză fișierele din cealaltă aplicație (`looksLikeExploatare`).
-- De testat prin `http://` (ex. `python -m http.server`), nu `file://` / `data:` — acolo
-  localStorage/IndexedDB sunt blocate și apar bannere false „Date corupte".
+  `graficTura_dispecer_version`, IndexedDB `GraficTuraDispecerDB` / cheia `main_dispecer`.
+- Propriul `APP_VERSION`/`CHANGELOG` (V2026.10.x, independent de index.html) și `COMMIT_COUNT`
+  (hook-ul `.githooks/pre-commit` le actualizează pe ambele fișiere).
+- A pornit ca o copie a `index.html`: fix-urile din secțiunile de mai jos (Exploatare) NU se aplică
+  în Dispecer — nu le porta. Invers, orice fix de infrastructură comună (print, import, org, Excel)
+  trebuie făcut manual în ambele fișiere.
+- `migrateState` șterge câmpurile vechi (config, genMode, customCrews, functia/crew/forced8) din date salvate.
+- Importul (backup, lună, „Adaugă dispeceri") refuză fișierele din Exploatare (`looksLikeExploatare`).
+- Print/PDF: tema deschisă mereu (`enterPrintTheme`), ca în Exploatare.
+
+**Testare** (fără UI, în consolă, pe `http://`): `python -m http.server`, apoi deschide pagina în
+Browser pane — NU `file://`/`data:` (localStorage/IndexedDB blocate → bannere false „Date corupte”).
+Navighează cu `?nocache=N` după editări (browserul ține în cache). Pașii de bază:
+```js
+window.confirm = () => true;   // altfel startGeneration() iese silențios când există deja grafic
+state.employees = []; for (let i=1;i<=7;i++) state.employees.push({id:i,name:'D'+i,category:'dispecer'});
+state.schedule = {}; genCOCM = {};
+document.getElementById('sel-year').value = 2026; document.getElementById('sel-month').value = 11;
+startGeneration(); generateAll();
+// verifică: acoperire T1–T4 în fiecare zi, odihnă ≥ 11h (24+start−sfârșit), serii ≤ 4, ore egale fără CO
+```
+Pentru CO: `state.schedule['2026-11-10'] = {3:5}` ÎNAINTE de `startGeneration()` (se păstrează la generare).
 
 ## Persistență date
 
@@ -57,7 +95,7 @@ incrementaseră `N` fără să actualizeze luna.)
 via git hook `.githooks/pre-commit` (activat prin `git config core.hooksPath .githooks`
 — setare LOCALĂ, trebuie rulată o dată pe orice clone nou).
 
-## Valorile turelor (`SHIFT_NAMES`, folosite peste tot ca număr, nu string)
+## Valorile turelor — Exploatare (`SHIFT_NAMES`, folosite peste tot ca număr, nu string)
 
 | Val | Cod | Sens |
 |---|---|---|
@@ -75,7 +113,7 @@ via git hook `.githooks/pre-commit` (activat prin `git config core.hooksPath .gi
 întoarce cel mai recent override ≤ data curentă (permite schimbare de echipaj la mijlocul
 lunii, oricâte modificări pe lună).
 
-## Reguli deja existente în aplicație (nu ținute de fixurile din sesiunea curentă)
+## Reguli deja existente în Exploatare (nu ținute de fixurile din sesiunea curentă)
 
 - **CO/CM nu se contorizează în weekend**: `getEmployeeStats()` exclude explicit
   `v===5|6 && isWeekend` din calculul orelor — regulă de business (CO/CM consumă normă
@@ -100,7 +138,7 @@ lunii, oricâte modificări pe lună).
   funcție de paritatea zilei, ca să nu se stabilizeze un singur echipaj mereu pe aceeași
   tură.
 
-## Algoritmul de generare — 4 moduri (`state.genMode`)
+## Algoritmul de generare Exploatare — 4 moduri (`state.genMode`)
 
 - `full` — T1/T2 + T1A/T2A alocate automat
 - `t12` (**implicit**) — doar T1/T2 automat, T1A/T2A rămân manuale
