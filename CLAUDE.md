@@ -42,6 +42,9 @@ valorile 3/4 înseamnă T3/T4 aici, dar T1A/T2A în Exploatare — de aici garda
 - A pornit ca o copie a `index.html`: fix-urile din secțiunile de mai jos (Exploatare) NU se aplică
   în Dispecer — nu le porta. Invers, orice fix de infrastructură comună (print, import, org, Excel)
   trebuie făcut manual în ambele fișiere.
+- Setări organizație (⚙️): denumirile câmpurilor sunt editabile și fiecare câmp are bifă activ/inactiv
+  (`ORG_FIELDS`, `org.labels`, `org.off`, `org.entitate`) — DOAR în Dispecer; în Exploatare rămân câmpurile fixe.
+  Detalii în DISPECER.md §15.
 - `migrateState` șterge câmpurile vechi (config, genMode, customCrews, functia/crew/forced8) din date salvate.
 - Importul (backup, lună, „Adaugă dispeceri") refuză fișierele din Exploatare (`looksLikeExploatare`).
 - Print/PDF: tema deschisă mereu (`enterPrintTheme`), ca în Exploatare.

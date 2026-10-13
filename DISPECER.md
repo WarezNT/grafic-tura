@@ -177,3 +177,17 @@ fără); scoasă la cerere, fiindcă utilizatorul preferă control manual.
 
 Algoritmul nu produce niciodată dubluri. Dacă cineva pune manual doi dispeceri pe aceeași tură în aceeași zi,
 sub tabel apare „⚠️ Ture cu mai mulți dispeceri (regula: cel mult unul pe tură)" cu zilele (`duplicateShifts`).
+
+## 15. Setări organizație editabile (V2026.10.7)
+
+Dispecerii au alte entități/funcții decât Exploatarea, deci modalul ⚙️ e complet configurabil:
+- **Entitate** (`org.entitate`, implicit „Delgaz Grid S.A") — în subtitlu, `document.title`, Excel.
+- Fiecare câmp din `ORG_FIELDS` (Formația/Unitatea, Șef FOL EM, Responsabil Tehnic, Județ, Aprobat Șef CORE):
+  **denumire editabilă** (`org.labels[key]`, goală = implicită) și **bifă activ/inactiv** (`org.off[key]`).
+- Inactiv = nu apare în antet, la print (`.signature-box` ascuns) și în Excel; valoarea rămâne memorată.
+- Semnăturile (`orgSignatures`) sunt: Șef FOL EM, Responsabil Tehnic, Aprobat (+ județ, dacă e activ);
+  Excel împarte lățimea la numărul de semnături active (0 = bloc omis).
+- Compatibil cu datele vechi (fără `labels`/`off`/`entitate` → valori implicite). Se salvează în
+  `graficTura_dispecer_org` și intră în exportul de lună. Dialogul de la prima pornire nu se mai redeschide
+  după ce a fost salvat o dată (`org.configured`), chiar dacă toate câmpurile sunt dezactivate.
+- Toate valorile se afișează cu `esc()`/`escAttr()` (import JSON de la terți).
