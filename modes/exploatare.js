@@ -73,7 +73,8 @@ const MODE = {
     const emps = Array.isArray(data.employees) ? data.employees : [];
     return data.module === 'dispecer' || emps.some(e => e && e.category === 'dispecer');
   },
-  foreignMessage: 'Fișierul provine din aplicația Dispecer — nu poate fi încărcat în Exploatare.',
+  foreignMessage: 'Fișierul conține dispeceri din aplicația Dispecer — nu poate fi importat în Exploatare.',
+  foreignFileMessage: 'Fișierul provine din aplicația Dispecer — nu poate fi încărcat în Exploatare.',
   // ── generare ──
   beginGeneration(emps) {
     const groups = GROUPS;
@@ -318,6 +319,37 @@ const MODE = {
       const sefCore = 'Aprobat Șef CORE' + (o.judet ? ' ' + o.judet : '');
       return [[' Șef FOL EM', o.sefFOL || '—'], ['Responsabil Tehnic', o.responsabilTehnic || '—'], [sefCore, o.aprobat || '—']];
     }
+  },
+  // ── pornire / restaurare ──
+  afterLoad() { if (!state.genMode) state.genMode = 't12'; },   // consecvent cu defaultState() (bug audit)
+  // Sincronizează panoul de configurare (T1/T1A/T2/T2A/8h) cu starea salvată. Lipsea la încărcarea
+  // normală a paginii — inputurile reveneau la valorile din HTML la fiecare reload, deși graficul
+  // generat folosea altă capacitate, iar panoul „mințea” vizual (bug găsit la audit).
+  syncConfigUI() {
+    document.getElementById('gen-mode').value = state.genMode || 't12';
+    GROUPS.forEach(g => {
+      const c = (state.config && state.config[g]) || {};
+      document.getElementById('cfg-' + g + '-t1').value = c.t1 ?? 2;
+      document.getElementById('cfg-' + g + '-t1a').value = c.t1a ?? 0;
+      document.getElementById('cfg-' + g + '-t2').value = c.t2 ?? 2;
+      document.getElementById('cfg-' + g + '-t2a').value = c.t2a ?? 0;
+      document.getElementById('cfg-' + g + '-c8').value = c.c8 ?? 0;
+    });
+    updateModeFieldVisibility();
+  },
+  beforeRestoreSave() {
+    document.getElementById('gen-mode').value = state.genMode || 'full';
+    updateModeFieldVisibility();
+  },
+  afterRestoreUI() {
+    GROUPS.forEach(g => {
+      const c = state.config[g] || {};
+      document.getElementById('cfg-' + g + '-t1').value = c.t1 || 0;
+      document.getElementById('cfg-' + g + '-t1a').value = c.t1a || 0;
+      document.getElementById('cfg-' + g + '-t2').value = c.t2 || 0;
+      document.getElementById('cfg-' + g + '-t2a').value = c.t2a || 0;
+      document.getElementById('cfg-' + g + '-c8').value = c.c8 || 0;
+    });
   }
 };
 
@@ -1090,101 +1122,6 @@ function workingDays(y, m) {
   return wd;
 }
 
-function applyJSON(text) {
-  try {
-    const data = JSON.parse(text);
-    // Detecția de tip nu se poate baza STRICT pe data.type==='month' — fișiere vechi legitime
-    // (dinainte de introducerea câmpului type, ex. exporturi cu {employees,config,schedule,
-    // currentMonth,currentYear}) nu au deloc type și cădeau pe ramura "backup complet" (state =
-    // data), ștergând toate celelalte luni + echipaje custom + org (bug găsit la audit). Doar
-    // backup-urile REALE (exportFullJSON) au genStats/genDay ca chei top-level — exportMonthJSON
-    // nu le include niciodată — deci prezența lor e semnalul de încredere pt. "backup complet".
-    const looksLikeFullBackup = data.type === 'full' || 'genStats' in data || 'genDay' in data;
-    const looksLikeMonth = data.type === 'month' || (!looksLikeFullBackup && data.schedule && typeof data.schedule === 'object' && Array.isArray(data.employees));
-    if (looksLikeMonth) {
-      // Suportă și numele vechi de câmpuri (currentYear/currentMonth) din fișierele legacy fără type.
-      const year = data.year ?? data.currentYear;
-      const month = data.month ?? data.currentMonth;
-      if (!year || !month) { setStatus('Fișier invalid — lipsește luna/anul.', 'err'); return; }
-      // Fără schedule valid, ștergerea de mai jos ar goli luna țintă și tot ar raporta succes
-      // (bug găsit la audit: for...in undefined nu aruncă eroare, doar nu adaugă nimic).
-      if (!data.schedule || typeof data.schedule !== 'object') { setStatus('Fișier invalid — lipsește graficul (schedule).', 'err'); return; }
-      // Coliziune de id: dacă fișierul are un electrician cu ACELAȘI id dar NUME diferit față de
-      // cineva local, turele din fișier i s-ar aplica silențios persoanei greșite (bug găsit la
-      // audit — id-urile pornesc de la 1 în orice instalare nouă, coliziunea e foarte plauzibilă
-      // exact în fluxul publicitar al aplicației: "trimite doar luna curentă cuiva").
-      if (Array.isArray(data.employees)) {
-        const localById = new Map(state.employees.map(e => [e.id, e.name]));
-        const conflicts = data.employees.filter(e => localById.has(e.id) && localById.get(e.id) !== e.name).map(e => e.name + ' (local: ' + localById.get(e.id) + ')');
-        if (conflicts.length && !confirm('Fișierul conține electricieni cu alt nume dar același id ca cei locali:\n' + conflicts.join(', ') + '\nTurele lor din fișier ar putea ajunge pe persoana greșită. Continuați?')) return;
-      }
-      // Month-save: overwrite only schedule for the specified year+month
-      const prefix = year + '-' + pad(month);
-      for (const dk in state.schedule) {
-        if (dk.startsWith(prefix)) delete state.schedule[dk];
-      }
-      for (const dk in data.schedule) {
-        state.schedule[dk] = data.schedule[dk];
-      }
-      // Merge COCM for this month
-      for (const dk in data.preservedCOCM) {
-        if (dk.startsWith(prefix)) genCOCM[dk] = data.preservedCOCM[dk];
-      }
-      // MERGE electricienii (adaugă după id pe cei lipsă din state curent), NU înlocui lista —
-      // altfel un import de lună mai veche ștergea silențios orice electrician adăugat de atunci
-      // (electricienii/config-ul sunt setări GLOBALE, nu specifice unei luni — un fișier de lună
-      // nu ar trebui să le poată suprascrie complet; bug găsit la audit).
-      if (Array.isArray(data.employees)) {
-        const existingIds = new Set(state.employees.map(e => e.id));
-        data.employees.forEach(emp => { if (!existingIds.has(emp.id)) state.employees.push(emp); });
-      }
-      // config NU se atinge la import de lună — e o setare curentă, nu ține de luna importată.
-      // org lives in ORG_KEY — only migrate from file if ORG_KEY is empty
-      if (data.org && data.org.sefFOL && !loadOrg()) saveOrg(data.org);
-      state.currentMonth = month;
-      state.currentYear = year;
-      document.getElementById('sel-month').value = month;
-      document.getElementById('sel-year').value = year;
-      genDay = 0; genStats = null; genYear = 0; genMonth = 0; genDim = 0;
-      migrateState(state);
-      saveState();
-      render();
-      updateButtons();
-      setStatus('Luna ' + getMonthName(month) + ' ' + year + ' încărcată din fișier.', 'success');
-      return;
-    }
-    // Full backup (data.type==='full' sau conține genStats/genDay top-level)
-    if (!data.employees || !Array.isArray(data.employees)) {
-      setStatus('Fișier JSON invalid.', 'err');
-      return;
-    }
-    state = data;
-    genCOCM = data.preservedCOCM || {};
-    genDay = data.genDay || 0; genStats = data.genStats || null; genYear = data.genYear || 0; genMonth = data.genMonth || 0; genDim = data.genDim || 0;
-    migrateState(state);
-    // org lives in ORG_KEY — only migrate from file if ORG_KEY is empty
-    if (data.org && data.org.sefFOL && !loadOrg()) saveOrg(data.org);
-    document.getElementById('gen-mode').value = state.genMode || 'full';
-    updateModeFieldVisibility();
-    saveState();
-    document.getElementById('sel-month').value = state.currentMonth || 1;
-    document.getElementById('sel-year').value = state.currentYear || new Date().getFullYear();
-    GROUPS.forEach(g => {
-      const c = state.config[g] || {};
-      document.getElementById('cfg-' + g + '-t1').value = c.t1 || 0;
-      document.getElementById('cfg-' + g + '-t1a').value = c.t1a || 0;
-      document.getElementById('cfg-' + g + '-t2').value = c.t2 || 0;
-      document.getElementById('cfg-' + g + '-t2a').value = c.t2a || 0;
-      document.getElementById('cfg-' + g + '-c8').value = c.c8 || 0;
-    });
-    render();
-    updateButtons();
-    setStatus('Baza de date restaurată din fișier.', 'success');
-  } catch (err) {
-    setStatus('Eroare la citirea fișierului.', 'err');
-  }
-}
-
 // ── Analiză moduri ──────────────────────────────────────────────────────
 // Simulează pe rând toate cele 4 moduri de generare, pentru luna selectată
 // curent, folosind exact motorul real de generare (generateDay), pe o copie
@@ -1448,78 +1385,3 @@ function updateModeFieldVisibility() {
   const usesC8 = state.genMode === 'full' || state.genMode === 't12';
   document.querySelectorAll('.c8-field').forEach(el => { el.style.display = usesC8 ? '' : 'none'; });
 }
-
-// Selector de modul: Exploatare rămâne aici, Dispecer redirecționează la aplicația separată.
-function switchApp(v) {
-  if (v === 'dispecer') window.location.href = 'dispecer.html';
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const logoEl = document.getElementById('header-logo');
-  if (logoEl) logoEl.src = 'data:image/png;base64,' + LOGO_B64;
-  const vBadge = document.getElementById('app-version-badge');
-  if (vBadge) vBadge.textContent = APP_VERSION;
-  const cBadge = document.getElementById('commit-badge');
-  if (cBadge) cBadge.textContent = '#' + COMMIT_COUNT;
-  if (typeof ExcelJS === 'undefined') {
-    const banner = document.createElement('div');
-    banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:8px;padding:12px 20px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:480px;text-align:center;line-height:1.5';
-    banner.innerHTML = '⚠️ <strong>Fără conexiune la internet</strong><br>Exportul în Excel nu va funcționa în această sesiune. Toate celelalte funcții sunt disponibile offline.<br><button onclick="this.parentElement.remove()" style="margin-top:8px;border:none;background:#856404;color:#fff;padding:4px 14px;border-radius:6px;cursor:pointer;font-size:12px">OK</button>';
-    document.body.appendChild(banner);
-  }
-  if (stateLoadCorrupted) {
-    const banner2 = document.createElement('div');
-    banner2.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;background:#fde8e8;color:#c0392b;border:1px solid #e74c3c;border-radius:8px;padding:12px 20px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:480px;text-align:center;line-height:1.5';
-    banner2.innerHTML = '⚠️ <strong>Date corupte găsite la pornire</strong><br>S-a pornit cu o stare nouă, goală. Datele vechi (corupte) au fost păstrate sub o cheie separată în browser, pentru cazul în care vrei să le recuperezi manual.<br><button onclick="this.parentElement.remove()" style="margin-top:8px;border:none;background:#c0392b;color:#fff;padding:4px 14px;border-radius:6px;cursor:pointer;font-size:12px">OK</button>';
-    document.body.appendChild(banner2);
-  }
-  const now = new Date();
-  document.getElementById('sel-year').value = state.currentYear || now.getFullYear();
-  document.getElementById('sel-month').value = state.currentMonth || (now.getMonth() + 1);
-  const dbEl = document.getElementById('db-status');
-  if (dbEl) dbEl.textContent = '💾 IndexedDB: inițializare...';
-  initStateFromDB().then(loaded => {
-    if (loaded) {
-      document.getElementById('sel-year').value = state.currentYear;
-      document.getElementById('sel-month').value = state.currentMonth;
-    }
-    if (!state.genMode) state.genMode = 't12'; // consecvent cu defaultState() (bug audit)
-    // migrate org from state to dedicated ORG_KEY if not yet migrated
-    if (!loadOrg() && state.org && state.org.sefFOL) saveOrg(state.org);
-    document.getElementById('gen-mode').value = state.genMode;
-    // Sincronizează inputurile de configurare (T1/T1A/T2/T2A/8h) cu state.config salvat —
-    // lipsea complet la încărcarea normală a paginii (doar importul de backup complet o
-    // făcea). Inputurile reveneau la valorile hardcodate din HTML (T1A/T2A=0) la fiecare
-    // reload, chiar dacă graficul deja generat folosea o altă capacitate — panoul de
-    // configurare mințea vizual, nelegat de ce era efectiv salvat sau folosit la generare.
-    GROUPS.forEach(g => {
-      const c = (state.config && state.config[g]) || {};
-      document.getElementById('cfg-' + g + '-t1').value = c.t1 ?? 2;
-      document.getElementById('cfg-' + g + '-t1a').value = c.t1a ?? 0;
-      document.getElementById('cfg-' + g + '-t2').value = c.t2 ?? 2;
-      document.getElementById('cfg-' + g + '-t2a').value = c.t2a ?? 0;
-      document.getElementById('cfg-' + g + '-c8').value = c.c8 ?? 0;
-    });
-    updateModeFieldVisibility();
-    applyOrgToDOM();
-    render();
-    updateButtons();
-    if (dbEl) dbEl.textContent = loaded ? '💾 IndexedDB: date încărcate' : '💾 IndexedDB: date noi';
-    checkVersion();
-    const org = getOrg();
-    if (!org.sefFOL && !org.responsabilTehnic && !org.aprobat) openOrgModal();
-  }).catch(e => {
-    GROUPS.forEach(g => {
-      const c = (state.config && state.config[g]) || {};
-      document.getElementById('cfg-' + g + '-t1').value = c.t1 ?? 2;
-      document.getElementById('cfg-' + g + '-t1a').value = c.t1a ?? 0;
-      document.getElementById('cfg-' + g + '-t2').value = c.t2 ?? 2;
-      document.getElementById('cfg-' + g + '-t2a').value = c.t2a ?? 0;
-      document.getElementById('cfg-' + g + '-c8').value = c.c8 ?? 0;
-    });
-    render();
-    updateButtons();
-    applyOrgToDOM();
-    if (dbEl) dbEl.textContent = '💾 IndexedDB: eroare';
-  });
-});
