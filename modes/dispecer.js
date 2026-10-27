@@ -71,8 +71,10 @@ const MODE = {
     rowHead(emp) {
       return '<td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + '</td>';
     },
-    // ziua de după T4: cele 6h de la 00:00 la 06:00 aparțin acestei zile calendaristice (doar sfat la hover)
-    cellTip(emp, dk) { return prevDayIsT4(emp.id, dk) ? T4_SPILL_TIP : ''; }
+    // ziua de după T4: cele 6h de la 00:00 la 06:00 aparțin acestei zile calendaristice — se vede „T4” sub celulă
+    cellExtra(emp, dk) {
+      return prevDayIsT4(emp.id, dk) ? '<span class="t4-spill" data-tooltip="' + T4_SPILL_TIP + '">T4</span>' : '';
+    }
   },
   // ── carduri și statistici ──
   summary: {
@@ -139,7 +141,7 @@ const MODE = {
     normLine: (mn, y, expected) => mn + ' ' + y + ' — ' + (expected !== null ? expected + 'h' : '? h') + ' normă/dispecer',
     weekendToL: [5, 6],
     extraCells() { return []; },
-    dayText: (emp, dk, sv) => SHIFT_NAMES[sv],
+    dayText: (emp, dk, sv) => SHIFT_NAMES[sv] + (prevDayIsT4(emp.id, dk) ? '\nT4' : ''),
     cellNote: (emp, dk) => prevDayIsT4(emp.id, dk) ? T4_SPILL_TIP : '',   // comentariu pe celulă, ca sfatul din pagină
     legend: [['T1+T4  06-10 + 22-06 (12h)', 'D6EAF8', '1A5276'], ['T2  10-16 (6h)', 'FDEBD0', '935116'], ['T3  16-22 (6h)', 'AED6F1', '154360'],
              ['T4  22-06 manual (8h)', 'FAD7A0', '7E4D0E'], ['CO  Concediu', 'E8D5F5', '6C3483'], ['CM  Medical', 'E8E8E8', '555555'],
@@ -205,7 +207,7 @@ const CHANGELOG = {
       { icon: '🗓️', text: 'Zile noi în dropdown: IL (instruire lunară), EMP (examinare medicală periodică), Z (program de zi 08–14) și A (autorizare anuală) — fiecare contează 6h lucrate, nu acoperă ture și se păstrează la regenerare' },
       { icon: '🏷️', text: 'Tura T1 devine T1+T4: aceeași persoană face T1 (06–10) și T4 (22–06) în aceeași zi; blocul devine T3→T2→T1+T4 (3 zile), cu 3 dispeceri pe zi' },
       { icon: '🛌', text: 'Pe cât posibil, fiecare dispecer are cel puțin un weekend liber legat (sâmbătă + duminică) pe lună; dacă nu se poate (concedii, acoperire), apare avertisment sub tabel' },
-      { icon: '🌙', text: 'T4 (22–06) se împarte pe zile calendaristice: 2h în ziua de start și 6h în ziua următoare (sfat la hover pe ziua de după T4), cu trecere corectă peste granița dintre luni; T1+T4 = 6h în ziua de start + 6h a doua zi' },
+      { icon: '🌙', text: 'T4 (22–06) se împarte pe zile calendaristice: 2h în ziua de start și 6h în ziua următoare (ziua de după T4 arată „T4” sub celulă, cu explicație la hover), cu trecere corectă peste granița dintre luni; T1+T4 = 6h în ziua de start + 6h a doua zi' },
       { icon: '▶▶', text: 'Buton nou „6 luni": generează dintr-odată 6 luni, începând cu luna afișată (lunile deja generate se păstrează)' }
     ]
   },
