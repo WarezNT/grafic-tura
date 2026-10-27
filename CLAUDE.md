@@ -59,13 +59,13 @@ valorile 3/4 înseamnă T3/T4 aici, dar T1A/T2A în Exploatare — de aici garda
 
 **V2026.10.10**: valori noi (manuale, 6h lucrate fiecare, nu acoperă ture, păstrate la regenerare prin `keepOnClear`,
 permise și în weekend — `MODE.weekendNoCount=[5,6]`): 7 IL · 8 EMP · 9 Z (08–14) · 10 A. Eticheta tura 1 = „T1+T4”
-(DOAR etichetă; algoritmul/orele neschimbate). Weekend liber legat „pe cât posibil”: `weekendUnsafe` în
+(valoarea 1 = T1 06–10 + T4 22–06, 12h, o singură celulă; T4 singur = valoarea 4, doar manual; `COVER_SLOTS`/`SLOT_VALUES`; T4 se împarte pe zile calendaristice 2h+6h, `t4SplitAdjust` pentru granița de lună; minim 4 dispeceri). Weekend liber legat „pe cât posibil”: `weekendUnsafe` în
 `assignDispecerShifts` (nu începe bloc cine și-ar pierde ultimul weekend liber din lună) + ⚠️ în `renderGapList`;
 la 5 dispeceri e imposibil, la 6 parțial, la 7+ ok. Buton „▶▶ 6 luni” = `generateSixMonths()` (lunile deja generate se păstrează).
 
 **Cum generează**
 - Regulă dură: într-o tură (T1–T4) cel mult UN dispecer pe zi; ceilalți sunt liberi. Se lucrează în BLOCURI
-  T3→T2→T1→T4 (4 zile), apoi ≥1 zi liberă; în fiecare zi începe exact un bloc nou. Continuarea blocului e funcție de
+  T3→T2→T1+T4 (3 zile; T1 și T4 la aceeași persoană, aceeași zi de start — valoarea 1 = 12h), apoi ≥1 zi liberă (ziua de după T1+T4 e liberă din cauza odihnei <11h); în fiecare zi începe exact un bloc nou. Continuarea blocului e funcție de
   tura REALĂ de ieri (`BLOCK_NEXT`), iar cine începe T3 se alege echitabil: ore în an la nivel de bloc (toleranță
   `BLOCK_HOURS`=24h), apoi cele mai puține weekenduri+sărbători (`assignDispecerShifts`). NU reveni la un ciclu fix pe poziții:
   la 7 dispeceri ciclul = o săptămână și fiecare lucrează mereu aceleași zile (weekend 0–104/an). Nu reintroduce dubluri.

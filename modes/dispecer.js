@@ -48,10 +48,10 @@ const MODE = {
   afterDay({ dk, day, year, month }) { rebalanceCoverage(dk, year, month, day); },
   // ── tabel și legendă ──
   legend: [
-    ['pill-t1', 'T1+T4 &nbsp;06:00–10:00 (4h)'],
+    ['pill-t1', 'T1+T4 &nbsp;06:00–10:00 + 22:00–06:00 (12h)'],
     ['pill-t2', 'T2 &nbsp;10:00–16:00 (6h)'],
     ['pill-t3', 'T3 &nbsp;16:00–22:00 (6h)'],
-    ['pill-t4', 'T4 &nbsp;22:00–06:00 (2h în ziua de start + 6h a doua zi)'],
+    ['pill-t4', 'T4 &nbsp;22:00–06:00 (8h) — doar manual'],
     ['pill-co', 'CO — Concediu Odihnă'],
     ['pill-cm', 'CM — Concediu Medical'],
     ['pill-il', 'IL — Instruire lunară (6h)'],
@@ -71,10 +71,8 @@ const MODE = {
     rowHead(emp) {
       return '<td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + '</td>';
     },
-    // ziua de după T4: cele 6h de la 00:00 la 06:00 aparțin acestei zile calendaristice
-    cellExtra(emp, dk) {
-      return prevDayIsT4(emp.id, dk) ? '<span class="t4-spill" data-tooltip="Continuarea turei T4 din ziua anterioară (00:00–06:00): 6h în această zi">+6h T4</span>' : '';
-    }
+    // ziua de după T4: cele 6h de la 00:00 la 06:00 aparțin acestei zile calendaristice (doar sfat la hover)
+    cellTip(emp, dk) { return prevDayIsT4(emp.id, dk) ? T4_SPILL_TIP : ''; }
   },
   // ── carduri și statistici ──
   summary: {
@@ -141,10 +139,10 @@ const MODE = {
     normLine: (mn, y, expected) => mn + ' ' + y + ' — ' + (expected !== null ? expected + 'h' : '? h') + ' normă/dispecer',
     weekendToL: [5, 6],
     extraCells() { return []; },
-    // ziua de după T4 primește marcajul „+6h” (cele 6h de la 00:00–06:00), ca în tabelul din pagină
-    dayText: (emp, dk, sv) => SHIFT_NAMES[sv] + (prevDayIsT4(emp.id, dk) ? '\n+6h' : ''),
-    legend: [['T1+T4  06-10 (4h)', 'D6EAF8', '1A5276'], ['T2  10-16 (6h)', 'FDEBD0', '935116'], ['T3  16-22 (6h)', 'AED6F1', '154360'],
-             ['T4  22-06 (2h+6h)', 'FAD7A0', '7E4D0E'], ['CO  Concediu', 'E8D5F5', '6C3483'], ['CM  Medical', 'E8E8E8', '555555'],
+    dayText: (emp, dk, sv) => SHIFT_NAMES[sv],
+    cellNote: (emp, dk) => prevDayIsT4(emp.id, dk) ? T4_SPILL_TIP : '',   // comentariu pe celulă, ca sfatul din pagină
+    legend: [['T1+T4  06-10 + 22-06 (12h)', 'D6EAF8', '1A5276'], ['T2  10-16 (6h)', 'FDEBD0', '935116'], ['T3  16-22 (6h)', 'AED6F1', '154360'],
+             ['T4  22-06 manual (8h)', 'FAD7A0', '7E4D0E'], ['CO  Concediu', 'E8D5F5', '6C3483'], ['CM  Medical', 'E8E8E8', '555555'],
              ['IL  Instruire lunară', 'F0F4F8', '2C3E50'], ['EMP  Exam. medicală', 'D5F5E3', '1A7A3A'], ['Z  Program zi 08-14', 'FFF3B0', '7D6608'],
              ['A  Autorizare anuală', 'FADBD8', '922B21'], ['L  Liber', 'F0F0F0', '666666']],
     signatures: () => orgSignatures(getOrg()).map(s => [s.label, s.name || '—'])
@@ -153,7 +151,7 @@ const MODE = {
   // ── markup specific modului (inserat în șablonul din js/shell.js) ──
   shell: {
     titleLine: `      <span>Grafic dispecer — <span id="month-title"></span></span>`,
-    controlsAndAddModal: `      <span style="font-size:11px;font-weight:600;color:var(--text-muted);padding:4px 10px;border-radius:6px;background:var(--ctrl-bg)" data-tooltip="Acoperirea celor 4 ture (24h) este asigurată automat prin rotația T3→T2→T1→T4→liber.">🔁 Acoperire 24h automată — T1 (06–10), T2 (10–16), T3 (16–22), T4 (22–06)</span>
+    controlsAndAddModal: `      <span style="font-size:11px;font-weight:600;color:var(--text-muted);padding:4px 10px;border-radius:6px;background:var(--ctrl-bg)" data-tooltip="Acoperirea celor 4 ture (24h) este asigurată automat prin rotația T3→T2→T1+T4→liber.">🔁 Acoperire 24h automată — T1+T4 (06–10 și 22–06), T2 (10–16), T3 (16–22)</span>
       <span style="flex:1"></span>
       <button class="btn btn-primary btn-sm" onclick="startGeneration()" data-tooltip="Pornește generarea graficului pentru luna și anul selectate">▶ Generare</button>
       <button class="btn btn-primary btn-sm" onclick="generateSixMonths()" data-tooltip="Generează dintr-odată 6 luni, începând cu luna afișată; lunile deja generate se păstrează">▶▶ 6 luni</button>
@@ -205,9 +203,9 @@ const CHANGELOG = {
     title: 'IL/EMP/Z/A, weekend liber, generare 6 luni',
     items: [
       { icon: '🗓️', text: 'Zile noi în dropdown: IL (instruire lunară), EMP (examinare medicală periodică), Z (program de zi 08–14) și A (autorizare anuală) — fiecare contează 6h lucrate, nu acoperă ture și se păstrează la regenerare' },
-      { icon: '🏷️', text: 'Tura T1 apare acum ca T1+T4 (doar eticheta; orele și regulile rămân neschimbate)' },
+      { icon: '🏷️', text: 'Tura T1 devine T1+T4: aceeași persoană face T1 (06–10) și T4 (22–06) în aceeași zi; blocul devine T3→T2→T1+T4 (3 zile), cu 3 dispeceri pe zi' },
       { icon: '🛌', text: 'Pe cât posibil, fiecare dispecer are cel puțin un weekend liber legat (sâmbătă + duminică) pe lună; dacă nu se poate (concedii, acoperire), apare avertisment sub tabel' },
-      { icon: '🌙', text: 'Tura T4 (22–06) se împarte pe zile calendaristice: 2h în ziua de start și 6h în ziua următoare (marcat „+6h T4”), cu trecere corectă peste granița dintre luni în ore și statistici' },
+      { icon: '🌙', text: 'T4 (22–06) se împarte pe zile calendaristice: 2h în ziua de start și 6h în ziua următoare (sfat la hover pe ziua de după T4), cu trecere corectă peste granița dintre luni; T1+T4 = 6h în ziua de start + 6h a doua zi' },
       { icon: '▶▶', text: 'Buton nou „6 luni": generează dintr-odată 6 luni, începând cu luna afișată (lunile deja generate se păstrează)' }
     ]
   },
@@ -276,16 +274,22 @@ const CHANGELOG = {
 // ── Ture (Dispecer) ──────────────────────────────────────────────────────
 const SHIFT_NAMES = ['L', 'T1+T4', 'T2', 'T3', 'T4', 'CO', 'CM', 'IL', 'EMP', 'Z', 'A'];
 
-// IL/EMP/Z/A (introduse manual) se contabilizează cu 6h lucrate fiecare și NU acoperă nicio tură T1–T4.
-const SHIFT_HOURS = [0, 4, 6, 6, 8, 0, 0, 6, 6, 6, 6];
+// T1+T4 = T1 (06–10, 4h) + T4 (22–06, 8h) în aceeași zi de start = 12h. T4 singur (valoarea 4) rămâne doar pentru
+// introducere manuală (8h). IL/EMP/Z/A (manuale) = 6h lucrate fiecare și NU acoperă nicio tură T1–T4.
+const SHIFT_HOURS = [0, 12, 6, 6, 8, 0, 0, 6, 6, 6, 6];
 
-// Tura T4 (22:00–06:00) se împarte pe zile calendaristice: 2h în ziua de start, 6h în ziua următoare
-// (inclusiv când ziua de start e ultima din lună — cele 6h cad în prima zi a lunii următoare).
+// T4 (22:00–06:00), inclusiv cel din T1+T4, se împarte pe zile calendaristice: 2h în ziua de start, 6h în ziua
+// următoare (inclusiv când ziua de start e ultima din lună — cele 6h cad în prima zi a lunii următoare).
+// Deci T1+T4 = 6h în ziua de start (4h T1 + 2h T4) + 6h în ziua următoare.
 const T4_SPILL_H = 6;
+
+const T4_SPILL_TIP = 'Continuarea turei T4 începute ieri la 22:00 (00:00–06:00): 6h lucrate în această zi';
+
+const hasT4 = v => v === 1 || v === 4;   // T1+T4 și T4 singur încheie tura a doua zi la 06:00
 
 function prevDayIsT4(empId, dk) {
   const d = new Date(+dk.slice(0, 4), +dk.slice(5, 7) - 1, +dk.slice(8, 10) - 1);
-  return ((state.schedule[dateKey(d.getFullYear(), d.getMonth() + 1, d.getDate())] || {})[String(empId)] || 0) === 4;
+  return hasT4((state.schedule[dateKey(d.getFullYear(), d.getMonth() + 1, d.getDate())] || {})[String(empId)] || 0);
 }
 
 // Ore lunare (y, m) ale unui dispecer: T4 de pe ultima zi a lunii dă doar 2h în această lună (cele 6h cad
@@ -295,21 +299,22 @@ function t4SplitAdjust(empId, y, m, hours) {
   const dim = daysInMonth(y, m);
   const prev = new Date(y, m - 2, 1), pdim = daysInMonth(prev.getFullYear(), prev.getMonth() + 1);
   let adj = 0;
-  if (at(y, m, dim) === 4) adj -= T4_SPILL_H;
-  if (at(prev.getFullYear(), prev.getMonth() + 1, pdim) === 4) adj += T4_SPILL_H;
+  if (hasT4(at(y, m, dim))) adj -= T4_SPILL_H;
+  if (hasT4(at(prev.getFullYear(), prev.getMonth() + 1, pdim))) adj += T4_SPILL_H;
   return hours + adj;
 }
 
 const WEEKEND_HIDE = [5, 6]; // CO/CM nu se oferă în dropdown pe S/D (se afișează ca L)
 
-// Un bloc = T3 → T2 → T1 → T4 (4 zile la rând), apoi cel puțin o zi liberă. În fiecare zi începe exact un
-// bloc nou (T3), deci fiecare tură are CEL MULT UN dispecer pe zi, iar ceilalți sunt liberi. Cine începe
-// blocul se alege echitabil (ore în an, apoi weekenduri + sărbători) — nu un ciclu fix pe zilele săptămânii.
-const MIN_CYCLE_LEN = 5; // cel puțin 5 dispeceri pentru acoperire completă (4 lucrează + 1 liber)
+// Un bloc = T3 → T2 → T1+T4 (3 zile la rând), apoi cel puțin o zi liberă (ziua de după T1+T4 e oricum liberă:
+// tura se termină la 06:00, iar T3 de la 16:00 ar avea doar 10h odihnă). În fiecare zi începe exact un bloc nou
+// (T3), deci T1, T2, T3 și T4 au CEL MULT UN dispecer pe zi (T1 și T4 la aceeași persoană), iar ceilalți sunt
+// liberi. Cine începe blocul se alege echitabil (ore în an, apoi weekenduri + sărbători), nu un ciclu fix.
+const MIN_CYCLE_LEN = 4; // cel puțin 4 dispeceri pentru acoperire completă (3 lucrează + 1 liber)
 
 function cycleLength() { return Math.max(MIN_CYCLE_LEN, state.employees.length); }
 
-// Ore medii pe zi ale unui dispecer = 24h împărțite la numărul de dispeceri (min. 5); folosit la normă și CO/CM.
+// Ore medii pe zi ale unui dispecer = 24h împărțite la numărul de dispeceri (min. 4); folosit la normă și CO/CM.
 function avgHoursPerDay() { return 24 / cycleLength(); }
 
 function defaultState() {
@@ -344,12 +349,18 @@ function migrateState(s) {
   if (!s.org) s.org = { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' };
 }
 
-// Dispecer: blocuri T3 → T2 → T1 → T4, un bloc nou în fiecare zi (vezi nota de la constante).
-const BLOCK_NEXT = { 3: 2, 2: 1, 1: 4, 4: 0 };        // tura de azi, dat fiind că ieri a fost cheia
+// Dispecer: blocuri T3 → T2 → T1+T4, un bloc nou în fiecare zi (vezi nota de la constante).
+const BLOCK_NEXT = { 3: 2, 2: 1, 1: 0, 4: 0 };        // tura de azi, dat fiind că ieri a fost cheia
 
-const BLOCK_REMAINING = { 3: 3, 2: 2, 1: 1, 4: 0 };   // zile rămase în bloc după tura respectivă
+const BLOCK_REMAINING = { 3: 2, 2: 1, 1: 0, 4: 0 };   // zile rămase în bloc după tura respectivă
 
 const BLOCK_HOURS = 24;                                // un bloc T3+T2+T1+T4 = 6+6+4+8 ore
+
+// Sloturile de acoperire ale unei zile: T1 (06–10), T2, T3, T4 (22–06). Valorile care acoperă fiecare slot:
+// T1+T4 (valoarea 1) acoperă T1 ȘI T4; T4 singur (valoarea 4, doar manual) acoperă doar T4.
+const COVER_SLOTS = [1, 2, 3];                        // ce alocă generatorul (T1 și T4 merg împreună)
+const SLOT_VALUES = { 1: [1], 2: [2], 3: [3], 4: [1, 4] };
+const SLOT_LABELS = ['', 'T1', 'T2', 'T3', 'T4'];
 
 // Ture T1–T4 lucrate în sâmbete/duminici/sărbători legale, în același an, ÎNAINTE de `dk` (report între luni).
 function weekendHolidayShifts(empId, dk) {
@@ -368,16 +379,16 @@ function weekendHolidayShifts(empId, dk) {
 
 // 1) continuă blocurile în curs (ieri T3 → azi T2 ș.a.m.d.); 2) alege, dintre cei odihniți, cine începe
 // un bloc nou azi (T3): cel mai puțin încărcat în an (ore cu credit CO/CM), apoi cu cele mai puține
-// weekenduri/sărbători, apoi id-ul. Nu începe un bloc cine are CO/CM în următoarele 3 zile (l-ar rupe).
+// weekenduri/sărbători, apoi id-ul. Nu începe un bloc cine are CO/CM în următoarele 2 zile (l-ar rupe).
 function assignDispecerShifts(emps, dk, assigned, year, month, day) {
   const ctx = dayContext(year, month, day);
   const prev = state.schedule[ctx.prevKey] || {};
   const hasHistory = state.employees.some(e => prev[String(e.id)] >= 1 && prev[String(e.id)] <= 4);
-  // Fără istoric (prima zi generată): „ieri" virtual (T1, T2, T3 la primii trei) ca să pornească toate
-  // cele 4 ture din prima zi, nu abia după 3 zile.
+  // Fără istoric (prima zi generată): „ieri" virtual (T2 și T3 la primii doi) ca să pornească toate turele
+  // din prima zi (T1+T4 și T2 din blocurile în curs + T3 nou), nu abia după 2 zile.
   const virtual = {};
   if (!hasHistory) {
-    emps.slice().sort((a, b) => a.id - b.id).slice(0, 3).forEach((e, i) => { virtual[e.id] = i + 1; });
+    emps.slice().sort((a, b) => a.id - b.id).slice(0, 2).forEach((e, i) => { virtual[e.id] = i === 0 ? 2 : 3; });
   }
   const yesterday = e => hasHistory ? (prev[String(e.id)] || 0) : (virtual[e.id] || 0);
   const today = state.schedule[dk];
@@ -388,12 +399,13 @@ function assignDispecerShifts(emps, dk, assigned, year, month, day) {
       if (!assigned.includes(e.id)) assigned.push(e.id);
     }
   });
-  // fără CO/CM în următoarele 3 zile
-  const leaveSoon = e => [1, 2, 3].some(off => {
+  // fără CO/CM în următoarele 2 zile (restul blocului)
+  const leaveSoon = e => [1, 2].some(off => {
     const v = (state.schedule[ctx.key(off)] || {})[String(e.id)];
     return v >= 5;                       // CO/CM/IL/EMP/Z/A — zi în care nu poate lucra într-un bloc
   });
-  let pool = emps.filter(e => !assigned.includes(e.id) && yesterday(e) !== 4);
+  // cine a făcut T1+T4/T4 ieri termină azi la 06:00 și nu poate începe T3 (16:00 = doar 10h odihnă)
+  let pool = emps.filter(e => !assigned.includes(e.id) && !hasT4(yesterday(e)));
   const rested = pool.filter(e => !leaveSoon(e));
   if (rested.length) pool = rested;
   if (!pool.length) return;
@@ -428,10 +440,11 @@ function monthWeekends(year, month) {
   return out;
 }
 
-// Zi lucrată (T1–T4, IL, EMP, Z, A); CO/CM și L nu contează ca lucrate pentru weekendul liber.
+// Zi lucrată (T1–T4, IL, EMP, Z, A, sau ziua în care se termină la 06:00 un T4 de ieri); CO/CM și L nu contează
+// ca lucrate pentru weekendul liber.
 function isWorkedDay(empId, dk) {
   const v = (state.schedule[dk] || {})[String(empId)] || 0;
-  return (v >= 1 && v <= 4) || v >= 7;
+  return (v >= 1 && v <= 4) || v >= 7 || prevDayIsT4(empId, dk);
 }
 
 // Are `e` cel puțin un weekend complet liber în luna dată (după graficul existent)?
@@ -439,7 +452,8 @@ function hasFreeWeekend(emp, year, month) {
   return monthWeekends(year, month).some(w => !isWorkedDay(emp.id, w[0]) && !isWorkedDay(emp.id, w[1]));
 }
 
-// Ar pierde `e` ultimul weekend liber posibil al lunii dacă ar începe azi un bloc (4 zile: azi..azi+3)?
+// Ar pierde `e` ultimul weekend liber posibil al lunii dacă ar începe azi un bloc (azi..azi+2, plus ziua
+// azi+3 în care T4 se termină la 06:00)?
 // Nu contează dacă are deja un weekend liber încheiat, sau dacă nu mai are niciunul posibil oricum.
 function weekendUnsafe(emp, year, month, day) {
   const dk = dateKey(year, month, day);
@@ -453,11 +467,12 @@ function weekendUnsafe(emp, year, month, day) {
 }
 
 // Orele de început/sfârșit ale turelor (față de miezul nopții zilei de start; T4 trece în ziua următoare).
-const SHIFT_SPAN = { 1: [6, 10], 2: [10, 16], 3: [16, 22], 4: [22, 30] };
+// T1+T4 începe la 06:00 și se termină a doua zi la 06:00 (30); între T1 și T4 are 12h pauză.
+const SHIFT_SPAN = { 1: [6, 30], 2: [10, 16], 3: [16, 22], 4: [22, 30] };
 
 const MIN_REST_H = 11; // odihnă minimă între două ture consecutive
 
-const MAX_CONSEC_DAYS = 4; // maxim zile lucrate la rând (ca ciclul T3→T2→T1→T4)
+const MAX_CONSEC_DAYS = 4; // maxim zile lucrate la rând (blocul T3→T2→T1+T4 are 3)
 
 // Odihna dintre două ture din zile consecutive (prev ieri → cur azi). 0/CO/CM = fără constrângere.
 function restBetween(prev, cur) {
@@ -512,7 +527,7 @@ function dayContext(year, month, day) {
       return this.runBefore(e) + 1 + (BLOCK_REMAINING[t] || 0) <= MAX_CONSEC_DAYS;
     },
     // Poate `e` lucra tura t azi, respectând odihna minimă față de tura de ieri (reală)? Ziua următoare e
-    // continuarea blocului (T3→T2→T1→T4→L), care respectă mereu odihna.
+    // continuarea blocului (T3→T2→T1+T4→L), care respectă mereu odihna.
     restOk(e, t) {
       const y = (state.schedule[this.prevKey] || {})[String(e.id)] || 0;
       return restBetween(y, t) >= MIN_REST_H;
@@ -533,7 +548,7 @@ function rebalanceCoverage(dk, year, month, day) {
   const emps = state.employees;
   const today = state.schedule[dk];
   const val = e => today[String(e.id)] || 0;
-  if ([1, 2, 3, 4].every(t => emps.filter(e => val(e) === t).length === 1)) return;
+  if (COVER_SLOTS.every(t => emps.filter(e => val(e) === t).length === 1)) return;
   const ctx = dayContext(year, month, day);
   const avail = emps.filter(e => val(e) < 5);
   const hrs = {};
@@ -541,39 +556,39 @@ function rebalanceCoverage(dk, year, month, day) {
   const can = {}; // can[e.id][t]: poate `e` lucra tura t azi? (tura lui curentă — întotdeauna)
   avail.forEach(e => {
     can[e.id] = {};
-    [1, 2, 3, 4].forEach(t => {
+    COVER_SLOTS.forEach(t => {
       can[e.id][t] = val(e) === t || (ctx.restOk(e, t) && ctx.consecOk(e, t));
     });
   });
   const holderOf = {};
-  [1, 2, 3, 4].forEach(t => { holderOf[t] = avail.find(e => val(e) === t) || null; });
+  COVER_SLOTS.forEach(t => { holderOf[t] = avail.find(e => val(e) === t) || null; });
   let best = null;
   const pick = {}, used = new Set();
   const evaluate = () => {
     const final = {};
     avail.forEach(e => { final[e.id] = 0; });
     const taken = new Set();
-    for (const t of [1, 2, 3, 4]) {
+    for (const t of COVER_SLOTS) {
       if (pick[t]) { final[pick[t].id] = t; taken.add(pick[t].id); }
     }
-    for (const t of [1, 2, 3, 4]) {            // tura nereasignată rămâne la titularul ei, dacă nu a plecat
+    for (const t of COVER_SLOTS) {            // tura nereasignată rămâne la titularul ei, dacă nu a plecat
       const h = holderOf[t];
       if (!pick[t] && h && !taken.has(h.id)) { final[h.id] = t; taken.add(h.id); }
     }
-    const covered = [1, 2, 3, 4].filter(t => avail.some(e => final[e.id] === t)).length;
+    const covered = COVER_SLOTS.filter(t => avail.some(e => final[e.id] === t)).length;
     let sq = 0, changes = 0;
     avail.forEach(e => {
       const h = hrs[e.id] + (SHIFT_HOURS[final[e.id]] || 0);
       sq += h * h;
       if (final[e.id] !== val(e)) changes++;
     });
-    const key = [4 - covered, sq, changes];
+    const key = [COVER_SLOTS.length - covered, sq, changes];
     if (!best || key[0] < best.key[0] || (key[0] === best.key[0] && (key[1] < best.key[1] || (key[1] === best.key[1] && key[2] < best.key[2])))) {
       best = { key, final: Object.assign({}, final) };
     }
   };
   const rec = t => {
-    if (t > 4) { evaluate(); return; }
+    if (t > COVER_SLOTS.length) { evaluate(); return; }
     pick[t] = null;
     rec(t + 1);                                // tura t: nereasignată
     for (const e of avail) {
@@ -598,8 +613,8 @@ function coverageGaps(year, month) {
   for (let d = 1; d <= daysInMonth(year, month); d++) {
     const day = state.schedule[dateKey(year, month, d)];
     if (!day || Object.keys(day).length < emps.length) continue;
-    const miss = [1, 2, 3, 4].filter(t => !emps.some(e => day[String(e.id)] === t));
-    if (miss.length) gaps.push({ day: d, shifts: miss.map(t => SHIFT_NAMES[t]) });
+    const miss = [1, 2, 3, 4].filter(t => !emps.some(e => SLOT_VALUES[t].includes(day[String(e.id)])));
+    if (miss.length) gaps.push({ day: d, shifts: miss.map(t => SLOT_LABELS[t]) });
   }
   return gaps;
 }
@@ -610,8 +625,8 @@ function duplicateShifts(year, month) {
   for (let d = 1; d <= daysInMonth(year, month); d++) {
     const day = state.schedule[dateKey(year, month, d)];
     if (!day) continue;
-    const dup = [1, 2, 3, 4].filter(t => state.employees.filter(e => day[String(e.id)] === t).length > 1);
-    if (dup.length) out.push({ day: d, shifts: dup.map(t => SHIFT_NAMES[t]) });
+    const dup = [1, 2, 3, 4].filter(t => state.employees.filter(e => SLOT_VALUES[t].includes(day[String(e.id)])).length > 1);
+    if (dup.length) out.push({ day: d, shifts: dup.map(t => SLOT_LABELS[t]) });
   }
   return out;
 }

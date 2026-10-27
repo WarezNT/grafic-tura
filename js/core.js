@@ -7,7 +7,7 @@
 // Construiește markup-ul paginii (antet, controale, modale, manual) din șablon + MODE.shell.
 document.body.insertAdjacentHTML('afterbegin', buildShell());
 
-const COMMIT_COUNT = 120;
+const COMMIT_COUNT = 121;
 
 const DB_VERSION = 1;
 
@@ -1050,7 +1050,9 @@ function renderTable() {
         // Valorile din weekendDisplayL (CO/CM etc.) se afișează ca L în weekend; valoarea reală rămâne în state.
         const displayV = (weekend && T.weekendDisplayL.includes(v)) ? 0 : v;
         const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
-        bhtml += '<td class="' + tdCls + '"><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
+        // sfat opțional pe celulă (MODE.table.cellTip), afișat la hover — fără text vizibil în celulă
+        const cellTip = T.cellTip ? T.cellTip(emp, dk, v) : '';
+        bhtml += '<td class="' + tdCls + '"' + (cellTip ? ' data-tooltip="' + escAttr(cellTip) + '"' : '') + '><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
         for (let si = 0; si < labels.length; si++) {
           if (weekend && T.weekendHide.includes(si)) continue;
           bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
@@ -1242,6 +1244,7 @@ function exportExcel() {
           const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
           const dc = ws.getCell(R, firstDay+d);
           dc.value = X.dayText(emp, dk, sv, sec); dc.font=fnt(fg,true,8); dc.fill=fill(bg);
+          if (X.cellNote) { const nt = X.cellNote(emp, dk, sv); if (nt) dc.note = nt; }   // comentariu Excel (echivalentul sfatului din pagină)
           // text pe două rânduri (ex. marcajul „+6h” de după T4): celula se împachetează, rândul se înalță
           const twoLines = typeof dc.value === 'string' && dc.value.includes('\n');
           dc.alignment = aln('center','middle', twoLines);

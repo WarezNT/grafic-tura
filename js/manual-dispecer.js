@@ -9,7 +9,7 @@ MANUALS.disp = {
       <div id="help-disp-start" class="help-tab-panel">
         <div class="help-hero">
           <div class="help-hero-title">Grafic Dispecer</div>
-          <div class="help-hero-sub">Planifică turele dispecerilor pe blocuri T3→T2→T1→T4, cu acoperire 24h și un singur dispecer pe tură — generare automată, CO/CM, statistici și export.</div>
+          <div class="help-hero-sub">Planifică turele dispecerilor pe blocuri T3→T2→T1+T4, cu acoperire 24h și un singur dispecer pe tură — generare automată, CO/CM, statistici și export.</div>
           <div class="help-chips">
             <span class="help-chip">📴 Funcționează offline</span>
             <span class="help-chip">🎯 Acoperire 24h</span>
@@ -21,8 +21,8 @@ MANUALS.disp = {
         <div class="help-section">
           <div class="help-section-title">✨ Ce poate face aplicația</div>
           <div class="help-feat-grid">
-            <div class="help-feat"><span class="help-feat-ico">🕐</span><div><div class="help-feat-t">Ture de 4/6/6/8 ore</div><div class="help-feat-d">T1 (06–10), T2 (10–16), T3 (16–22), T4 (22–06).</div></div></div>
-            <div class="help-feat"><span class="help-feat-ico">🔄</span><div><div class="help-feat-t">Blocuri automate</div><div class="help-feat-d">Fiecare dispecer: T3→T2→T1→T4, apoi zile libere.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🕐</span><div><div class="help-feat-t">Ture T1 / T2 / T3 / T4</div><div class="help-feat-d">T1 (06–10) și T4 (22–06) merg împreună: T1+T4 (12h); T2 (10–16); T3 (16–22).</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🔄</span><div><div class="help-feat-t">Blocuri automate</div><div class="help-feat-d">Fiecare dispecer: T3→T2→T1+T4, apoi zile libere.</div></div></div>
             <div class="help-feat"><span class="help-feat-ico">1️⃣</span><div><div class="help-feat-t">Un dispecer pe tură</div><div class="help-feat-d">Niciodată doi pe aceeași tură; ceilalți sunt liberi.</div></div></div>
             <div class="help-feat"><span class="help-feat-ico">⚖️</span><div><div class="help-feat-t">Alegere echitabilă</div><div class="help-feat-d">Cine începe un bloc se alege după ore, weekenduri și sărbători.</div></div></div>
             <div class="help-feat"><span class="help-feat-ico">🏖️</span><div><div class="help-feat-t">CO / CM</div><div class="help-feat-d">Păstrate la regenerare; turele rămase goale se redistribuie automat.</div></div></div>
@@ -36,7 +36,7 @@ MANUALS.disp = {
           <div class="help-section-title">🚀 Pașii pentru un grafic nou</div>
           <div class="help-steps">
             <div class="help-step"><span class="help-step-n">1</span><span class="help-step-t"><strong>Completează setările organizației</strong> (⚙️ din colțul dreapta-sus) — denumirile câmpurilor sunt editabile.</span></div>
-            <div class="help-step"><span class="help-step-n">2</span><span class="help-step-t"><strong>Adaugă dispecerii</strong> cu <em>+ Dispecer</em> (doar numele). Pentru acoperire 24h ai nevoie de cel puțin 5.</span></div>
+            <div class="help-step"><span class="help-step-n">2</span><span class="help-step-t"><strong>Adaugă dispecerii</strong> cu <em>+ Dispecer</em> (doar numele). Pentru acoperire 24h ai nevoie de cel puțin 4.</span></div>
             <div class="help-step"><span class="help-step-n">3</span><span class="help-step-t"><strong>Alege luna și anul</strong> (săgețile ‹ › sau selectoarele).</span></div>
             <div class="help-step"><span class="help-step-n">4</span><span class="help-step-t"><strong>Introdu concediile</strong> (CO / CM) <em>înainte</em> de generare — algoritmul le respectă și redistribuie turele rămase goale.</span></div>
             <div class="help-step"><span class="help-step-n">5</span><span class="help-step-t">Apasă <em>▶ Generare</em>, apoi <em>Generare totală →</em> (sau <em>Ziua →</em> pas cu pas). Verifică avertismentele ⚠️ de sub tabel, ajustează manual celulele, apoi exportă (Excel / Print / JSON).</span></div>
@@ -77,7 +77,7 @@ MANUALS.disp = {
         <div class="help-section">
           <div class="help-section-title">🕐 Cele 4 ture</div>
           <ul class="help-list">
-            <li><strong>T1+T4</strong> (eticheta tură T1: 06:00–10:00, 4h)</li>
+            <li><strong>T1+T4</strong> — aceeași persoană face T1 (06:00–10:00, 4h) și T4 (22:00–06:00 a doua zi, 8h) = 12h</li>
             <li><strong>T2</strong> (10:00–16:00, 6h)</li>
             <li><strong>T3</strong> (16:00–22:00, 6h)</li>
             <li><strong>T4</strong> (22:00–06:00, 8h)</li>
@@ -105,10 +105,10 @@ MANUALS.disp = {
         <div class="help-section">
           <div class="help-section-title">🔄 Cum se alocă turele</div>
           <ul class="help-list">
-            <li>Un <strong>bloc</strong> înseamnă <strong>T3 → T2 → T1 → T4</strong> (4 zile la rând), urmat de cel puțin o zi liberă.</li>
+            <li>Un <strong>bloc</strong> înseamnă <strong>T3 → T2 → T1+T4</strong> (3 zile la rând), urmat de cel puțin o zi liberă (ziua de după T1+T4 e liberă oricum: tura se termină la 06:00).</li>
             <li>În <strong>fiecare zi începe exact un bloc nou</strong> (tura T3). Așa, fiecare tură are un singur dispecer în fiecare zi, iar ceilalți sunt liberi.</li>
             <li><strong>Cine începe</strong> blocul se alege din cei odihniți, echitabil: cu cele mai puține ore în an (cu report între luni), apoi cu cele mai puține weekenduri/sărbători lucrate. De aceea nu lucrezi „mereu aceleași zile ale săptămânii”.</li>
-            <li>Nu începe un bloc cine are CO/CM în următoarele 3 zile (l-ar rupe).</li>
+            <li>Nu începe un bloc cine are CO/CM în următoarele 2 zile (l-ar rupe).</li>
           </ul>
           <p>Exemplu: cu 7 dispeceri lucrează 4 pe zi, iar 3 sunt liberi; fiecare face un bloc la aproximativ 7 zile.</p>
         </div>
@@ -119,7 +119,7 @@ MANUALS.disp = {
         <div class="help-section">
           <div class="help-section-title">🏷️ Legendă ture</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
-            <span class="shift-pill pill-t1" style="padding:3px 10px;font-size:12px">T1+T4 — 06:00–10:00 (4h)</span>
+            <span class="shift-pill pill-t1" style="padding:3px 10px;font-size:12px">T1+T4 — 06:00–10:00 + 22:00–06:00 (12h)</span>
             <span class="shift-pill pill-t2" style="padding:3px 10px;font-size:12px">T2 — 10:00–16:00 (6h)</span>
             <span class="shift-pill pill-t3" style="padding:3px 10px;font-size:12px">T3 — 16:00–22:00 (6h)</span>
             <span class="shift-pill pill-t4" style="padding:3px 10px;font-size:12px">T4 — 22:00–06:00 (8h)</span>
@@ -131,7 +131,7 @@ MANUALS.disp = {
             <span class="shift-pill pill-a" style="padding:3px 10px;font-size:12px">A — Autorizare anuală (6h)</span>
             <span class="shift-pill" style="padding:3px 10px;font-size:12px;background:var(--shift0-bg);color:var(--shift0-text)">L — Liber</span>
           </div>
-          <p style="margin-top:8px">Orele se contorizează real per tură: T1 = 4h, T2 = 6h, T3 = 6h, T4 = 8h. <strong>T4 (22:00–06:00) se împarte pe zile calendaristice:</strong> 2h în ziua de start, 6h în ziua următoare (marcat „+6h T4” în tabel). Dacă T4 începe în ultima zi a lunii, cele 6h se numără în prima zi a lunii următoare.<strong>IL, EMP, Z și A</strong> se aleg manual din dropdown, contează câte <strong>6h lucrate</strong> (și în weekend), nu acoperă nicio tură T1–T4, nu reduc norma și se păstrează la regenerare. În „pe interval” se aplică doar în zilele lucrătoare.</p>
+          <p style="margin-top:8px">Orele se contorizează real per tură: T1 = 4h, T2 = 6h, T3 = 6h, T4 = 8h (T1+T4 = 12h). <strong>T4 (22:00–06:00) se împarte pe zile calendaristice:</strong> 2h în ziua de start, 6h în ziua următoare (deci T1+T4 = 6h în ziua de start + 6h a doua zi). T4 singur rămâne doar pentru introducere manuală (ziua de după T4 rămâne „L”; la hover apare explicația, iar în Excel un comentariu pe celulă). Dacă T4 începe în ultima zi a lunii, cele 6h se numără în prima zi a lunii următoare.<strong>IL, EMP, Z și A</strong> se aleg manual din dropdown, contează câte <strong>6h lucrate</strong> (și în weekend), nu acoperă nicio tură T1–T4, nu reduc norma și se păstrează la regenerare. În „pe interval” se aplică doar în zilele lucrătoare.</p>
         </div>
       </div>
 
@@ -141,9 +141,9 @@ MANUALS.disp = {
           <div class="help-section-title">📏 Reguli respectate la generarea automată</div>
           <ul class="help-list">
             <li><strong>Cel mult un dispecer pe tură</strong> într-o zi; restul sunt liberi.</li>
-            <li><strong>Bloc T3→T2→T1→T4</strong>; <strong>T1 e urmat de T4</strong> (aceeași persoană) și după T4 urmează cel puțin o zi liberă.</li>
+            <li><strong>Bloc T3→T2→T1+T4</strong>; T1 și T4 sunt la aceeași persoană, în aceeași zi de start, iar după T1+T4 urmează cel puțin o zi liberă.</li>
             <li><strong>Odihnă minimă 11h</strong> între două ture consecutive și maximum <strong>4 zile lucrate la rând</strong>.</li>
-            <li><strong>Acoperire 24h</strong> — în fiecare zi există câte un dispecer pe T1, T2, T3 și T4 (cu cel puțin 5 dispeceri și fără concedii suprapuse).</li>
+            <li><strong>Acoperire 24h</strong> — în fiecare zi există câte un dispecer pe T1+T4, T2 și T3 (cu cel puțin 4 dispeceri și fără concedii suprapuse).</li>
             <li><strong>Echitate</strong> — cine începe un bloc se alege după orele din an, apoi după weekenduri și sărbători lucrate; nu apar dispeceri „blocați” pe aceleași zile ale săptămânii.</li>
             <li><strong>Continuitate</strong> — blocurile curg peste granița dintre luni (fără resetare).</li>
             <li><strong>CO / CM / IL / EMP / Z / A existente</strong> se păstrează la generare și regenerare.</li>
@@ -154,7 +154,7 @@ MANUALS.disp = {
         <div class="help-section">
           <div class="help-section-title">🧮 Norma și CO/CM în calcule</div>
           <ul class="help-list">
-            <li><strong>Norma lunară</strong> = zilele lunii × 24h împărțite la numărul de dispeceri (minim 5). Cu 5 dispeceri ≈ 4,8h/zi (144h/lună), cu 7 ≈ 3,4h/zi (≈103h/lună).</li>
+            <li><strong>Norma lunară</strong> = zilele lunii × 24h împărțite la numărul de dispeceri (minim 4). Cu 5 dispeceri ≈ 4,8h/zi (144h/lună), cu 7 ≈ 3,4h/zi (≈103h/lună).</li>
             <li><strong>CO/CM reduc norma</strong> cu aceleași ore pe zi (doar zile lucrătoare), ca să nu apară „sub normă” pentru zilele de concediu.</li>
             <li><strong>CO/CM nu se contorizează în weekend</strong> — se afișează ca L, dar valoarea rămâne memorată.</li>
           </ul>
@@ -162,8 +162,8 @@ MANUALS.disp = {
         <div class="help-section">
           <div class="help-section-title">⚠️ Limitări și avertismente</div>
           <ul class="help-list">
-            <li>Cu mai puțin de 5 dispeceri nu toate turele pot fi acoperite.</li>
-            <li>Când nu se poate acoperi o tură fără să se încalce odihna minimă sau seria de 4 zile (de ex. concedii suprapuse), ziua rămâne cu tura goală — apare un avertisment ⚠️ sub tabel și o corectezi manual din dropdown.</li>
+            <li>Cu mai puțin de 4 dispeceri nu toate turele pot fi acoperite.</li>
+            <li>Când nu se poate acoperi o tură fără să se încalce odihna minimă sau seria de maximum 4 zile (de ex. concedii suprapuse), ziua rămâne cu tura goală — apare un avertisment ⚠️ sub tabel și o corectezi manual din dropdown.</li>
             <li>Dacă introduci manual doi dispeceri pe aceeași tură, apare avertismentul „Ture cu mai mulți dispeceri”.</li>
             <li>Sărbătorile legale nu influențează alocarea; pe carduri și în Statistici vezi câte ture de sărbătoare a lucrat fiecare (în lună și în an), ca să poți decide manual.</li>
             <li>Regulile se aplică doar generării automate; la editare manuală ai libertate deplină.</li>

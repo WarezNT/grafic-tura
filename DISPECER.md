@@ -47,7 +47,7 @@ T1+T2+T3+T4 = 24h (acoperire completă a zilei).
 
 Regulă dură: **într-o tură (T1–T4) nu poate fi mai mult de un dispecer într-o zi — ceilalți sunt liberi**.
 
-Un **bloc** = `T3 → T2 → T1 → T4` (4 zile la rând), urmat de cel puțin o zi liberă. În fiecare zi începe
+Un **bloc** = `T3 → T2 → T1+T4` (3 zile la rând; T1 și T4 la aceeași persoană, în aceeași zi de start — vezi V2026.10.10), urmat de cel puțin o zi liberă. În fiecare zi începe
 **exact un bloc nou** (T3), deci fiecare tură are un singur dispecer. Cu n dispeceri, 4 lucrează pe zi și n−4 sunt liberi
 (n=5: 4 din 5; n=7: 4 din 7, fiecare face un bloc la ~7 zile).
 
