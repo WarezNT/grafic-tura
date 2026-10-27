@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_version';
 
 const ORG_KEY = 'graficTura_org';
 
-const APP_VERSION = 'V2026.10.3';
+const APP_VERSION = 'V2026.10.4';
 
 const DB_NAME = 'GraficTuraDB';
 
@@ -134,6 +134,10 @@ const MODE = {
       assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 3, 2, 0, 1, 4, 2, 0]);
     } else if (state.genMode === 'rotation3') {
       assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 2, 0]);
+    } else if (state.genMode === 'rotation5') {
+      assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 3, 4, 2, 0]);
+    } else if (state.genMode === 'rotation4') {
+      assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 3, 2, 0]);
     } else {
       groups.forEach(g => assignCategoryShifts(emps.filter(e => e.category === g && !hasCOCM.includes(String(e.id)) && !e.forced8), genStats, cfgs[g], dk, assigned, weekend, day, state.genMode !== 'full'));
     }
@@ -377,6 +381,8 @@ const MODE = {
           <option value="t12">2) Zilnic T1/T2</option>
           <option value="rotation">3) Rotație 8 zile</option>
           <option value="rotation3">4) Rotație T1-T2-L</option>
+          <option value="rotation5">5) Rotație T1-T1A-T2A-T2-L</option>
+          <option value="rotation4">6) Rotație T1-T1A-T2-L</option>
         </select>
       </label>
       <span style="flex:1"></span>
@@ -446,7 +452,7 @@ const MODE = {
     <div class="tb-sep"></div>
     <!-- Analiză moduri -->
     <div class="tb-group">
-      <button class="btn btn-outline btn-sm" onclick="analyzeModes()" data-tooltip="Compară cele 4 moduri de generare pe baza echipajelor detectate automat și a configurației curente — care mod utilizează cel mai bine echipajele pe lună">📈 Analiză moduri</button>`,
+      <button class="btn btn-outline btn-sm" onclick="analyzeModes()" data-tooltip="Compară cele 6 moduri de generare pe baza echipajelor detectate automat și a configurației curente — care mod utilizează cel mai bine echipajele pe lună">📈 Analiză moduri</button>`,
     devNote: `<!-- bulk-toolbar removed (not implemented) -->
 
 `,
@@ -491,6 +497,14 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.4': {
+    title: 'Două moduri noi de rotație',
+    items: [
+      { icon: '🔄', text: 'Mod nou 5) Rotație T1-T1A-T2A-T2-L (ciclu de 5 zile)' },
+      { icon: '🔄', text: 'Mod nou 6) Rotație T1-T1A-T2-L (ciclu de 4 zile)' },
+      { icon: '🛡️', text: 'Aceleași reguli ca la celelalte rotații: max 4 zile consecutive, max 5 zile/săptămână, gap T2→T1, fairness pe ore, continuitate între luni' }
+    ]
+  },
   'V2026.10.3': {
     title: 'Cod modular',
     items: [
@@ -1265,7 +1279,7 @@ function workingDays(y, m) {
 }
 
 // ── Analiză moduri ──────────────────────────────────────────────────────
-// Simulează pe rând toate cele 4 moduri de generare, pentru luna selectată
+// Simulează pe rând toate cele 6 moduri de generare, pentru luna selectată
 // curent, folosind exact motorul real de generare (generateDay), pe o copie
 // izolată a state.schedule/genStats — starea reală nu e atinsă (backup +
 // restore complet la final, saveState() dezactivat temporar cât timp rulează
@@ -1363,7 +1377,9 @@ const ANALYZE_MODES = [
   { key: 'full', label: '1) T1/T2 + T1A/T2A' },
   { key: 't12', label: '2) Zilnic T1/T2' },
   { key: 'rotation', label: '3) Rotație 8 zile' },
-  { key: 'rotation3', label: '4) Rotație T1-T2-L' }
+  { key: 'rotation3', label: '4) Rotație T1-T2-L' },
+  { key: 'rotation5', label: '5) Rotație T1-T1A-T2A-T2-L' },
+  { key: 'rotation4', label: '6) Rotație T1-T1A-T2-L' }
 ];
 
 function analyzeModes() {
@@ -1519,7 +1535,7 @@ function updateModeFieldVisibility() {
   // T1A/T2A sunt relevante doar in modurile care le pot folosi automat: T1/T2+T1A/T2A
   // ("full") si Rotatie 8 zile ("rotation"). In "t12" (Zilnic T1/T2) sunt ignorate complet
   // de algoritm (raman doar pt editare manuala pe celule), iar in "rotation3" nu exista deloc.
-  const usesTA = state.genMode === 'full' || state.genMode === 'rotation';
+  const usesTA = ['full', 'rotation', 'rotation5', 'rotation4'].includes(state.genMode);
   document.querySelectorAll('.ta-field').forEach(el => { el.style.display = usesTA ? '' : 'none'; });
   // c8 (8h) e alocat automat doar in full/t12 (assignCategoryShifts) — modurile de rotatie
   // (3/4) nu au deloc logica de c8, ascunde campul acolo ca sa nu para configurabil fara efect

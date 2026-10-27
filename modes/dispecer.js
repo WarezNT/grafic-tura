@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_dispecer_version';
 
 const ORG_KEY = 'graficTura_dispecer_org';
 
-const APP_VERSION = 'V2026.10.9';
+const APP_VERSION = 'V2026.10.10';
 
 const DB_NAME = 'GraficTuraDispecerDB';
 
@@ -20,11 +20,12 @@ const MODE = {
   stateModule: 'dispecer',       // etichetă salvată în state.module (garda la import)
   words: {
     employee: 'dispecer', Employee: 'Dispecer', employeeGen: 'dispecerului', employeesPl: 'dispeceri',
-    keptLong: 'CO și CM', keptShort: 'CO/CM'
+    keptLong: 'CO, CM, IL, EMP, Z și A', keptShort: 'CO/CM/IL/EMP/Z/A'
   },
-  keepOnClear: [5, 6],
-  leaveTypes: { 5: 'CO', 6: 'CM' },
-  leaveSkipWeekend: [],
+  keepOnClear: [5, 6, 7, 8, 9, 10],
+  leaveTypes: { 5: 'CO', 6: 'CM', 7: 'IL', 8: 'EMP', 9: 'Z', 10: 'A' },
+  leaveSkipWeekend: [7, 8, 9, 10],       // la „pe interval", IL/EMP/Z/A sar peste sâmbete/duminici
+  weekendNoCount: [5, 6],                // doar CO/CM nu se contorizează în weekend; IL/EMP/Z/A da (6h)
   leaveHoursPerDay() { return avgHoursPerDay(); },
   isWorkShift(v) { return v > 0 && (SHIFT_HOURS[v] || 0) > 0; },
   expectedHours(y, m) { return Math.round(daysInMonth(y, m) * avgHoursPerDay()); },
@@ -47,15 +48,20 @@ const MODE = {
   afterDay({ dk, day, year, month }) { rebalanceCoverage(dk, year, month, day); },
   // ── tabel și legendă ──
   legend: [
-    ['pill-t1', 'T1 &nbsp;06:00–10:00 (4h)'],
+    ['pill-t1', 'T1+T4 &nbsp;06:00–10:00 (4h)'],
     ['pill-t2', 'T2 &nbsp;10:00–16:00 (6h)'],
     ['pill-t3', 'T3 &nbsp;16:00–22:00 (6h)'],
-    ['pill-t4', 'T4 &nbsp;22:00–06:00 (8h)'],
+    ['pill-t4', 'T4 &nbsp;22:00–06:00 (2h în ziua de start + 6h a doua zi)'],
     ['pill-co', 'CO — Concediu Odihnă'],
     ['pill-cm', 'CM — Concediu Medical'],
+    ['pill-il', 'IL — Instruire lunară (6h)'],
+    ['pill-emp', 'EMP — Examinare medicală periodică (6h)'],
+    ['pill-z', 'Z — Program de zi 08–14 (6h)'],
+    ['pill-a', 'A — Autorizare anuală (6h)'],
     ['', 'L — Liber', 'background:var(--shift0-bg);color:var(--shift0-text)']
   ],
   afterTableHead(y, m) { renderGapList(y, m); },
+  adjustMonthHours(empId, y, m, hours) { return t4SplitAdjust(empId, y, m, hours); },
   table: {
     extraHeader: '',
     fixedCols: 4,
@@ -64,6 +70,10 @@ const MODE = {
     sections(emps) { return [{ emps, cls: '', header: null }]; },
     rowHead(emp) {
       return '<td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + '</td>';
+    },
+    // ziua de după T4: cele 6h de la 00:00 la 06:00 aparțin acestei zile calendaristice
+    cellExtra(emp, dk) {
+      return prevDayIsT4(emp.id, dk) ? '<span class="t4-spill" data-tooltip="Continuarea turei T4 din ziua anterioară (00:00–06:00): 6h în această zi">+6h T4</span>' : '';
     }
   },
   // ── carduri și statistici ──
@@ -74,11 +84,12 @@ const MODE = {
     },
     cardHeader(emp) { return '<span class="emp-card-name">' + esc(emp.name) + '</span>'; },
     cardPills(emp, st, holCount) {
-      const pillCls = ['', 'pill-t1', 'pill-t2', 'pill-t3', 'pill-t4'];
+      const pillCls = ['', 'pill-t1', 'pill-t2', 'pill-t3', 'pill-t4', 'pill-co', 'pill-cm', 'pill-il', 'pill-emp', 'pill-z', 'pill-a'];
       const pills = [];
       for (let i = 1; i <= 4; i++) { if (st.counts[i]) pills.push('<span class="shift-pill ' + pillCls[i] + '">' + SHIFT_NAMES[i] + ' ×' + st.counts[i] + '</span>'); }
       if (st.co) pills.push('<span class="shift-pill pill-co">CO ×' + st.co + '</span>');
       if (st.cm) pills.push('<span class="shift-pill pill-cm">CM ×' + st.cm + '</span>');
+      for (let i = 7; i <= 10; i++) { if (st.counts[i]) pills.push('<span class="shift-pill ' + pillCls[i] + '">' + SHIFT_NAMES[i] + ' ×' + st.counts[i] + '</span>'); }
       const holYear = holidayShiftsYear(emp.id, state.currentYear, state.currentMonth);
       if (holCount || holYear) pills.push('<span class="shift-pill" style="background:var(--holiday-bg);color:var(--holiday-text)" data-tooltip="Ture lucrate în sărbători legale: în luna afișată și de la 1 ianuarie până la sfârșitul ei">🎉 Sărb.: ' + holCount + ' lună · ' + holYear + ' an</span>');
       return pills;
@@ -86,9 +97,11 @@ const MODE = {
     statsTable(expected) {
       let html = '<table class="stat-table"><thead><tr>'
         + '<th style="text-align:left">Nume Prenume</th>'
-        + '<th title="Tura 1 (06:00–10:00)">T1</th><th title="Tura 2 (10:00–16:00)">T2</th>'
+        + '<th title="Tura 1 (06:00–10:00)">T1+T4</th><th title="Tura 2 (10:00–16:00)">T2</th>'
         + '<th title="Tura 3 (16:00–22:00)">T3</th><th title="Tura 4 (22:00–06:00)">T4</th>'
         + '<th title="Concediu Odihnă">CO</th><th title="Concediu Medical">CM</th>'
+        + '<th title="Instruire lunară (6h)">IL</th><th title="Examinare medicală periodică (6h)">EMP</th>'
+        + '<th title="Program de zi 08–14 (6h)">Z</th><th title="Autorizare anuală (6h)">A</th>'
         + '<th title="Ture lucrate în zile de sărbătoare legală, în luna curentă">🎉 Sărb.</th>'
         + '<th title="Ture lucrate în sărbători legale de la 1 ianuarie până la sfârșitul lunii afișate">🎉 Sărb. an</th>'
         + '<th title="Ore lucrate efectiv">Lucrate</th>'
@@ -105,6 +118,10 @@ const MODE = {
           + '<td>' + (st.counts[4] || '—') + '</td>'
           + '<td>' + (st.co || '—') + '</td>'
           + '<td>' + (st.cm || '—') + '</td>'
+          + '<td>' + (st.counts[7] || '—') + '</td>'
+          + '<td>' + (st.counts[8] || '—') + '</td>'
+          + '<td>' + (st.counts[9] || '—') + '</td>'
+          + '<td>' + (st.counts[10] || '—') + '</td>'
           + '<td' + (holCount ? ' style="color:var(--holiday-text);font-weight:700"' : '') + '>' + (holCount || '—') + '</td>'
           + '<td style="color:var(--text-muted)">' + (holidayShiftsYear(emp.id, state.currentYear, state.currentMonth) || '—') + '</td>'
           + '<td class="' + hoursCls + '">' + st.hours + 'h</td>'
@@ -124,9 +141,12 @@ const MODE = {
     normLine: (mn, y, expected) => mn + ' ' + y + ' — ' + (expected !== null ? expected + 'h' : '? h') + ' normă/dispecer',
     weekendToL: [5, 6],
     extraCells() { return []; },
-    dayText: (emp, dk, sv) => SHIFT_NAMES[sv],
-    legend: [['T1  06-10 (4h)', 'D6EAF8', '1A5276'], ['T2  10-16 (6h)', 'FDEBD0', '935116'], ['T3  16-22 (6h)', 'AED6F1', '154360'],
-             ['T4  22-06 (8h)', 'FAD7A0', '7E4D0E'], ['CO  Concediu', 'E8D5F5', '6C3483'], ['CM  Medical', 'E8E8E8', '555555'], ['L  Liber', 'F0F0F0', '666666']],
+    // ziua de după T4 primește marcajul „+6h” (cele 6h de la 00:00–06:00), ca în tabelul din pagină
+    dayText: (emp, dk, sv) => SHIFT_NAMES[sv] + (prevDayIsT4(emp.id, dk) ? '\n+6h' : ''),
+    legend: [['T1+T4  06-10 (4h)', 'D6EAF8', '1A5276'], ['T2  10-16 (6h)', 'FDEBD0', '935116'], ['T3  16-22 (6h)', 'AED6F1', '154360'],
+             ['T4  22-06 (2h+6h)', 'FAD7A0', '7E4D0E'], ['CO  Concediu', 'E8D5F5', '6C3483'], ['CM  Medical', 'E8E8E8', '555555'],
+             ['IL  Instruire lunară', 'F0F4F8', '2C3E50'], ['EMP  Exam. medicală', 'D5F5E3', '1A7A3A'], ['Z  Program zi 08-14', 'FFF3B0', '7D6608'],
+             ['A  Autorizare anuală', 'FADBD8', '922B21'], ['L  Liber', 'F0F0F0', '666666']],
     signatures: () => orgSignatures(getOrg()).map(s => [s.label, s.name || '—'])
   },
   helpMode: 'disp',                // modul de manual deschis implicit (cheia din MANUALS),
@@ -136,10 +156,11 @@ const MODE = {
     controlsAndAddModal: `      <span style="font-size:11px;font-weight:600;color:var(--text-muted);padding:4px 10px;border-radius:6px;background:var(--ctrl-bg)" data-tooltip="Acoperirea celor 4 ture (24h) este asigurată automat prin rotația T3→T2→T1→T4→liber.">🔁 Acoperire 24h automată — T1 (06–10), T2 (10–16), T3 (16–22), T4 (22–06)</span>
       <span style="flex:1"></span>
       <button class="btn btn-primary btn-sm" onclick="startGeneration()" data-tooltip="Pornește generarea graficului pentru luna și anul selectate">▶ Generare</button>
+      <button class="btn btn-primary btn-sm" onclick="generateSixMonths()" data-tooltip="Generează dintr-odată 6 luni, începând cu luna afișată; lunile deja generate se păstrează">▶▶ 6 luni</button>
       <button class="btn btn-outline btn-sm" id="btn-prev-day" onclick="prevDay()" style="display:none" data-tooltip="Întoarce cu o zi înapoi, pentru a regenera ultima zi dacă rezultatul nu e satisfăcător">←</button>
       <button class="btn btn-outline btn-sm" id="btn-next-day" onclick="generateNextDay()" style="display:none" data-tooltip="Generează doar ziua curentă și avansează — verificare pas cu pas">Ziua →</button>
       <button class="btn btn-success btn-sm" id="btn-generate-all" onclick="generateAll()" style="display:none" data-tooltip="Generează dintr-odată toate zilele rămase din lună">Generare totală →</button>
-      <button class="btn btn-warning btn-sm" onclick="clearSchedule()" data-tooltip="Șterge turele generate pentru luna curentă; CO și CM introduse se păstrează (dispecerii rămân)">✕ Curăță</button>
+      <button class="btn btn-warning btn-sm" onclick="clearSchedule()" data-tooltip="Șterge turele generate pentru luna curentă; CO, CM, IL, EMP, Z și A introduse se păstrează (dispecerii rămân)">✕ Curăță</button>
       <button class="btn btn-success btn-sm" id="add-emp-btn" onclick="openAddEmployeeModal()" data-tooltip="Adaugă un dispecer nou">+ Dispecer</button>
     </div>
   </div>
@@ -168,6 +189,10 @@ const MODE = {
         <button onclick="closeTbDropdowns();loadJSON()" data-tooltip="Deschide un fișier JSON exportat de aici — recunoaște automat dacă e o lună sau un backup complet">📂 Încarcă fișier (lună sau backup)</button>
         <button onclick="closeTbDropdowns();importEmployees()" data-tooltip="Adaugă electricieni dintr-un alt fișier JSON, fără să șteargă graficul sau dispecerii existenți">👥 Adaugă dispeceri din fișier</button>`,
     devNote: ``,
+    leaveInstOption: `          <option value="7">IL — Instruire lunară</option>
+          <option value="8">EMP — Examinare medicală periodică</option>
+          <option value="9">Z — Program de zi 08–14</option>
+          <option value="10">A — Autorizare anuală</option>`,
     editModalBody: `    <h3>Editează dispecer</h3>
     <label data-tooltip="Numele complet al dispecerului — apare în tabel, carduri și exporturi.">Nume: <input type="text" id="modal-emp-name"></label>
     <div id="leave-interval-section" style="margin-bottom:12px">
@@ -176,6 +201,16 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.10': {
+    title: 'IL/EMP/Z/A, weekend liber, generare 6 luni',
+    items: [
+      { icon: '🗓️', text: 'Zile noi în dropdown: IL (instruire lunară), EMP (examinare medicală periodică), Z (program de zi 08–14) și A (autorizare anuală) — fiecare contează 6h lucrate, nu acoperă ture și se păstrează la regenerare' },
+      { icon: '🏷️', text: 'Tura T1 apare acum ca T1+T4 (doar eticheta; orele și regulile rămân neschimbate)' },
+      { icon: '🛌', text: 'Pe cât posibil, fiecare dispecer are cel puțin un weekend liber legat (sâmbătă + duminică) pe lună; dacă nu se poate (concedii, acoperire), apare avertisment sub tabel' },
+      { icon: '🌙', text: 'Tura T4 (22–06) se împarte pe zile calendaristice: 2h în ziua de start și 6h în ziua următoare (marcat „+6h T4”), cu trecere corectă peste granița dintre luni în ore și statistici' },
+      { icon: '▶▶', text: 'Buton nou „6 luni": generează dintr-odată 6 luni, începând cu luna afișată (lunile deja generate se păstrează)' }
+    ]
+  },
   'V2026.10.9': {
     title: 'Cod modular',
     items: [
@@ -239,9 +274,31 @@ const CHANGELOG = {
 };
 
 // ── Ture (Dispecer) ──────────────────────────────────────────────────────
-const SHIFT_NAMES = ['L', 'T1', 'T2', 'T3', 'T4', 'CO', 'CM'];
+const SHIFT_NAMES = ['L', 'T1+T4', 'T2', 'T3', 'T4', 'CO', 'CM', 'IL', 'EMP', 'Z', 'A'];
 
-const SHIFT_HOURS = [0, 4, 6, 6, 8, 0, 0];
+// IL/EMP/Z/A (introduse manual) se contabilizează cu 6h lucrate fiecare și NU acoperă nicio tură T1–T4.
+const SHIFT_HOURS = [0, 4, 6, 6, 8, 0, 0, 6, 6, 6, 6];
+
+// Tura T4 (22:00–06:00) se împarte pe zile calendaristice: 2h în ziua de start, 6h în ziua următoare
+// (inclusiv când ziua de start e ultima din lună — cele 6h cad în prima zi a lunii următoare).
+const T4_SPILL_H = 6;
+
+function prevDayIsT4(empId, dk) {
+  const d = new Date(+dk.slice(0, 4), +dk.slice(5, 7) - 1, +dk.slice(8, 10) - 1);
+  return ((state.schedule[dateKey(d.getFullYear(), d.getMonth() + 1, d.getDate())] || {})[String(empId)] || 0) === 4;
+}
+
+// Ore lunare (y, m) ale unui dispecer: T4 de pe ultima zi a lunii dă doar 2h în această lună (cele 6h cad
+// în luna următoare), iar un T4 început în ultima zi a lunii precedente aduce 6h în prima zi de acum.
+function t4SplitAdjust(empId, y, m, hours) {
+  const at = (yy, mm, dd) => (state.schedule[dateKey(yy, mm, dd)] || {})[String(empId)] || 0;
+  const dim = daysInMonth(y, m);
+  const prev = new Date(y, m - 2, 1), pdim = daysInMonth(prev.getFullYear(), prev.getMonth() + 1);
+  let adj = 0;
+  if (at(y, m, dim) === 4) adj -= T4_SPILL_H;
+  if (at(prev.getFullYear(), prev.getMonth() + 1, pdim) === 4) adj += T4_SPILL_H;
+  return hours + adj;
+}
 
 const WEEKEND_HIDE = [5, 6]; // CO/CM nu se oferă în dropdown pe S/D (se afișează ca L)
 
@@ -334,7 +391,7 @@ function assignDispecerShifts(emps, dk, assigned, year, month, day) {
   // fără CO/CM în următoarele 3 zile
   const leaveSoon = e => [1, 2, 3].some(off => {
     const v = (state.schedule[ctx.key(off)] || {})[String(e.id)];
-    return v === 5 || v === 6;
+    return v >= 5;                       // CO/CM/IL/EMP/Z/A — zi în care nu poate lucra într-un bloc
   });
   let pool = emps.filter(e => !assigned.includes(e.id) && yesterday(e) !== 4);
   const rested = pool.filter(e => !leaveSoon(e));
@@ -346,10 +403,53 @@ function assignDispecerShifts(emps, dk, assigned, year, month, day) {
   // rămâne în joc, iar între ei decid weekendurile/sărbătorile. Altfel diferențe mici de ore ar impune o
   // ordine fixă (coadă), care la 7 dispeceri se blochează pe aceleași zile ale săptămânii.
   const minH = Math.min(...pool.map(e => hrs[e.id]));
-  const near = pool.filter(e => hrs[e.id] <= minH + BLOCK_HOURS);
+  let near = pool.filter(e => hrs[e.id] <= minH + BLOCK_HOURS);
+  // Weekend liber legat (sâmbătă + duminică) cel puțin o dată pe lună, „pe cât posibil": nu începe blocul
+  // cine și-ar pierde astfel ultimul weekend liber posibil din lună, dacă există alternativă.
+  const keepWeekend = near.filter(e => !weekendUnsafe(e, year, month, day));
+  if (keepWeekend.length) near = keepWeekend;
+  else {
+    const anySafe = pool.filter(e => !weekendUnsafe(e, year, month, day));
+    if (anySafe.length) near = anySafe;
+  }
   near.sort((a, b) => we[a.id] - we[b.id] || hrs[a.id] - hrs[b.id] || a.id - b.id);
   today[String(near[0].id)] = 3;
   assigned.push(near[0].id);
+}
+
+// ── Weekend liber legat (sâmbătă + duminică, ambele fără tură) — cel puțin unul pe dispecer pe lună ──
+// Pe cât posibil: CO/CM, puțini dispeceri sau acoperirea obligatorie pot face regula imposibilă.
+// Doar weekendurile complete din aceeași lună (sâmbăta și duminica din luna respectivă).
+function monthWeekends(year, month) {
+  const out = [], dim = daysInMonth(year, month);
+  for (let d = 1; d < dim; d++) {
+    if (new Date(year, month - 1, d).getDay() === 6) out.push([dateKey(year, month, d), dateKey(year, month, d + 1)]);
+  }
+  return out;
+}
+
+// Zi lucrată (T1–T4, IL, EMP, Z, A); CO/CM și L nu contează ca lucrate pentru weekendul liber.
+function isWorkedDay(empId, dk) {
+  const v = (state.schedule[dk] || {})[String(empId)] || 0;
+  return (v >= 1 && v <= 4) || v >= 7;
+}
+
+// Are `e` cel puțin un weekend complet liber în luna dată (după graficul existent)?
+function hasFreeWeekend(emp, year, month) {
+  return monthWeekends(year, month).some(w => !isWorkedDay(emp.id, w[0]) && !isWorkedDay(emp.id, w[1]));
+}
+
+// Ar pierde `e` ultimul weekend liber posibil al lunii dacă ar începe azi un bloc (4 zile: azi..azi+3)?
+// Nu contează dacă are deja un weekend liber încheiat, sau dacă nu mai are niciunul posibil oricum.
+function weekendUnsafe(emp, year, month, day) {
+  const dk = dateKey(year, month, day);
+  const ws = monthWeekends(year, month);
+  if (ws.some(w => w[1] < dk && !isWorkedDay(emp.id, w[0]) && !isWorkedDay(emp.id, w[1]))) return false; // deja satisfăcut
+  const dayDate = new Date(year, month - 1, day);
+  const block = new Set();
+  for (let off = 0; off < 4; off++) { const d = new Date(dayDate); d.setDate(d.getDate() + off); block.add(dateKey(d.getFullYear(), d.getMonth() + 1, d.getDate())); }
+  const freeable = hit => ws.filter(w => w[1] >= dk && !isWorkedDay(emp.id, w[0]) && !isWorkedDay(emp.id, w[1]) && !(hit && (block.has(w[0]) || block.has(w[1]))));
+  return freeable(false).length > 0 && freeable(true).length === 0;
 }
 
 // Orele de început/sfârșit ale turelor (față de miezul nopții zilei de start; T4 trece în ziua următoare).
@@ -391,7 +491,7 @@ function dayContext(year, month, day) {
       for (const k in state.schedule) {
         if (k.slice(0, 4) !== String(year) || k >= dk) continue;
         const v = state.schedule[k][String(e.id)] || 0;
-        if (v >= 1 && v <= 4) h += SHIFT_HOURS[v];
+        if ((v >= 1 && v <= 4) || v >= 7) h += SHIFT_HOURS[v];
         else if (v === 5 || v === 6) {
           const dow = new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, +k.slice(8, 10)).getDay();
           if (dow !== 0 && dow !== 6) h += avgHoursPerDay();
@@ -435,7 +535,7 @@ function rebalanceCoverage(dk, year, month, day) {
   const val = e => today[String(e.id)] || 0;
   if ([1, 2, 3, 4].every(t => emps.filter(e => val(e) === t).length === 1)) return;
   const ctx = dayContext(year, month, day);
-  const avail = emps.filter(e => val(e) !== 5 && val(e) !== 6);
+  const avail = emps.filter(e => val(e) < 5);
   const hrs = {};
   avail.forEach(e => { hrs[e.id] = ctx.yearHours(e); });
   const can = {}; // can[e.id][t]: poate `e` lucra tura t azi? (tura lui curentă — întotdeauna)
@@ -527,7 +627,49 @@ function renderGapList(y, m) {
     + gaps.map(g => g.day + '.' + pad(m) + ' (' + g.shifts.join(', ') + ')').join(' • ') + ' — corectează manual din dropdown.');
   if (dups.length) lines.push('⚠️ Ture cu mai mulți dispeceri (regula: cel mult unul pe tură): '
     + dups.map(g => g.day + '.' + pad(m) + ' (' + g.shifts.join(', ') + ')').join(' • ') + '.');
+  // Weekend liber legat: doar pentru luni generate complet (toate zilele au intrări pentru toți dispecerii)
+  const dim = daysInMonth(y, m);
+  const complete = state.employees.length && Array.from({ length: dim }, (_, i) => state.schedule[dateKey(y, m, i + 1)])
+    .every(day => day && Object.keys(day).length >= state.employees.length);
+  if (complete && state.employees.length > 1) {
+    const noWe = state.employees.filter(e => !hasFreeWeekend(e, y, m));
+    if (noWe.length) lines.push('⚠️ Fără weekend liber legat (sâmbătă + duminică) în această lună: ' + noWe.map(e => e.name).join(', ') + ' — nu s-a putut din cauza concediilor/acoperirii; corectează manual dacă e nevoie.');
+  }
   el.innerHTML = lines.map(esc).join('<br>');
+}
+
+// Generează dintr-odată 6 luni, începând cu luna afișată. Lunile deja generate complet se păstrează
+// (pentru regenerare: „Curăță" luna respectivă). Ciclul curge continuu peste granițele lunilor.
+function generateSixMonths() {
+  if (!state.employees.length) { setStatus('Adaugă cel puțin un dispecer.', 'warn'); return; }
+  const y0 = state.currentYear, m0 = state.currentMonth;
+  if (!confirm('Generezi 6 luni, începând cu ' + getMonthName(m0) + ' ' + y0 + '? Lunile deja generate se păstrează; CO, CM, IL, EMP, Z și A introduse se respectă.')) return;
+  const realConfirm = window.confirm;
+  window.confirm = () => true;               // fără întrebarea „Continuați generarea?" la fiecare lună
+  const gaps = [];
+  try {
+    for (let i = 0; i < 6; i++) {
+      let m = m0 + i, y = y0;
+      while (m > 12) { m -= 12; y++; }
+      document.getElementById('sel-year').value = y;
+      document.getElementById('sel-month').value = m;
+      state.currentYear = y; state.currentMonth = m;
+      startGeneration();
+      generateAll();
+      const g = coverageGaps(y, m).length;
+      if (g) gaps.push(getMonthName(m) + ' (' + g + ' zile)');
+    }
+  } finally {
+    window.confirm = realConfirm;
+  }
+  // gata cu generarea: ascunde butoanele pas-cu-pas (ca după „Curăță")
+  state.genDay = 0; state.genStats = null; state.genYear = 0; state.genMonth = 0; state.genDim = 0;
+  genDay = 0; genStats = null; genYear = 0; genMonth = 0; genDim = 0;
+  document.getElementById('sel-year').value = y0;
+  document.getElementById('sel-month').value = m0;
+  updateButtons();
+  render();
+  setStatus('Generate 6 luni, începând cu ' + getMonthName(m0) + ' ' + y0 + '.' + (gaps.length ? ' ⚠️ Ture neacoperite în: ' + gaps.join(', ') + '.' : ''), gaps.length ? 'warn' : 'success');
 }
 
 // Fișierele din aplicația Exploatare (electricieni urban/rural, ture T1A/T2A/8/INST) au alt

@@ -22,7 +22,7 @@ MANUALS.exp = {
           <div class="help-feat-grid">
             <div class="help-feat"><span class="help-feat-ico">🏭</span><div><div class="help-feat-t">Urban &amp; Rural</div><div class="help-feat-d">Două grupe cu cerințe de ture independente.</div></div></div>
             <div class="help-feat"><span class="help-feat-ico">👥</span><div><div class="help-feat-t">Echipaje</div><div class="help-feat-d">Membrii unui echipaj lucrează împreună; schimbare de echipaj pe dată.</div></div></div>
-            <div class="help-feat"><span class="help-feat-ico">🔀</span><div><div class="help-feat-t">4 moduri de generare</div><div class="help-feat-d">Complet, doar T1/T2, rotație 8 zile, rotație 3 zile.</div></div></div>
+            <div class="help-feat"><span class="help-feat-ico">🔀</span><div><div class="help-feat-t">4 moduri de generare</div><div class="help-feat-d">Complet, doar T1/T2, rotație 8 zile, rotație 3 zile, rotație 5 zile, rotație 4 zile.</div></div></div>
             <div class="help-feat"><span class="help-feat-ico">🏖️</span><div><div class="help-feat-t">CO / CM / Instruire</div><div class="help-feat-d">Păstrate la regenerare, excluse automat din weekend.</div></div></div>
             <div class="help-feat"><span class="help-feat-ico">🧮</span><div><div class="help-feat-t">Normă &amp; validare</div><div class="help-feat-d">Calcul automat cu sărbători legale și verificarea orelor.</div></div></div>
             <div class="help-feat"><span class="help-feat-ico">📊</span><div><div class="help-feat-t">Statistici</div><div class="help-feat-d">Ore pe angajat, carduri, comparație cu norma lunară.</div></div></div>
@@ -131,6 +131,8 @@ MANUALS.exp = {
             <li><strong>2) Zilnic T1/T2</strong> (implicit) — la fel, dar completează automat doar T1, T2 (și 8h); T1A/T2A rămân complet manuale.</li>
             <li><strong>3) Rotație 8 zile</strong> — fiecare echipaj/individ urmează ciclul personal T1→T1A→T2→L→T1→T2A→T2→L. Dacă faza T1A/T2A cade în weekend, se transformă în T1/T2 (dacă formația folosește T1A/T2A), altfel rămâne L. Ciclul curge continuu peste granița dintre luni. La 5+ echipaje pe grup, ciclul are coliziuni inevitabile, rezolvate automat: câștigă cine are mai puține ore, iar perechea care se ciocnește se rotește la fiecare 8 zile.</li>
             <li><strong>4) Rotație T1-T2-L</strong> — ciclu fix de 3 zile: T1→T2→L. Nu folosește T1A/T2A/8h. Aceeași protecție la coliziuni și aceeași continuitate între luni.</li>
+            <li><strong>5) Rotație T1-T1A-T2A-T2-L</strong> — ciclu fix de 5 zile: T1→T1A→T2A→T2→L. Dacă faza T1A/T2A cade în weekend (sau formația nu folosește T1A/T2A), se transformă în T1/T2. Aceleași reguli și continuitate ca la celelalte rotații.</li>
+            <li><strong>6) Rotație T1-T1A-T2-L</strong> — ciclu fix de 4 zile: T1→T1A→T2→L. Folosește T1A, dar nu T2A. Aceeași tratare a weekendului și aceleași reguli.</li>
           </ul>
           <p><strong>Cum alegi:</strong> folosește <em>📈 Analiză moduri</em> (bara de jos) — simulează toate cele 4 moduri pe luna curentă și arată care utilizează cel mai bine echipajele, fără să modifice graficul real (vezi tabul Statistici).</p>
           <p>Comune tuturor modurilor: grupare pe echipaje, respectarea echipajului „pe dată”, împerecherea temporară a celor rămași fără pereche, protecțiile din tabul Reguli, iar electricienii cu <em>Forțat 8h</em> primesc mereu 8h în zile lucrătoare.</p>

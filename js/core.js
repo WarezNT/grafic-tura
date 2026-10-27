@@ -7,7 +7,7 @@
 // Construiește markup-ul paginii (antet, controale, modale, manual) din șablon + MODE.shell.
 document.body.insertAdjacentHTML('afterbegin', buildShell());
 
-const COMMIT_COUNT = 119;
+const COMMIT_COUNT = 120;
 
 const DB_VERSION = 1;
 
@@ -746,13 +746,13 @@ function onShiftChange(dk, empId, sel) {
   if (existing !== null && existing !== v && existing !== 0 && v !== 0) {
     if (!confirm('Angajatul are deja tura ' + SHIFT_NAMES[existing] + ' în această zi. Schimbi în ' + SHIFT_NAMES[v] + '?')) {
       sel.value = existing;
-      sel.parentElement.className = sel.parentElement.className.replace(/\bshift-\d\b/, 'shift-' + existing);
+      sel.parentElement.className = sel.parentElement.className.replace(/\bshift-\d+\b/, 'shift-' + existing);
       return;
     }
   }
   setShift(dk, empId, v);
   const td = sel.parentElement;
-  td.className = td.className.replace(/\bshift-\d\b/, 'shift-' + v);
+  td.className = td.className.replace(/\bshift-\d+\b/, 'shift-' + v);
   const span = sel.parentElement.querySelector('.print-shift');
   if (span) { span.className = 'print-shift shift-' + v; span.textContent = SHIFT_NAMES[v]; }
   const st = getEmployeeStats(empId);
@@ -979,11 +979,13 @@ function getEmployeeStats(empId) {
     const parts = dk.split('-');
     const dow = new Date(+parts[0], +parts[1]-1, +parts[2]).getDay();
     const isWeekend = dow === 0 || dow === 6;
-    if (isWeekend && v >= 5) continue; // CO/CM nu se contorizează în weekend
+    if (isWeekend && (MODE.weekendNoCount ? MODE.weekendNoCount.includes(v) : v >= 5)) continue; // CO/CM nu se contorizează în weekend (MODE.weekendNoCount le poate restrânge)
     if (v >= 0 && v < counts.length) counts[v]++;
   }
   let hours = 0, worked = 0;
   for (let i = 0; i < counts.length; i++) { const h = SHIFT_HOURS[i] || 0; hours += counts[i] * h; if (h > 0) worked += counts[i]; }
+  // cârlig de mod: ajustări de ore la graniță (ex. tura de noapte care trece în luna următoare)
+  if (MODE.adjustMonthHours) hours = MODE.adjustMonthHours(empId, state.currentYear, state.currentMonth, hours);
   const co = counts[5] || 0, cm = counts[6] || 0;
   const st = { counts, co, cm, hours, worked, total: worked + co };
   if (MODE.decorateStats) MODE.decorateStats(st);   // câmpuri denumite specifice modului
@@ -1149,7 +1151,8 @@ function exportExcel() {
   const shiftFill = {
     0:{bg:'F0F0F0',fg:'666666'}, 1:{bg:'D6EAF8',fg:'1A5276'}, 2:{bg:'FDEBD0',fg:'935116'},
     3:{bg:'AED6F1',fg:'154360'}, 4:{bg:'FAD7A0',fg:'7E4D0E'}, 5:{bg:'E8D5F5',fg:'6C3483'},
-    6:{bg:'E8E8E8',fg:'555555'}, 7:{bg:'F0F4F8',fg:'2C3E50'}, 8:{bg:'D5F5E3',fg:'1A7A3A'}
+    6:{bg:'E8E8E8',fg:'555555'}, 7:{bg:'F0F4F8',fg:'2C3E50'}, 8:{bg:'D5F5E3',fg:'1A7A3A'},
+    9:{bg:'FFF3B0',fg:'7D6608'}, 10:{bg:'FADBD8',fg:'922B21'}
   };
   const argb = c => 'FF' + c;
   const fill = bg => ({ type:'pattern', pattern:'solid', fgColor:{ argb: argb(bg) } });
@@ -1238,7 +1241,11 @@ function exportExcel() {
           const sv = (isW && X.weekendToL.includes(rawSv)) ? 0 : rawSv;
           const ss = shiftFill[sv], bg = isW&&sv===0?'FCE4E4':ss.bg, fg = isW&&sv===0?'999999':ss.fg;
           const dc = ws.getCell(R, firstDay+d);
-          dc.value = X.dayText(emp, dk, sv, sec); dc.font=fnt(fg,true,8); dc.fill=fill(bg); dc.alignment=aln('center','middle');
+          dc.value = X.dayText(emp, dk, sv, sec); dc.font=fnt(fg,true,8); dc.fill=fill(bg);
+          // text pe două rânduri (ex. marcajul „+6h” de după T4): celula se împachetează, rândul se înalță
+          const twoLines = typeof dc.value === 'string' && dc.value.includes('\n');
+          dc.alignment = aln('center','middle', twoLines);
+          if (twoLines) ws.getRow(R).height = 24;
           // Chenar auriu pe celulele din zilele de sărbătoare — mirror al td.td-holiday din grafic
           if (yearHolidays.has(dk)) { const hb = { style:'thick', color:{argb:'FFD4A017'} }; dc.border = { top:hb, bottom:hb, left:hb, right:hb }; }
         }

@@ -57,6 +57,12 @@ referință). `diffs: []` = comportament identic. Atenție la cache: JS-urile se
 (16–22, 6h) · 4 T4 (22–06, 8h; o singură celulă, trece miezul nopții) · 5 CO · 6 CM. Atenție:
 valorile 3/4 înseamnă T3/T4 aici, dar T1A/T2A în Exploatare — de aici garda la import.
 
+**V2026.10.10**: valori noi (manuale, 6h lucrate fiecare, nu acoperă ture, păstrate la regenerare prin `keepOnClear`,
+permise și în weekend — `MODE.weekendNoCount=[5,6]`): 7 IL · 8 EMP · 9 Z (08–14) · 10 A. Eticheta tura 1 = „T1+T4”
+(DOAR etichetă; algoritmul/orele neschimbate). Weekend liber legat „pe cât posibil”: `weekendUnsafe` în
+`assignDispecerShifts` (nu începe bloc cine și-ar pierde ultimul weekend liber din lună) + ⚠️ în `renderGapList`;
+la 5 dispeceri e imposibil, la 6 parțial, la 7+ ok. Buton „▶▶ 6 luni” = `generateSixMonths()` (lunile deja generate se păstrează).
+
 **Cum generează**
 - Regulă dură: într-o tură (T1–T4) cel mult UN dispecer pe zi; ceilalți sunt liberi. Se lucrează în BLOCURI
   T3→T2→T1→T4 (4 zile), apoi ≥1 zi liberă; în fiecare zi începe exact un bloc nou. Continuarea blocului e funcție de
@@ -194,6 +200,8 @@ lunii, oricâte modificări pe lună).
 - `t12` (**implicit**) — doar T1/T2 automat, T1A/T2A rămân manuale
 - `rotation` — „Rotație 8 zile": ciclu fix T1→T1A→T2→L→T1→T2A→T2→L per echipaj/individ
 - `rotation3` — „Rotație T1-T2-L (3 zile)": ciclu fix T1→T2→L per echipaj/individ
+- `rotation5` — „Rotație T1-T1A-T2A-T2-L (5 zile)": `[1,3,4,2,0]`; `rotation4` — „Rotație T1-T1A-T2-L (4 zile)":
+  `[1,3,2,0]` (V2026.10.4). Doar un `case` nou în `assignDay` + opțiuni în select/`ANALYZE_MODES`/`usesTA`
 
 Toate rulează prin `generateDay(day)` → `assignCategoryShifts()` (full/t12) sau
 `assignRotationShifts()` (ambele moduri `rotation*`), apelat separat pt. fiecare grup
