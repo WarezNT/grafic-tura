@@ -515,3 +515,37 @@ nimic.
 - INST (valoare 8) e exclus din selecție pe weekend, la fel ca CO/CM — nu apare în dropdown
   pe S/D, se afișează ca `L` dacă e deja setat din date vechi, și nu se contorizează în ore
   pe weekend (`getEmployeeStats`).
+
+## Capcane la commit (verificate 2026-10-30)
+
+### `*.json` din `.gitignore` e o excludere agresivă
+
+`.gitignore` conține `*.json` („Date locale") — bine pentru exporturile de grafice, dar exclude
+**orice** fișier JSON, cu orice nume, oriunde în repo. Dacă se adaugă vreodată în proiect un
+`package.json`, un config JSON sau un fixture de test `.json`, git îl va ignora **silențios**
+(fără eroare, fără avertisment la `git add`), iar fișierul nu va ajunge în commit.
+
+Remediu, la momentul respectiv: excepție explicită în `.gitignore`, în ordinea corectă
+(excepția după regula generală, altfel nu are efect):
+
+```
+*.json
+!package.json
+```
+
+Sau, mai curat, înlocuirea regulii generale cu una țintită (ex. `/exports/`, `grafic-*.json`).
+De verificat cu `git check-ignore -v <fișier>` — dar **atenție**: `check-ignore` raportează și
+fișierele urmărite deja (tracked), deci un rezultat pozitiv nu înseamnă neapărat că fișierul
+e exclus din commit.
+
+### Hook-ul pre-commit e dezactivat local → `COMMIT_COUNT` se incrementează manual
+
+`core.hooksPath` e **dezactivat** în clonele de pe mașina asta (sandbox-ul Windows blochează
+`sh.exe`, prin care Git rulează hook-urile — vezi `PJ\README.md`). Consecințe:
+
+- Un commit **nu** mai modifică singur `COMMIT_COUNT` din `js/core.js`; ce stagezi e exact ce
+  se commit-ește, fără surprize.
+- Ca footer-ul aplicației (`#commit`) să rămână corect, `COMMIT_COUNT` se incrementează manual
+  în același commit, cu numărul commit-ului care urmează: `git rev-list --count HEAD` + 1.
+- Pe orice altă mașină (sau în CI) hook-ul rulează normal după
+  `git config core.hooksPath .githooks` — acolo nu trebuie incrementat manual.
