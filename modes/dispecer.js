@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_dispecer_version';
 
 const ORG_KEY = 'graficTura_dispecer_org';
 
-const APP_VERSION = 'V2026.10.16';
+const APP_VERSION = 'V2026.10.17';
 
 const DB_NAME = 'GraficTuraDispecerDB';
 
@@ -23,6 +23,9 @@ const MODE = {
     keptLong: 'CO, CM, IL, EMP, Z și A', keptShort: 'CO/CM/IL/EMP/Z/A'
   },
   keepOnClear: [5, 6, 7, 8, 9, 10],
+  // Angajatul-exemplu pentru o instalare NOUĂ (vezi seedInitialState din nucleu). Recuperarea din
+  // date corupte NU îl primește — acolo trebuie să pornești de la zero, nu cu un om inventat.
+  seedEmployee() { return { id: 1, name: 'Dispecer 1', category: 'dispecer' }; },
   leaveTypes: { 5: 'CO', 6: 'CM', 7: 'IL', 8: 'EMP', 9: 'Z', 10: 'A' },
   leaveSkipWeekend: [7, 8, 9, 10],       // la „pe interval", IL/EMP/Z/A sar peste sâmbete/duminici
   weekendNoCount: [5, 6],                // doar CO/CM nu se contorizează în weekend; IL/EMP/Z/A da (6h)
@@ -268,6 +271,13 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.17': {
+    title: 'Pornire mai curată',
+    items: [
+      { icon: '🧹', text: 'Dacă datele salvate sunt deteriorate, aplicația pornește de la zero — fără un „Dispecer 1" inventat peste datele pierdute. Datele vechi rămân păstrate într-o copie de siguranță.' },
+      { icon: '➕', text: 'La prima instalare primești în continuare un dispecer-exemplu, ca să vezi imediat cum arată graficul.' }
+    ]
+  },
   'V2026.10.16': {
     title: 'Organizația, separată pe fiecare mod',
     items: [
@@ -493,7 +503,7 @@ function defaultState() {
     currentMonth: now.getMonth() + 1,
     currentYear: now.getFullYear(),
     org: { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' },
-    employees: [{ id: 1, name: 'Dispecer 1', category: 'dispecer' }]
+    employees: []
   };
 }
 

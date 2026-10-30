@@ -7,7 +7,8 @@
 //   2. modes/<mod>.js        → acest fișier (constante + MODE + funcțiile specifice).
 //   3. js/manual-<mod>.js    → manualul (MANUALS.<cheie> = {label, panels}); adaugă-l în toate paginile.
 //   4. <mod>.html            → copie a dispecer.html cu fișierul de mod schimbat (30 de linii).
-//   5. tests/snapshot.js     → un scenariu nou; generează tests/_baseline-<mod>.json din versiunea de referință.
+//   5. tests/snapshot.js     → un scenariu nou; regenerează tests/baseline-<mod>.json
+//                              (node tools/harness/make-baseline.mjs) din versiunea de referință.
 //
 // Ordinea scripturilor în pagină: logo → modes-registry → manual-* → modes/<mod> → shell → core.
 // Fișierul de mod NU apelează funcții din core la încărcare (doar în hook-uri, la evenimente).
@@ -40,6 +41,9 @@ const MODE = {
     keptLong: 'CO și CM', keptShort: 'CO/CM'               // ce păstrează „Curăță”
   },
   keepOnClear: [3, 4],          // valori păstrate la „Curăță” (CO, CM)
+  // Angajatul-exemplu pentru o instalare NOUĂ (vezi seedInitialState din nucleu) — NU se folosește
+  // la recuperarea din date corupte. Lasă funcția afară dacă modul pornește de la zero.
+  seedEmployee() { return { id: 1, name: 'Angajat 1' }; },
   leaveTypes: { 3: 'CO', 4: 'CM' },
   leaveSkipWeekend: [],
   leaveHoursPerDay() { return 8; },                         // ore creditate pe zi de CO/CM

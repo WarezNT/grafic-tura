@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_version';
 
 const ORG_KEY = 'graficTura_org';
 
-const APP_VERSION = 'V2026.10.9';
+const APP_VERSION = 'V2026.10.10';
 
 const DB_NAME = 'GraficTuraDB';
 
@@ -22,6 +22,8 @@ const MODE = {
     keptLong: 'CO, CM și Instruire', keptShort: 'CO/CM/Instruire'    // ce păstrează „Curăță”
   },
   keepOnClear: [5, 6, 8],        // valori de tură păstrate la „Curăță” (CO, CM, INST)
+  // Angajatul-exemplu pentru o instalare NOUĂ (vezi seedInitialState din nucleu).
+  seedEmployee() { return { id: 1, name: 'Electrician 1', category: 'urban', functia: 'emitent', crew: '', forced8: false, crewOverrides: {} }; },
   leaveTypes: { 5: 'CO', 6: 'CM', 8: 'INST' },   // tipuri aplicabile pe interval
   leaveSkipWeekend: [8],         // tipuri care sar peste weekend la „pe interval”
   leaveHoursPerDay() { return 8; },
@@ -534,6 +536,13 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.10': {
+    title: 'Pornire mai curată',
+    items: [
+      { icon: '🧹', text: 'Dacă datele salvate sunt deteriorate, aplicația pornește de la zero — fără un „Electrician 1" inventat peste datele pierdute. Datele vechi rămân păstrate într-o copie de siguranță.' },
+      { icon: '➕', text: 'La prima instalare primești în continuare un electrician-exemplu, ca să vezi imediat cum arată graficul.' }
+    ]
+  },
   'V2026.10.9': {
     title: 'Organizația, separată pe fiecare mod',
     items: [
@@ -806,7 +815,7 @@ const PREDEFINED_CREWS = ['U1','U2','U3','U4','U5','R1','R2','R3','R4','R5'];
 function defaultState() {
   const now = new Date();
   return {
-    employees: [{ id: 1, name: 'Electrician 1', category: 'urban', functia: 'emitent', crew: '', forced8: false, crewOverrides: {} }],
+    employees: [],
     config: { urban: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 }, rural: { t1: 2, t1a: 0, t2: 2, t2a: 0, c8: 0 } },
     customCrews: [],
     schedule: {},

@@ -26,7 +26,7 @@ Ordinea scripturilor: logo → modes-registry → manual-* → modes/<mod> → s
 **Regula de aur**: o corecție comună se face O SINGURĂ DATĂ, în `js/core.js`; ce diferă între moduri stă în
 `MODE` (hook-uri/date) sau în `MODE.shell` (markup). Nu copia cod între fișierele de mod.
 
-**Contractul `MODE`** (vezi `modes/_template.js`): `id, dbKey, stateModule, helpMode, words, keepOnClear, leaveTypes,
+**Contractul `MODE`** (vezi `modes/_template.js`): `id, dbKey, stateModule, helpMode, words, keepOnClear, seedEmployee, leaveTypes,
 leaveSkipWeekend, leaveHoursPerDay, isWorkShift, expectedHours`; formulare (`readAddForm, resetAddForm, afterAdd,
 addedMessage, fillEditForm, readEditForm, applyEditForm, importEmployee`), garda la import (`looksForeign,
 foreignMessage, foreignFileMessage`), generare (`beginGeneration, commitGeneration, initGenStats, resyncGenStats,
@@ -190,6 +190,13 @@ Trei chei de storage, INDEPENDENTE una de alta — nu se suprascriu reciproc:
   **Deliberat separat de `state.org`** — vezi „Bug fix: org reset" mai jos.
 
 Plus IndexedDB (`GraficTuraDB`) ca back-up secundar la `saveState()`.
+
+**Cum pornește `loadState()`** (trei căi, verificate cu `tools/harness/verify-state.mjs`):
+nimic în storage → `seedInitialState()` = stare goală + `MODE.seedEmployee()` (angajatul-exemplu, ca
+tabelul să nu fie gol la prima rulare); date corupte (JSON rupt sau formă greșită) → `defaultState()`
+**fără** angajat-exemplu + banner + copia raw-ului în `<STORAGE_KEY>_corrupt_backup`; date valide →
+`adoptState()` (sanitizare + migrare). `defaultState()` nu mai conține angajați — seedul e separat,
+ca recuperarea după date pierdute să nu inventeze un om.
 
 ### Bug fix istoric: org data se reseta la fiecare deploy/import
 Cauză: `state.org` era suprascris de orice import JSON (lună sau backup complet) sau

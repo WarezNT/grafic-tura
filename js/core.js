@@ -24,7 +24,7 @@ document.addEventListener('keydown', e => {
   if (window.getComputedStyle(top).display !== 'none') top.style.display = 'none';  // plasă de siguranță
 });
 
-const COMMIT_COUNT = 135;
+const COMMIT_COUNT = 136;
 
 const DB_VERSION = 1;
 
@@ -74,16 +74,17 @@ function dbPut(key, value) {
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const s = JSON.parse(raw);
-      if (s && s.employees && Array.isArray(s.employees)) {
-        adoptState(s);          // validează angajații + graficul, apoi migrează (vezi adoptState)
-        return s;
-      }
-      // JSON valid dar formă neașteptată (fără employees[]) — tot corupt din perspectiva
-      // aplicației, tratat la fel ca eșecul de parsare de mai jos.
-      throw new Error('shape invalid: missing employees[]');
+    // Nimic în storage = instalare nouă (nu date pierdute): primește un angajat-exemplu, ca tabelul
+    // să nu fie complet gol la prima rulare.
+    if (!raw) return seedInitialState();
+    const s = JSON.parse(raw);
+    if (s && s.employees && Array.isArray(s.employees)) {
+      adoptState(s);          // validează angajații + graficul, apoi migrează (vezi adoptState)
+      return s;
     }
+    // JSON valid dar formă neașteptată (fără employees[]) — tot corupt din perspectiva
+    // aplicației, tratat la fel ca eșecul de parsare de mai jos.
+    throw new Error('shape invalid: missing employees[]');
   } catch (e) {
     console.warn('loadState: date corupte în localStorage, pornesc de la zero.', e);
     // Salvează raw-ul corupt sub o cheie separată — nu se pierde, doar nu se folosește direct.
@@ -97,6 +98,16 @@ function loadState() {
     stateLoadCorrupted = true;
   }
   return defaultState();
+}
+
+// Starea unei instalări noi: goală + angajatul-exemplu dat de mod (dacă are). Deliberat SEPARAT de
+// defaultState(), care e folosită și la recuperarea din date corupte: acolo nu trebuie inventat un
+// om peste datele pierdute, ci pornit de la zero (bug găsit la audit — „Dispecer 1" apărea din senin).
+function seedInitialState() {
+  const s = defaultState();
+  const seed = typeof MODE.seedEmployee === 'function' ? MODE.seedEmployee() : null;
+  if (seed) s.employees = [seed];
+  return s;
 }
 
 function closeAddEmployeeModal() {
