@@ -80,6 +80,8 @@ node trace-disp.mjs 4        # Dispecer: primele 14 zile + câte zile libere are
 node norma.mjs               # norma pe ambele module (Dispecer 6h/zi, Exploatare 8h/zi) + % acoperit
 node check-7.mjs             # Dispecer 7 oameni: scenarii cu/fără concedii suprapuse
 node make-baseline.mjs       # regenerează tests/baseline-*.json (Chrome real); --verify doar compară
+node verify-state.mjs        # cele 3 căi de pornire a stării: instalare nouă / date corupte / date valide
+node verify-shell-stability.mjs  # amprenta de shell nu depinde de datele din profil
 node probe.mjs               # sanity: ce globals/elemente există în pagină
 ```
 
