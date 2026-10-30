@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_version';
 
 const ORG_KEY = 'graficTura_org';
 
-const APP_VERSION = 'V2026.10.4';
+const APP_VERSION = 'V2026.10.5';
 
 const DB_NAME = 'GraficTuraDB';
 
@@ -497,6 +497,12 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.5': {
+    title: 'Coloana cu nume nu mai dispare pe ecrane mici',
+    items: [
+      { icon: '🖥️', text: 'Coloana „Nume Prenume" se comprima la lățime 0 sub ~1700px (laptop, zoom >100%) și numele se revărsau peste coloana următoare; acum are lățime fixă, iar tabelul face scroll orizontal ca înainte' }
+    ]
+  },
   'V2026.10.4': {
     title: 'Două moduri noi de rotație',
     items: [

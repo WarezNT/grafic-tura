@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_dispecer_version';
 
 const ORG_KEY = 'graficTura_dispecer_org';
 
-const APP_VERSION = 'V2026.10.10';
+const APP_VERSION = 'V2026.10.11';
 
 const DB_NAME = 'GraficTuraDispecerDB';
 
@@ -201,6 +201,12 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.11': {
+    title: 'Coloana cu nume nu mai dispare pe ecrane mici',
+    items: [
+      { icon: '🖥️', text: 'Coloana cu numele dispecerilor se comprima la lățime 0 sub ~1700px (laptop, zoom >100%) și numele se revărsau peste coloana următoare; acum are lățime fixă, iar tabelul face scroll orizontal' }
+    ]
+  },
   'V2026.10.10': {
     title: 'IL/EMP/Z/A, weekend liber, generare 6 luni',
     items: [

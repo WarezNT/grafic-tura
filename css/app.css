@@ -42,6 +42,11 @@ th:last-child{min-width:55px}
 th.day-col{min-width:43px;width:43px;padding:6px 0}
 td{padding:0;text-align:center;border:none;border-radius:4px;vertical-align:middle}
 td:first-child{text-align:left;padding:2px 6px;font-weight:500;background:var(--card-bg);position:sticky;left:0;z-index:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* `table-layout:fixed` (linia 37) ignoră `min-width` pe celule: coloana cu numele avea doar
+   min-width, deci se comprima la 0 când zilele lunii nu încăpeau în lățime (sub ~1700px, deci
+   pe orice laptop sau la zoom >100%) și textul se revărsa peste coloana următoare. Are nevoie de
+   `width` explicit; varianta de print o avea deja (width:180px). */
+#schedule-table th:first-child,#schedule-table td:first-child{width:180px}
 tr:nth-child(even) td:first-child{background:var(--row-even)}
 tbody tr:hover td{background:var(--hover-bg)}
 tbody tr:hover td:first-child{background:var(--hover-first)}
