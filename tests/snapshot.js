@@ -190,9 +190,15 @@ async function runSnapshot() {
 }
 
 /* Amprenta markup-ului STATIC al paginii (shell + modale + manual), fără conținutul dinamic.
- * Se calculează pe pagina proaspăt încărcată (înainte de acțiuni). */
+ * Se calculează pe o stare CANONICĂ (fără angajați și fără grafic), nu pe ce a rămas în browser:
+ * altfel amprenta depinde de profilul de test (angajați vechi, butoane active, lună selectată) și
+ * aceeași versiune de cod dădea rezultate diferite între local și site. */
 function shellFingerprint() {
   const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); };
+  const saved = { emps: state.employees, sched: state.schedule, genDay: state.genDay, genStats: state.genStats };
+  state.employees = []; state.schedule = {};
+  state.genDay = 0; state.genStats = null; genDay = 0; genStats = null;
+  try { render(); } catch (e) {}
   const b = document.body.cloneNode(true);
   b.querySelectorAll('script').forEach(s => s.remove());
   ['month-title', 'org-subtitle', 'table-head', 'table-body', 'table-legend', 'holiday-list', 'gap-list', 'empty-msg', 'status',
@@ -206,6 +212,11 @@ function shellFingerprint() {
   });
   b.querySelectorAll('.ta-field,.c8-field').forEach(e => e.removeAttribute('style'));
   const html = b.innerHTML.replace(/>\s+</g, '><').trim();
+  // restaurează starea de dinainte (testul continuă apoi cu scenariile lui)
+  state.employees = saved.emps; state.schedule = saved.sched;
+  state.genDay = saved.genDay; state.genStats = saved.genStats;
+  genDay = saved.genDay; genStats = saved.genStats;
+  try { render(); } catch (e) {}
   return { hash: hash(html), len: html.length };
 }
 
