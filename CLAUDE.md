@@ -613,6 +613,18 @@ nu se reia singur. Atenție la CDN: `wareznt.github.io` ține asset-urile în ca
 **ignoră query string-ul** — verifică cu header `Cache-Control: no-cache` (o fac scripturile de mai
 sus), nu cu `?cb=...`.
 
+## Preferințe de lucru (confirmate de utilizator)
+
+- **Un singur commit la final**, nu commit la fiecare modificare: se fac mai multe dezvoltări, apoi un
+  commit + push care le cuprinde pe toate (versiuni, changelog-uri și `COMMIT_COUNT` actualizate o dată).
+  Excepție doar când se cere explicit commit imediat.
+- **Versiunile rămân independente pe mod** (`V2026.10.17` Dispecer vs `V2026.10.10` Exploatare).
+  S-a propus unificarea pe 2026-10-31 și utilizatorul a ales să rămână separate — nu unifica
+  `APP_VERSION` fără cerere explicită. `COMMIT_COUNT` e singurul număr comun (al deploy-ului).
+- **Două tab-uri deschise simultan**: nu există listener pe `storage`, deci ultima scriere câștigă
+  silențios. Limitare cunoscută și acceptată; repararea cere o strategie de reconciliere a
+  modificărilor, nu doar un listener — nu o „repara" de unul singur.
+
 ## Capcane la commit (verificate 2026-10-30)
 
 ### `*.json` din `.gitignore` e o excludere agresivă
