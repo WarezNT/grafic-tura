@@ -189,17 +189,16 @@ async function runSnapshot() {
   return out;
 }
 
-/* Amprenta markup-ului STATIC al paginii (shell + modale + manual), fără conținutul dinamic.
- * Se calculează pe o stare CANONICĂ (fără angajați și fără grafic), nu pe ce a rămas în browser:
- * altfel amprenta depinde de profilul de test (angajați vechi, butoane active, lună selectată) și
- * aceeași versiune de cod dădea rezultate diferite între local și site. */
+/* Amprenta markup-ului STATIC al paginii (shell + modale + manual).
+ * Sursa e markup-ul capturat la boot (`window.__shellBootHtml`, setat în core.js imediat după ce
+ * shell-ul e injectat) — NU DOM-ul viu. Altfel amprenta depinde de starea din profil (ultimul mesaj
+ * de status, butoane dezactivate, un changelog care se deschide singur după un deploy) și aceeași
+ * versiune de cod dădea rezultate diferite între local și site. */
 function shellFingerprint() {
   const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); };
-  const saved = { emps: state.employees, sched: state.schedule, genDay: state.genDay, genStats: state.genStats };
-  state.employees = []; state.schedule = {};
-  state.genDay = 0; state.genStats = null; genDay = 0; genStats = null;
-  try { render(); } catch (e) {}
-  const b = document.body.cloneNode(true);
+  const box = document.createElement('div');
+  box.innerHTML = window.__shellBootHtml || document.body.innerHTML;
+  const b = box;
   b.querySelectorAll('script').forEach(s => s.remove());
   ['month-title', 'org-subtitle', 'table-head', 'table-body', 'table-legend', 'holiday-list', 'gap-list', 'empty-msg', 'status',
    'db-status', 'summary', 'sig-sef', 'sig-resp', 'sig-aprobat', 'app-version-badge', 'commit-badge', 'org-fields',
@@ -210,13 +209,16 @@ function shellFingerprint() {
   ['status', 'btn-prev-day', 'btn-next-day', 'btn-generate-all', 'header-logo'].forEach(id => {
     const e = b.querySelector('#' + id); if (e) { e.removeAttribute('style'); e.removeAttribute('src'); }
   });
+  // elemente al căror `class`/atribut depinde de stare, nu de markup
+  ['status', 'db-status', 'empty-msg'].forEach(id => {
+    const e = b.querySelector('#' + id); if (e) e.removeAttribute('class');
+  });
+  b.querySelectorAll('button').forEach(e => e.removeAttribute('disabled'));
+  b.querySelectorAll('[style=""],[data-confirm]').forEach(e => { e.removeAttribute('style'); e.removeAttribute('data-confirm'); });
   b.querySelectorAll('.ta-field,.c8-field').forEach(e => e.removeAttribute('style'));
+  b.querySelectorAll('.modal-overlay').forEach(e => { e.removeAttribute('style'); e.removeAttribute('aria-hidden'); });
   const html = b.innerHTML.replace(/>\s+</g, '><').trim();
-  // restaurează starea de dinainte (testul continuă apoi cu scenariile lui)
-  state.employees = saved.emps; state.schedule = saved.sched;
-  state.genDay = saved.genDay; state.genStats = saved.genStats;
-  genDay = saved.genDay; genStats = saved.genStats;
-  try { render(); } catch (e) {}
+  window.__shellHtml = html;   // doar pentru diagnostic (diff-shell*.mjs); nu intră în hash
   return { hash: hash(html), len: html.length };
 }
 

@@ -6,6 +6,10 @@
 
 // Construiește markup-ul paginii (antet, controale, modale, manual) din șablon + MODE.shell.
 document.body.insertAdjacentHTML('afterbegin', buildShell());
+// Markup-ul static, capturat O DATĂ aici, înainte de orice randare / mesaj / popup. Testul de
+// instantanee (tests/snapshot.js) îl folosește ca amprentă: dacă ar citi DOM-ul viu, amprenta ar
+// depinde de starea din profil (ultimul mesaj de status, butoane dezactivate, un changelog deschis).
+window.__shellBootHtml = document.body.innerHTML;
 
 // Accesibilitate: modalele sunt <div>-uri fără rol. Le marcăm ca dialoguri și le închidem cu Escape.
 // Fiecare overlay are deja onclick="if(event.target===this)closeX()" pe fundal, deci un click
@@ -24,7 +28,7 @@ document.addEventListener('keydown', e => {
   if (window.getComputedStyle(top).display !== 'none') top.style.display = 'none';  // plasă de siguranță
 });
 
-const COMMIT_COUNT = 140;
+const COMMIT_COUNT = 141;
 
 const DB_VERSION = 1;
 
