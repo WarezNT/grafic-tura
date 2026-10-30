@@ -580,6 +580,28 @@ nimic.
   pe S/D, se afișează ca `L` dacă e deja setat din date vechi, și nu se contorizează în ore
   pe weekend (`getEmployeeStats`).
 
+## Deploy (GitHub Pages) — cum se verifică
+
+Publicarea e „deploy from branch" pe `main`: fiecare push pornește un build Pages (rulează ca
+GitHub Actions, environment `github-pages`). **Se întâmplă ca pasul `deploy` să pice după un
+build reușit** („failure" în ~1 minut, fără eroare de cod) sau ca build-ul să nu pornească deloc
+— ambele s-au întâmplat pe 2026-10-30, de trei ori. Nu e problemă de cod: conținutul e bun,
+doar publicarea a eșuat.
+
+Cum verifici rapid (fără să ghicești):
+
+```powershell
+cd C:\Users\OMFG\Documents\PJ\tools\harness
+node check-deploy.mjs      # compară branch-ul, deployments-urile și ce servește site-ul
+node deploy-status.mjs     # ultimele deployment-uri + status (success / failure / error)
+node poll-site.mjs 132     # așteaptă până când site-ul servește commit-ul #132
+```
+
+Remediu: **un push nou** (orice commit; sau „Re-run failed jobs" din fila Actions). Un build reușit
+nu se reia singur. Atenție la CDN: `wareznt.github.io` ține asset-urile în cache ~10 minute și
+**ignoră query string-ul** — verifică cu header `Cache-Control: no-cache` (o fac scripturile de mai
+sus), nu cu `?cb=...`.
+
 ## Capcane la commit (verificate 2026-10-30)
 
 ### `*.json` din `.gitignore` e o excludere agresivă
