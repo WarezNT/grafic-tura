@@ -32,9 +32,11 @@ addedMessage, fillEditForm, readEditForm, applyEditForm, importEmployee`), garda
 foreignMessage, foreignFileMessage`), generare (`beginGeneration, commitGeneration, initGenStats, resyncGenStats,
 assignDay, afterDay, decorateStats`), pornire (`afterLoad, syncConfigUI, beforeRestoreSave, afterRestoreUI`),
 `legend`, `table{extraHeader, fixedCols, weekendHide, weekendDisplayL, sections, rowHead, cellExtra}`,
-`summary{info, cardHeader, cardPills, statsTable}`, `excel{...}`, `shell{...}`. Funcții obligatorii în fișierul de
-mod: `defaultState()`, `migrateState(s)`; organizația (`getOrg/applyOrgToDOM/openOrgModal/saveOrgSettings`) e încă
-specifică modului (Dispecer = configurabilă, Exploatare = câmpuri fixe).
+`summary{info, cardHeader, cardPills, statsTable, cardExtra}`, `excel{...}`, `org{defaults, subtitle, title,
+signatures, fillForm, readForm, focusId, normalize}`, `shell{...}`. Funcții obligatorii în fișierul de
+mod: `defaultState()`, `migrateState(s)`; scheletul organizației (`getOrg/applyOrgToDOM/openOrgModal/
+saveOrgSettings`) e în `core.js` — modul dă doar `MODE.org` și propriul `ORG_KEY` (chei separate, deci
+setările celor două aplicații sunt independente).
 
 **Cum adaug un mod nou** (ore, nu zile): (1) intrare în `APP_MODES`; (2) copiază `modes/_template.js` →
 `modes/<mod>.js` și completează `MODE`, `assignDay`, `defaultState`, `migrateState`; (3) `js/manual-<mod>.js`
@@ -147,9 +149,11 @@ la 5 dispeceri e imposibil, la 6 parțial, la 7+ ok. Buton „▶▶ 6 luni” =
 - A pornit ca o copie a `index.html`: fix-urile din secțiunile de mai jos (Exploatare) NU se aplică
   în Dispecer — nu le porta. Invers, orice fix de infrastructură comună (print, import, org, Excel)
   trebuie făcut manual în ambele fișiere.
-- Setări organizație (⚙️): denumirile câmpurilor sunt editabile și fiecare câmp are bifă activ/inactiv
-  (`ORG_FIELDS`, `org.labels`, `org.off`, `org.entitate`) — DOAR în Dispecer; în Exploatare rămân câmpurile fixe.
-  Detalii în DISPECER.md §15.
+- Setări organizație (⚙️): scheletul comun (titlu, subtitlu, semnături, modal, salvare) stă în `core.js`,
+  iar fiecare mod dă doar `MODE.org` (câmpuri, texte, formular) + propriul `ORG_KEY`
+  (`graficTura_org` vs `graficTura_dispecer_org`). Deci setările sunt independente între aplicații.
+  În Dispecer câmpurile sunt configurabile (`ORG_FIELDS`, `org.labels`, `org.off`, `org.entitate`),
+  în Exploatare rămân fixe. Detalii în DISPECER.md §15.
 - `migrateState` șterge câmpurile vechi (config, genMode, customCrews, functia/crew/forced8) din date salvate.
 - Importul (backup, lună, „Adaugă dispeceri") refuză fișierele din Exploatare (`looksLikeExploatare`).
 - Print/PDF: tema deschisă mereu (`enterPrintTheme`), ca în Exploatare.

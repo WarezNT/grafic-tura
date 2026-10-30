@@ -46,6 +46,24 @@ const MODE = {
   isWorkShift(v) { return v > 0 && (SHIFT_HOURS[v] || 0) > 0; },   // contează ca tură lucrată (sărbători)
   expectedHours(y, m) { return 8 * 21; },                   // norma lunară (null = necunoscută)
 
+  // organizația: scheletul (titlu, subtitlu, semnături, modal, salvare) e în nucleu.
+  // Fiecare mod are propriul ORG_KEY → setările celor două aplicații sunt independente.
+  org: {
+    defaults() { return { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' }; },
+    subtitle(org) { return [org.formatia, 'Entitatea S.A'].filter(Boolean).join(' — '); },
+    title(org) { return 'Grafic' + (org.formatia ? ' — ' + org.formatia : ''); },
+    signatures(org) {
+      return [
+        { id: 'sig-sef', html: 'Șef FOL EM<br>' + esc(org.sefFOL || '—') },
+        { id: 'sig-resp', html: 'Responsabil Tehnic<br>' + esc(org.responsabilTehnic || '—') },
+        { id: 'sig-aprobat', html: 'Aprobat<br>' + esc(org.aprobat || '—') }
+      ];
+    },
+    fillForm(org) { /* completează inputurile modalului (id-uri din MODE.shell) */ },
+    readForm(prev) { return prev; },   // întoarce obiectul org citit din formular
+    focusId: 'org-formatia'
+  },
+
   // formulare angajat (adăugare / editare / import)
   readAddForm() { return { category: '<mod>' }; },
   resetAddForm() {}, afterAdd() {},

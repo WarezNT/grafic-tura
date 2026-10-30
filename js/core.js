@@ -24,7 +24,7 @@ document.addEventListener('keydown', e => {
   if (window.getComputedStyle(top).display !== 'none') top.style.display = 'none';  // plasă de siguranță
 });
 
-const COMMIT_COUNT = 130;
+const COMMIT_COUNT = 131;
 
 const DB_VERSION = 1;
 
@@ -538,6 +538,53 @@ function loadOrg() {
 
 function saveOrg(org) {
   localStorage.setItem(ORG_KEY, JSON.stringify(org));
+}
+
+// ── Organizația: scheletul comun (citire, titlu, subtitlu, semnături, modal, salvare) ──
+// Ce diferă între module stă exclusiv în MODE.org (câmpuri, texte, formular). Fiecare mod are
+// propriul ORG_KEY (`graficTura_org` vs `graficTura_dispecer_org`) și propriul state, deci
+// setările celor două aplicații rămân INDEPENDENTE — un mod nu poate scrie peste celălalt.
+function getOrg() {
+  const stored = loadOrg() || state.org || {};
+  const org = Object.assign(MODE.org.defaults(), stored);
+  if (MODE.org.normalize) MODE.org.normalize(org);
+  return org;
+}
+
+function applyOrgToDOM() {
+  const org = getOrg();
+  const O = MODE.org;
+  const subtitle = document.getElementById('org-subtitle');
+  if (subtitle) subtitle.textContent = O.subtitle(org);
+  document.title = O.title(org);
+  // Semnăturile vin cu HTML deja escapat de mod (au nevoie de <br> și de etichete editabile).
+  // Cele dezactivate se ascund complet, nu rămân cu „—".
+  const sigs = new Map(O.signatures(org).map(s => [s.id, s]));
+  (O.signatureIds || ['sig-sef', 'sig-resp', 'sig-aprobat']).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const box = el.closest('.signature-box') || el;
+    const s = sigs.get(id);
+    box.style.display = s ? '' : 'none';
+    if (s) el.innerHTML = s.html;
+  });
+}
+
+function openOrgModal() {
+  MODE.org.fillForm(getOrg());
+  document.getElementById('org-modal').style.display = 'flex';
+  const first = MODE.org.focusId ? document.getElementById(MODE.org.focusId) : null;
+  if (first) setTimeout(() => first.focus(), 50);
+}
+
+function saveOrgSettings() {
+  const org = MODE.org.readForm(getOrg());
+  saveOrg(org);
+  state.org = org;
+  saveState();
+  applyOrgToDOM();
+  closeOrgModal();
+  setStatus('Setări organizație salvate.', 'success');
 }
 
 function closeOrgModal() {

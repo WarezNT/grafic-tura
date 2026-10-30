@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_version';
 
 const ORG_KEY = 'graficTura_org';
 
-const APP_VERSION = 'V2026.10.8';
+const APP_VERSION = 'V2026.10.9';
 
 const DB_NAME = 'GraficTuraDB';
 
@@ -360,6 +360,38 @@ const MODE = {
       document.getElementById('cfg-' + g + '-c8').value = c.c8 || 0;
     });
   },
+  // ── organizația: doar specificul modului; scheletul (titlu, semnături, salvare) e în nucleu ──
+  // Aici câmpurile sunt FIXE (entitatea e mereu Delgaz Grid S.A), spre deosebire de Dispecer.
+  org: {
+    defaults() { return { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' }; },
+    subtitle(org) { return [org.formatia, 'Delgaz Grid S.A'].filter(Boolean).join(' — '); },
+    title(org) { return 'Grafic de tură' + (org.formatia ? ' — ' + org.formatia : '') + ' - Delgaz Grid S.A'; },
+    // HTML gata escapat: are nevoie de <br> între linii, ca în machetă.
+    signatures(org) {
+      return [
+        { id: 'sig-sef', html: 'Șef FOL EM<br>' + esc(org.sefFOL || '—') },
+        { id: 'sig-resp', html: 'Responsabil Tehnic<br>' + esc(org.responsabilTehnic || '—') },
+        { id: 'sig-aprobat', html: 'Aprobat<br>' + (org.judet ? 'Șef CORE ' + esc(org.judet) : 'Șef CORE') + '<br>' + esc(org.aprobat || '—') }
+      ];
+    },
+    fillForm(org) {
+      document.getElementById('org-formatia').value = org.formatia;
+      document.getElementById('org-sef').value = org.sefFOL;
+      document.getElementById('org-resp').value = org.responsabilTehnic;
+      document.getElementById('org-judet').value = org.judet;
+      document.getElementById('org-aprobat').value = org.aprobat;
+    },
+    readForm() {
+      return {
+        formatia: document.getElementById('org-formatia').value.trim(),
+        sefFOL: document.getElementById('org-sef').value.trim(),
+        responsabilTehnic: document.getElementById('org-resp').value.trim(),
+        judet: document.getElementById('org-judet').value.trim(),
+        aprobat: document.getElementById('org-aprobat').value.trim()
+      };
+    },
+    focusId: 'org-formatia'
+  },
   helpMode: 'exp',                // modul de manual deschis implicit (cheia din MANUALS),
   // ── markup specific modului (inserat în șablonul din js/shell.js) ──
   shell: {
@@ -502,6 +534,13 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.9': {
+    title: 'Organizația, separată pe fiecare mod',
+    items: [
+      { icon: '🏢', text: 'Setările de organizație (formația, semnăturile, datele aprobării) sunt ținute separat pentru Exploatare și Dispecer: ce setezi într-o aplicație nu apare în cealaltă' },
+      { icon: '🧱', text: 'Codul comun pentru organizație (titlu, subtitlu, semnături, modal, salvare) stă acum într-un singur loc; ce se vede rămâne neschimbat' }
+    ]
+  },
   'V2026.10.8': {
     title: 'Tastatură, modale și salvare mai rară',
     items: [
@@ -1502,55 +1541,8 @@ function closeAnalyzeModal() {
   document.getElementById('analyze-modal').style.display = 'none';
 }
 
-function getOrg() {
-  const stored = loadOrg();
-  if (stored) return Object.assign({ formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' }, stored);
-  return Object.assign({ formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '' }, state.org || {});
-}
-
-function applyOrgToDOM() {
-  const org = getOrg();
-  const subtitle = document.getElementById('org-subtitle');
-  if (subtitle) subtitle.textContent = [org.formatia, 'Delgaz Grid S.A'].filter(Boolean).join(' — ');
-  document.title = 'Grafic de tură' + (org.formatia ? ' — ' + org.formatia : '') + ' - Delgaz Grid S.A';
-  // esc() (deja folosit pt. nume electricieni în renderTable) — org.* poate veni dintr-un fișier
-  // JSON importat de la altcineva; fără escape, innerHTML nesigur = XSS stocat la reload (bug
-  // găsit la audit: applyJSON poate seta ORG_KEY din data.org la import de lună).
-  const sigSef = document.getElementById('sig-sef');
-  if (sigSef) sigSef.innerHTML = 'Șef FOL EM<br>' + esc(org.sefFOL || '—');
-  const sigResp = document.getElementById('sig-resp');
-  if (sigResp) sigResp.innerHTML = 'Responsabil Tehnic<br>' + esc(org.responsabilTehnic || '—');
-  const sigAprobat = document.getElementById('sig-aprobat');
-  const sefCoreLabel = 'Șef CORE' + (org.judet ? ' ' + esc(org.judet) : '');
-  if (sigAprobat) sigAprobat.innerHTML = 'Aprobat<br>' + sefCoreLabel + '<br>' + esc(org.aprobat || '—');
-}
-
-function openOrgModal() {
-  const org = getOrg();
-  document.getElementById('org-formatia').value = org.formatia;
-  document.getElementById('org-sef').value = org.sefFOL;
-  document.getElementById('org-resp').value = org.responsabilTehnic;
-  document.getElementById('org-judet').value = org.judet;
-  document.getElementById('org-aprobat').value = org.aprobat;
-  document.getElementById('org-modal').style.display = 'flex';
-  setTimeout(() => document.getElementById('org-formatia').focus(), 50);
-}
-
-function saveOrgSettings() {
-  const org = {
-    formatia: document.getElementById('org-formatia').value.trim(),
-    sefFOL: document.getElementById('org-sef').value.trim(),
-    responsabilTehnic: document.getElementById('org-resp').value.trim(),
-    judet: document.getElementById('org-judet').value.trim(),
-    aprobat: document.getElementById('org-aprobat').value.trim()
-  };
-  saveOrg(org);
-  state.org = org;
-  saveState();
-  applyOrgToDOM();
-  closeOrgModal();
-  setStatus('Setări organizație salvate.', 'success');
-}
+// getOrg / applyOrgToDOM / openOrgModal / saveOrgSettings stau acum în js/core.js (schelet comun
+// pentru ambele module); aici rămâne doar MODE.org, cu câmpurile și textele specifice Exploatării.
 
 function updateModeFieldVisibility() {
   // T1A/T2A sunt relevante doar in modurile care le pot folosi automat: T1/T2+T1A/T2A

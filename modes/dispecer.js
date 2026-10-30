@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_dispecer_version';
 
 const ORG_KEY = 'graficTura_dispecer_org';
 
-const APP_VERSION = 'V2026.10.15';
+const APP_VERSION = 'V2026.10.16';
 
 const DB_NAME = 'GraficTuraDispecerDB';
 
@@ -172,6 +172,50 @@ const MODE = {
              ['A  Autorizare anuală', 'FADBD8', '922B21'], ['L  Liber', 'F0F0F0', '666666']],
     signatures: () => orgSignatures(getOrg()).map(s => [s.label, s.name || '—'])
   },
+  // ── organizația: scheletul e în nucleu; aici câmpurile editabile (bifă + denumire) și textele ──
+  org: {
+    defaults() {
+      return { formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '', entitate: ORG_DEFAULT_ENTITY, labels: {}, off: {} };
+    },
+    normalize(org) {
+      org.labels = Object.assign({}, org.labels || {});
+      org.off = Object.assign({}, org.off || {});
+      if (typeof org.entitate !== 'string') org.entitate = ORG_DEFAULT_ENTITY;
+    },
+    subtitle(org) { return orgSubtitle(org); },
+    title(org) {
+      return 'Grafic dispecer' + (orgOn(org, 'formatia') && org.formatia ? ' — ' + org.formatia : '') + (org.entitate ? ' - ' + org.entitate : '');
+    },
+    signatures(org) {
+      return orgSignatures(org).map(s => ({ id: s.id, html: esc(s.label) + '<br>' + esc(s.name || '—') }));
+    },
+    fillForm(org) {
+      document.getElementById('org-entitate').value = org.entitate;
+      document.getElementById('org-fields').innerHTML = ORG_FIELDS.map(f =>
+        '<div class="org-row' + (orgOn(org, f.key) ? '' : ' off') + '" id="org-row-' + f.key + '">'
+        + '<div class="org-row-head">'
+        + '<input type="checkbox" id="org-on-' + f.key + '" onchange="orgFieldToggled(\'' + f.key + '\')"' + (orgOn(org, f.key) ? ' checked' : '') + ' title="Câmp activ — debifat: nu apare în antet, print și Excel">'
+        + '<input type="text" class="org-lbl" id="org-lbl-' + f.key + '" value="' + escAttr(orgLabel(org, f.key)) + '" placeholder="' + escAttr(f.label) + '" title="Denumirea câmpului (editabilă)">'
+        + '</div>'
+        + '<input type="text" class="org-val" id="org-val-' + f.key + '" style="width:100%" value="' + escAttr(org[f.key] || '') + '" placeholder="' + escAttr(f.valPh) + '"' + (orgOn(org, f.key) ? '' : ' disabled') + '>'
+        + '</div>'
+      ).join('');
+    },
+    readForm(prev) {
+      const org = { entitate: document.getElementById('org-entitate').value.trim(), labels: {}, off: {}, configured: true };
+      ORG_FIELDS.forEach(f => {
+        org[f.key] = document.getElementById('org-val-' + f.key).value.trim();
+        const lbl = document.getElementById('org-lbl-' + f.key).value.trim();
+        if (lbl && lbl !== f.label) org.labels[f.key] = lbl;
+        if (!document.getElementById('org-on-' + f.key).checked) {
+          org.off[f.key] = true;
+          if (!org[f.key]) org[f.key] = prev[f.key] || ''; // valoarea rămâne memorată cât timp câmpul e dezactivat
+        }
+      });
+      return org;
+    },
+    focusId: 'org-entitate'
+  },
   helpMode: 'disp',                // modul de manual deschis implicit (cheia din MANUALS),
   // ── markup specific modului (inserat în șablonul din js/shell.js) ──
   shell: {
@@ -224,6 +268,13 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.16': {
+    title: 'Organizația, separată pe fiecare mod',
+    items: [
+      { icon: '🏢', text: 'Setările de organizație (formația, semnăturile, entitatea) sunt ținute separat pentru Exploatare și Dispecer: ce setezi într-o aplicație nu apare în cealaltă' },
+      { icon: '🧱', text: 'Codul comun pentru organizație (titlu, subtitlu, semnături, modal, salvare) stă acum într-un singur loc; fiecare mod păstrează doar câmpurile și textele lui — ce se vede rămâne neschimbat' }
+    ]
+  },
   'V2026.10.15': {
     title: 'Tastatură, modale și salvare mai rară',
     items: [
@@ -855,14 +906,8 @@ const ORG_FIELDS = [
 
 const ORG_DEFAULT_ENTITY = 'Delgaz Grid S.A';
 
-function getOrg() {
-  const stored = loadOrg() || state.org || {};
-  const org = Object.assign({ formatia: '', sefFOL: '', responsabilTehnic: '', aprobat: '', judet: '', entitate: ORG_DEFAULT_ENTITY }, stored);
-  org.labels = Object.assign({}, stored.labels || {});
-  org.off = Object.assign({}, stored.off || {});
-  if (typeof org.entitate !== 'string') org.entitate = ORG_DEFAULT_ENTITY;
-  return org;
-}
+// getOrg / applyOrgToDOM / openOrgModal / saveOrgSettings sunt în js/core.js (schelet comun);
+// Dispecerul dă doar MODE.org (câmpuri editabile, entitate) și ajutoarele de dedesubt.
 
 function orgLabel(org, key) {
   const f = ORG_FIELDS.find(x => x.key === key);
@@ -886,64 +931,10 @@ function orgSignatures(org) {
   });
 }
 
-function applyOrgToDOM() {
-  const org = getOrg();
-  const sub = orgSubtitle(org);
-  const subtitle = document.getElementById('org-subtitle');
-  if (subtitle) subtitle.textContent = sub;
-  document.title = 'Grafic dispecer' + (orgOn(org, 'formatia') && org.formatia ? ' — ' + org.formatia : '') + (org.entitate ? ' - ' + org.entitate : '');
-  // esc(): org.* poate veni dintr-un fișier JSON importat de la altcineva — fără escape, innerHTML
-  // nesigur = XSS stocat la reload (bug găsit la audit: applyJSON poate seta ORG_KEY din data.org).
-  const active = new Map(orgSignatures(org).map(s => [s.id, s]));
-  ORG_FIELDS.filter(f => f.sig).forEach(f => {
-    const el = document.getElementById(f.sig);
-    if (!el) return;
-    const box = el.closest('.signature-box') || el;
-    const s = active.get(f.sig);
-    box.style.display = s ? '' : 'none';
-    if (s) el.innerHTML = esc(s.label) + '<br>' + esc(s.name || '—');
-  });
-}
-
-function openOrgModal() {
-  const org = getOrg();
-  document.getElementById('org-entitate').value = org.entitate;
-  const box = document.getElementById('org-fields');
-  box.innerHTML = ORG_FIELDS.map(f =>
-    '<div class="org-row' + (orgOn(org, f.key) ? '' : ' off') + '" id="org-row-' + f.key + '">'
-    + '<div class="org-row-head">'
-    + '<input type="checkbox" id="org-on-' + f.key + '" onchange="orgFieldToggled(\'' + f.key + '\')"' + (orgOn(org, f.key) ? ' checked' : '') + ' title="Câmp activ — debifat: nu apare în antet, print și Excel">'
-    + '<input type="text" class="org-lbl" id="org-lbl-' + f.key + '" value="' + escAttr(orgLabel(org, f.key)) + '" placeholder="' + escAttr(f.label) + '" title="Denumirea câmpului (editabilă)">'
-    + '</div>'
-    + '<input type="text" class="org-val" id="org-val-' + f.key + '" style="width:100%" value="' + escAttr(org[f.key] || '') + '" placeholder="' + escAttr(f.valPh) + '"' + (orgOn(org, f.key) ? '' : ' disabled') + '>'
-    + '</div>'
-  ).join('');
-  document.getElementById('org-modal').style.display = 'flex';
-  setTimeout(() => document.getElementById('org-entitate').focus(), 50);
-}
-
+// ── Organizația: scheletul (titlu, subtitlu, semnături, modal, salvare) e în js/core.js;
+// aici rămâne doar ce e specific dispecerilor — câmpuri editabile, cu bifă activ/inactiv, entitate.
 function orgFieldToggled(key) {
   const on = document.getElementById('org-on-' + key).checked;
   document.getElementById('org-val-' + key).disabled = !on;
   document.getElementById('org-row-' + key).classList.toggle('off', !on);
-}
-
-function saveOrgSettings() {
-  const prev = getOrg();
-  const org = { entitate: document.getElementById('org-entitate').value.trim(), labels: {}, off: {}, configured: true };
-  ORG_FIELDS.forEach(f => {
-    org[f.key] = document.getElementById('org-val-' + f.key).value.trim();
-    const lbl = document.getElementById('org-lbl-' + f.key).value.trim();
-    if (lbl && lbl !== f.label) org.labels[f.key] = lbl;
-    if (!document.getElementById('org-on-' + f.key).checked) {
-      org.off[f.key] = true;
-      if (!org[f.key]) org[f.key] = prev[f.key] || ''; // valoarea rămâne memorată cât timp câmpul e dezactivat
-    }
-  });
-  saveOrg(org);
-  state.org = org;
-  saveState();
-  applyOrgToDOM();
-  closeOrgModal();
-  setStatus('Setări organizație salvate.', 'success');
 }
