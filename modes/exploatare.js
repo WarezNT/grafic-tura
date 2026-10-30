@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_version';
 
 const ORG_KEY = 'graficTura_org';
 
-const APP_VERSION = 'V2026.10.7';
+const APP_VERSION = 'V2026.10.8';
 
 const DB_NAME = 'GraficTuraDB';
 
@@ -204,9 +204,14 @@ const MODE = {
     rowHead(emp, sec) {
       const fnLabel = FUNC_NAMES[emp.functia || 'emitent'];
       const fnCls = 'fn-' + (emp.functia || 'emitent');
+      const eid = Number(emp.id) || 0;
       let crewLabel = '';
       if (!sec.f8 && emp.crew) crewLabel = '<span style="font-size:11px;font-weight:700;color:#555;display:block;text-align:center">' + esc(emp.crew) + '</span>';
-      return '<td class="emp-name-cell" onclick="openEditModal(' + (Number(emp.id) || 0) + ')">' + esc(emp.name) + ((sec.f8 || emp.forced8) ? ' <span class="forced-badge">F</span>' : '') + '</td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + crewLabel + '</td>';
+      // Numele e și buton de editare: se poate deschide din tastatură (Enter/Space), nu doar cu mouse-ul.
+      return '<td class="emp-name-cell" tabindex="0" role="button" aria-label="Editează ' + escAttr(emp.name) + '"'
+        + ' onclick="openEditModal(' + eid + ')"'
+        + ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openEditModal(' + eid + ')}">'
+        + esc(emp.name) + ((sec.f8 || emp.forced8) ? ' <span class="forced-badge">F</span>' : '') + '</td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + crewLabel + '</td>';
     },
     cellExtra(emp, dk, v, sec) {   // indicator de echipaj când diferă de cel de bază (override pe dată)
       if (sec.f8) return '';
@@ -497,6 +502,14 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.8': {
+    title: 'Tastatură, modale și salvare mai rară',
+    items: [
+      { icon: '⌨️', text: 'Modalele se închid cu Escape și au rol de dialog; numele unui electrician se poate deschide din tastatură cu Enter sau Spațiu' },
+      { icon: '💾', text: 'Salvarea declanșată de redesărire se face o dată la 300 ms (acțiunile care schimbă date salvează imediat, iar la închiderea filei se scrie ce era în coadă)' },
+      { icon: '⚡', text: 'Statisticile fiecărui angajat se calculează o singură dată pe redesărire, nu de trei ori' }
+    ]
+  },
   'V2026.10.7': {
     title: 'Fișiere importate: verificate',
     items: [

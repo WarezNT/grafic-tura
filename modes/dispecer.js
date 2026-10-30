@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_dispecer_version';
 
 const ORG_KEY = 'graficTura_dispecer_org';
 
-const APP_VERSION = 'V2026.10.14';
+const APP_VERSION = 'V2026.10.15';
 
 const DB_NAME = 'GraficTuraDispecerDB';
 
@@ -72,7 +72,12 @@ const MODE = {
     weekendDisplayL: [5, 6],               // și se afișează ca L
     sections(emps) { return [{ emps, cls: '', header: null }]; },
     rowHead(emp) {
-      return '<td class="emp-name-cell" onclick="openEditModal(' + (Number(emp.id) || 0) + ')">' + esc(emp.name) + '</td>';
+      const eid = Number(emp.id) || 0;
+      // Numele e și buton de editare: se poate deschide din tastatură (Enter/Space), nu doar cu mouse-ul.
+      return '<td class="emp-name-cell" tabindex="0" role="button" aria-label="Editează ' + escAttr(emp.name) + '"'
+        + ' onclick="openEditModal(' + eid + ')"'
+        + ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openEditModal(' + eid + ')}">'
+        + esc(emp.name) + '</td>';
     },
     // ziua de după T4: cele 6h de la 00:00 la 06:00 aparțin acestei zile calendaristice — se vede „T4” sub celulă
     cellExtra(emp, dk) {
@@ -219,6 +224,14 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.15': {
+    title: 'Tastatură, modale și salvare mai rară',
+    items: [
+      { icon: '⌨️', text: 'Modalele se închid cu Escape și au rol de dialog (pentru cititoarele de ecran); numele unui dispecer se poate deschide din tastatură cu Enter sau Spațiu, nu doar cu mouse-ul' },
+      { icon: '💾', text: 'Salvarea care însoțea fiecare redesărire se face acum o dată la 300 ms; acțiunile care schimbă date (adăugare, ștergere, generare, import) salvează în continuare imediat, iar la închiderea filei se scrie tot ce era în coadă' },
+      { icon: '⚡', text: 'Statisticile fiecărui dispecer se calculează o singură dată pe redesărire, nu de trei ori (tabel, carduri, statistici)' }
+    ]
+  },
   'V2026.10.14': {
     title: 'Fișiere importate: verificate',
     items: [

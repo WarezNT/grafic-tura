@@ -7,7 +7,24 @@
 // Construiește markup-ul paginii (antet, controale, modale, manual) din șablon + MODE.shell.
 document.body.insertAdjacentHTML('afterbegin', buildShell());
 
-const COMMIT_COUNT = 129;
+// Accesibilitate: modalele sunt <div>-uri fără rol. Le marcăm ca dialoguri și le închidem cu Escape.
+// Fiecare overlay are deja onclick="if(event.target===this)closeX()" pe fundal, deci un click
+// sintetic pe overlay refolosește exact logica de închidere a modului respectiv (fără duplicate).
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.setAttribute('role', 'dialog');
+  m.setAttribute('aria-modal', 'true');
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const open = Array.from(document.querySelectorAll('.modal-overlay'))
+    .filter(m => window.getComputedStyle(m).display !== 'none');
+  if (!open.length) return;
+  const top = open[open.length - 1];
+  if (typeof top.click === 'function') top.click();
+  if (window.getComputedStyle(top).display !== 'none') top.style.display = 'none';  // plasă de siguranță
+});
+
+const COMMIT_COUNT = 130;
 
 const DB_VERSION = 1;
 
@@ -166,12 +183,20 @@ function render() {
   const y = parseInt(document.getElementById('sel-year').value);
   state.currentMonth = m;
   state.currentYear = y;
-  saveState();
+  saveStateSoon();     // fiecare randare salva, deși de obicei nu s-a schimbat nimic — vezi saveStateSoon
 
   document.getElementById('month-title').textContent = getMonthName(m) + ' ' + y;
 
-  renderTable();
-  renderSummary();
+  // Cache pentru getEmployeeStats pe durata randării: tabelul, cardurile și statisticile ar
+  // parcurge altfel tot state.schedule de 3 ori pentru fiecare angajat (măsurat: 141 ms la 25
+  // de oameni × 365 zile). În afara randării cache-ul e null, deci nimic nu rămâne învechit.
+  _statsCache = new Map();
+  try {
+    renderTable();
+    renderSummary();
+  } finally {
+    _statsCache = null;
+  }
 }
 
 let modalEmpId = null;
@@ -583,6 +608,9 @@ async function initStateFromDB() {
 }
 
 async function saveState() {
+  // O salvare explicită anulează una amânată (altfel s-ar scrie de două ori: o dată aici, o dată
+  // la expirarea timerului din saveStateSoon — ex. addEmployee face saveState() + render()).
+  if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
   try {
     if (MODE.stateModule) state.module = MODE.stateModule;
     state.preservedCOCM = genCOCM;
@@ -601,6 +629,25 @@ async function saveState() {
     if (dbEl) dbEl.textContent = '💾 IndexedDB: eroare salvare';
   }
 }
+
+// Salvare amânată: render() rulează la fiecare editare de celulă și la fiecare navigare între luni,
+// dar de obicei nu s-a schimbat nimic. O scriere imediată costă ~90 ms (localStorage + IndexedDB) la
+// fiecare randare. Acțiunile care schimbă date (adăugare, ștergere, generare, import) cheamă în
+// continuare saveState() direct; aici se coalesc doar salvările declanșate de randare.
+let _saveTimer = null;
+function saveStateSoon() {
+  if (_saveTimer) return;
+  _saveTimer = setTimeout(() => { _saveTimer = null; saveState(); }, 300);
+}
+// Dacă tabul se închide înainte să expire timerul, scriem imediat (localStorage e sincron).
+function flushSave() {
+  if (!_saveTimer) return;
+  clearTimeout(_saveTimer);
+  _saveTimer = null;
+  saveState();
+}
+window.addEventListener('pagehide', flushSave);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushSave(); });
 
 function addEmployee() {
   const inp = document.getElementById('new-emp');
@@ -989,7 +1036,11 @@ function prevDay() {
   render();
 }
 
+// Cache pe durata unei randări (vezi render()). `null` = în afara randării, deci se calculează normal.
+let _statsCache = null;
+
 function getEmployeeStats(empId) {
+  if (_statsCache) { const hit = _statsCache.get(empId); if (hit) return hit; }
   const counts = SHIFT_NAMES.map(() => 0);
   const prefix = state.currentYear + '-' + pad(state.currentMonth);
   for (const dk in state.schedule) {
@@ -1009,6 +1060,7 @@ function getEmployeeStats(empId) {
   const co = counts[5] || 0, cm = counts[6] || 0;
   const st = { counts, co, cm, hours, worked, total: worked + co };
   if (MODE.decorateStats) MODE.decorateStats(st);   // câmpuri denumite specifice modului
+  if (_statsCache) _statsCache.set(empId, st);
   return st;
 }
 
