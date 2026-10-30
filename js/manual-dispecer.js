@@ -208,7 +208,7 @@ MANUALS.disp = {
             <li><strong>Lucrate</strong> — suma orelor reale pe ture (T1=4h, T2=6h, T3=6h, T4=8h).</li>
             <li><strong>CO/CM</strong> — orele de concediu (doar zile lucrătoare).</li>
             <li><strong>Normă</strong> — zilele lucrătoare (luni–vineri, fără sărbătorile legale) × 6h, minus 6h pentru fiecare zi de CO/CM.</li>
-            <li><strong>An</strong> — pe fiecare card apare și situația pe an: ore de la 1 ianuarie până la luna afișată, față de norma acelorași luni minus CO/CM luat, plus câte zile de concediu are în an. Cu 20 de zile de CO legal (120h), norma anului scade de la 1500h la 1380h.</li>
+            <li><strong>An</strong> — pe fiecare card apare și situația pe an: ore de la prima lună generată din an (dacă ai generat tot anul, de la 1 ianuarie) până la luna afișată, față de norma aceleiași perioade minus CO/CM luat, plus câte zile de concediu are în an. Cu 20 de zile de CO legal (120h), norma anului scade de la 1500h la 1380h.</li>
           </ul>
           <p><strong>Culorile orelor:</strong> verde = exact norma, galben = sub normă cu cel mult 16h, roșu = peste normă sau cu mai mult de 16h sub normă. Pentru un dispecer cu blocuri care încep/se termină în altă lună, diferențele se echilibrează de-a lungul anului.</p>
         </div>

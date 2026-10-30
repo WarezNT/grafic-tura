@@ -102,8 +102,10 @@ dimineața de 6h) la n ≥ 5.
 - `avgHoursPerDay()` (24 / nr. dispeceri) a rămas **doar ca „credit" intern de echitate** în generare: câte ore
   ar fi lucrat în medie într-o zi dacă nu era în concediu (`dayContext.yearHours`), ca orele din an să rămână
   comparabile între oameni. Nu e norma și nu se afișează.
-- **Situația pe an, pe carduri** (`ytdTotals`): ore de la 1 ianuarie până la sfârșitul lunii afișate, față de
-  norma acelorași luni minus CO/CM luat (6h pe zi lucrătoare), plus câte zile de CO/CM are în an.
+- **Situația pe an, pe carduri** (`ytdTotals`): ore de la **prima lună generată din an** până la sfârșitul lunii
+  afișate (dacă e generat tot anul, de la 1 ianuarie), față de norma aceleiași perioade minus CO/CM luat
+  (6h pe zi lucrătoare), plus câte zile de CO/CM are în an. Se iau doar lunile care au date — altfel, cu o
+  singură lună generată, s-ar compara orele unei luni cu norma a 10 luni și ar ieși un procent fals.
   Contează pentru că **fiecare om are ~20 de zile de CO legal pe an = 120h**: norma anului 2026 scade de la
   1500h la 1380h, iar cu CO eșalonat graficul acoperă **88–92%** (măsurat headless, `tools/harness/norma-co.mjs`),
   nu 82–85% cât iese fără concedii. Dacă vrei procentul real, CO-ul viitor trebuie introdus în grafic

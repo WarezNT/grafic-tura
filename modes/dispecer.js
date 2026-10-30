@@ -97,16 +97,19 @@ const MODE = {
       if (holCount || holYear) pills.push('<span class="shift-pill" style="background:var(--holiday-bg);color:var(--holiday-text)" data-tooltip="Ture lucrate în sărbători legale: în luna afișată și de la 1 ianuarie până la sfârșitul ei">🎉 Sărb.: ' + holCount + ' lună · ' + holYear + ' an</span>');
       return pills;
     },
-    // Linia „An YYYY: ore / normă” — norma anului până la luna afișată, minus CO/CM luat.
+    // Linia „An YYYY: ore / normă” — norma perioadei generate până la luna afișată, minus CO/CM luat.
     // Fără ea, cifra pe lună pare „sub normă” fără motiv: 20 de zile de CO legal = 120h mai puțin pe an.
     cardExtra(emp) {
       const t = ytdTotals(emp.id);
       if (!t.norm) return '';
       const pct = Math.round((100 * t.hours) / t.norm);
+      const year = state.currentYear;
+      const scope = t.from === 1 ? 'An ' + year : year + ' (din ' + getMonthName(t.from).slice(0, 3) + ')';
+      const deLa = t.from === 1 ? '1 ianuarie' : 'prima lună generată (' + getMonthName(t.from) + ')';
       return '<div style="font-size:11px;color:var(--text-muted);margin:-3px 0 6px;cursor:help" data-tooltip="'
-        + 'Ore lucrate de la 1 ianuarie până la sfârșitul lunii afișate, față de norma acelorași luni minus CO/CM (6h pe zi lucrătoare). '
+        + 'Ore lucrate de la ' + deLa + ' până la sfârșitul lunii afișate, față de norma aceleiași perioade minus CO/CM (6h pe zi lucrătoare). '
         + 'Anul întreg are ' + ytdNormYear() + 'h de normă; fiecare zi de CO sau CM scade 6h.">'
-        + 'An ' + state.currentYear + ': <strong>' + t.hours + 'h</strong> / ' + t.norm + 'h (' + pct + '%)'
+        + scope + ': <strong>' + t.hours + 'h</strong> / ' + t.norm + 'h (' + pct + '%)'
         + (t.coDays ? ' · CO/CM ' + t.coDays + ' z' : '') + '</div>';
     },
     statsTable(expected) {
@@ -355,18 +358,22 @@ function ytdNormYear() {
   return t;
 }
 
-// Situația pe an, de la 1 ianuarie până la sfârșitul lunii afișate: ore lucrate + norma acelorași luni,
-// minus CO/CM luat (6h pe zi lucrătoare). E cifra care răspunde la „cât mai are de lucrat anul ăsta" —
-// cu 20 de zile de CO legal, norma anuală de 1500h scade la 1380h.
-// Orele se însumează ca în getEmployeeStats: T4 de pe ultima zi a perioadei dă doar 2h aici (6h cad în
-// luna următoare), la fel ca t4SplitAdjust.
+// Situația pe an, de la PRIMA lună generată din an până la sfârșitul lunii afișate: ore lucrate + norma
+// aceleiași perioade, minus CO/CM luat (6h pe zi lucrătoare). E cifra care răspunde la „cât mai are de
+// lucrat anul ăsta" — cu 20 de zile de CO legal, norma anuală de 1500h scade la 1380h.
+// Se iau doar lunile care au date: altfel, dacă e generată doar octombrie, s-ar compara orele unei luni cu
+// norma a 10 luni și ar ieși un procent fals (9% în loc de 82%).
+// Orele se însumează ca în getEmployeeStats: T4 din ultima zi a perioadei dă doar 2h aici (6h cad în luna
+// următoare), la fel ca t4SplitAdjust.
 function ytdTotals(empId) {
   const y = state.currentYear, m = state.currentMonth;
   let hours = 0, coDays = 0, norm = 0;
+  const months = new Set();
   for (const dk in state.schedule) {
     if (+dk.slice(0, 4) !== y) continue;
     const mm = +dk.slice(5, 7);
     if (mm > m) continue;
+    months.add(mm);
     const v = state.schedule[dk][String(empId)] || 0;
     hours += SHIFT_HOURS[v] || 0;
     if (v === 5 || v === 6) {
@@ -375,9 +382,9 @@ function ytdTotals(empId) {
     }
   }
   if (hasT4((state.schedule[dateKey(y, m, daysInMonth(y, m))] || {})[String(empId)] || 0)) hours -= T4_SPILL_H;
-  for (let i = 1; i <= m; i++) norm += MODE.expectedHours(y, i) || 0;
+  months.forEach(mm => { norm += MODE.expectedHours(y, mm) || 0; });
   norm -= coDays * NORM_H_PER_DAY;
-  return { hours, norm, coDays };
+  return { hours, norm, coDays, from: months.size ? Math.min(...months) : m, to: m, months: months.size };
 }
 
 const WEEKEND_HIDE = [5, 6]; // CO/CM nu se oferă în dropdown pe S/D (se afișează ca L)
