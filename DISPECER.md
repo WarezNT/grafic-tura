@@ -47,9 +47,12 @@ T1+T2+T3+T4 = 24h (acoperire completă a zilei).
 
 Regulă dură: **într-o tură (T1–T4) nu poate fi mai mult de un dispecer într-o zi — ceilalți sunt liberi**.
 
-Un **bloc** = `T3 → T2 → T1+T4` (3 zile la rând; T1 și T4 la aceeași persoană, în aceeași zi de start — vezi V2026.10.10), urmat de cel puțin o zi liberă. În fiecare zi începe
-**exact un bloc nou** (T3), deci fiecare tură are un singur dispecer. Cu n dispeceri, 4 lucrează pe zi și n−4 sunt liberi
-(n=5: 4 din 5; n=7: 4 din 7, fiecare face un bloc la ~7 zile).
+Un **bloc** = `T3 → T2 → T1+T4` (3 zile la rând; T1 și T4 la aceeași persoană, în aceeași zi de start — vezi V2026.10.10)
++ dimineața de 6h în care se termină T4 (00:00–06:00 a zilei următoare), urmat de o **zi liberă întreagă**. Ziua cu 6h
+nu e zi liberă (`isWorkedDay` o socotește lucrată), deci un bloc nou **nu** începe imediat după ea. În fiecare zi începe
+**exact un bloc nou** (T3), deci fiecare tură are un singur dispecer. Cu n dispeceri, **3 lucrează pe zi** și n−3 sunt liberi
+(n=5: 3 din 5; n=7: 3 din 7, fiecare face un bloc la ~7 zile). Ciclul complet are 5 zile
+(T3, T2, T1+T4, dimineața de 6h, liber), deci **5 dispeceri = minimul pentru acoperire 24h *și* zi liberă întreagă după T4**.
 
 De ce nu mai e ciclu fix: cu 7 dispeceri un ciclu de 7 zile = o săptămână → fiecare ajungea să lucreze mereu aceleași zile
 ale săptămânii (măsurat 2026: ture în weekend 104/52/0/0/52/104/104, T4 mereu în aceeași zi). Acum cine începe se alege la fiecare zi.
@@ -62,27 +65,49 @@ Pentru ziua d, pornind de la tura reală de IERI a fiecărui dispecer (`BLOCK_NE
    nu rupă blocul): ore în an cu credit CO/CM (`ctx.yearHours`) la nivel de bloc (toleranță 24h, `BLOCK_HOURS`), apoi
    **cele mai puține weekenduri+sărbători** lucrate în an (`weekendHolidayShifts`), apoi ore, apoi id.
    Toleranța de 24h e esențială: fără ea, diferențe mici de ore impun o coadă fixă care la 7 dispeceri se blochează iar pe zilele săptămânii.
-3. Fără istoric (prima zi generată): „ieri" virtual T1/T2/T3 pentru primii trei, ca toate cele 4 ture să pornească din prima zi.
+   **Ziua de ieri trebuie să fie complet liberă**: cine a lucrat 00:00–06:00 (dimineața de după T4) e exclus, ca seria
+   să nu sară de 4 zile. Dacă nu rămâne nimeni (sub 5 dispeceri, concedii suprapuse), acoperirea are prioritate și se
+   acceptă și continuarea imediată — vezi nota din §11.
+3. Fără istoric (prima zi generată): „ieri" virtual T2 pentru primul și T3 pentru al doilea, ca toate cele 4 ture să
+   pornească din prima zi (primul continuă în T1+T4, al doilea în T2, al treilea începe T3).
 4. CO/CM introduse manual se păstrează; golurile rezultate se completează prin §12.
 
 Blocul garantează prin construcție: T1→T4, odihnă ≥ 11h, max 4 zile la rând, cel puțin o zi liberă după T4, o singură persoană pe tură.
 Schimbarea numărului de dispeceri la mijloc de an nu cere nicio recalculare (starea e în `state.schedule`, nu într-o formulă).
 
-Testat (2026, fără concedii, ture lucrate în weekend per dispecer / spread; goluri 0, dubluri 0, încălcări 0):
-n=5: 84/83/83/83/83 (1) · n=6: 67–73 (6) · **n=7: 59–60 (1)** · n=8: 42–57 (15) · n=10: 40–44 (4).
+Testat headless (2026-10-30, an întreg 2026 generat lună cu lună, fără concedii, `tools/harness/audit-disp.mjs`):
+ture de weekend per dispecer — n=5: 62–63 (spread 1) · n=6: 48–57 (9) · n=7: 42–48 (6) · n=8: 30–45 (15);
+ore pe an — n=5: 1746–1752 (6h diferență) · n=6: 1440–1476 (36h) · n=7: 1224–1272 (48h) · n=8: 1074–1116 (42h).
+0 goluri de acoperire, 0 dubluri, 0 încălcări de odihnă, **cea mai lungă serie de zile lucrate = 4** (socotind și
+dimineața de 6h) la n ≥ 5.
 
-> ⚠️ **Cifrele de mai sus sunt dinainte de V2026.10.10**, când T1 și T4 erau persoane diferite
-> (4 oameni/zi). Acum valoarea 1 = „T1+T4" la aceeași persoană, deci **3 oameni lucrează pe zi**
-> și turele de weekend per persoană ies altfel. Remăsurat headless (2026-10-30, an întreg 2026,
-> fără concedii): n=5 → 59–64 (spread 5); n=7 → 38–56 (spread 18); total anual ~1212–1284h la
-> n=7 (media ~1250h, ca în document). Acoperirea și regulile rămân respectate: 0 goluri,
-> 0 dubluri, 0 serii peste 4 zile. Nu modifica algoritmul ca să iasă cifrele vechi.
+> Cifrele mai vechi de aici (n=7: 59–60 ture de weekend, spread 1) erau măsurate înainte de V2026.10.10, când T1 și T4
+> erau persoane diferite (4 oameni/zi). Nu „repara" algoritmul ca să iasă cifrele vechi.
+> **V2026.10.12** (ziua liberă după T4): înainte de fix, seriile ajungeau la 8/12/16/24 de zile la rând (n=8/7/6/5) și
+> spread-ul anual era 42/72/60/30h — cauza și cifrele în §11.
 
-## 5. Norma (Dispecer)
+## 5. Norma (Dispecer) — V2026.10.13
 
-- Ore medii pe zi = `24 / max(5, nr. dispeceri)` (`cycleLength()`, `avgHoursPerDay()`); norma lunară = `round(zile × ore_medii)`.
-  Ex. 7 dispeceri: 3,43h/zi → ~103h/lună, ~1250h/an (nu 144h ca la 5 dispeceri).
-- CO/CM reduc norma cu orele medii pe zi (doar zile lucrătoare).
+- **Norma lunară = zile lucrătoare × 6h** (`MODE.expectedHours` = `workingDays(y, m) × NORM_H_PER_DAY`).
+  Zilele lucrătoare = luni–vineri **minus sărbătorile legale** care cad în cursul săptămânii; `workingDays`
+  stă în `js/core.js` (o folosește și Exploatarea, cu ×8h — acolo formula a rămas neschimbată).
+  Tura standard are 6h (T2/T3), iar T1+T4 = 12h se socotește două ture.
+  Ex.: octombrie 2026 = 22 zile → **132h**; ianuarie 2026 = 18 zile (5 sărbători) → **108h**; anul 2026 = 250 zile → **1500h**.
+- **Nu se calculează pe zile calendaristice.** Formula veche (`zile × 24h / nr. dispeceri`) dădea ~103h/lună la
+  7 dispeceri și ascundea întrebarea reală: cât din normă acoperă graficul. Acoperirea 24h/zi e asigurată de
+  echipă, nu de fiecare om — la 3 oameni pe zi și 7 dispeceri ies ~1250h/an, adică **82–85% din normă**
+  (cu 6 dispeceri ~100%, cu 5 peste normă).
+- CO/CM reduc norma cu **6h pe zi** (`MODE.leaveHoursPerDay`), doar în zilele lucrătoare; coloana CO/CM din
+  Statistici arată aceleași ore.
+- `avgHoursPerDay()` (24 / nr. dispeceri) a rămas **doar ca „credit" intern de echitate** în generare: câte ore
+  ar fi lucrat în medie într-o zi dacă nu era în concediu (`dayContext.yearHours`), ca orele din an să rămână
+  comparabile între oameni. Nu e norma și nu se afișează.
+- **Situația pe an, pe carduri** (`ytdTotals`): ore de la 1 ianuarie până la sfârșitul lunii afișate, față de
+  norma acelorași luni minus CO/CM luat (6h pe zi lucrătoare), plus câte zile de CO/CM are în an.
+  Contează pentru că **fiecare om are ~20 de zile de CO legal pe an = 120h**: norma anului 2026 scade de la
+  1500h la 1380h, iar cu CO eșalonat graficul acoperă **88–92%** (măsurat headless, `tools/harness/norma-co.mjs`),
+  nu 82–85% cât iese fără concedii. Dacă vrei procentul real, CO-ul viitor trebuie introdus în grafic
+  (butonul „CO/CM pe interval" din modalul dispecerului) — altfel norma rămâne cea brută.
 
 ## 6. Interfață (Dispecer)
 
@@ -128,11 +153,18 @@ valorile de tură 3/4 au alt sens acolo (T1A/T2A) și ar strica graficul.
 
 - Cu mai puțini de 5 dispeceri disponibili sau mai multe CO/CM suprapuse, unele ture rămân
   neacoperite chiar și după redistribuire (§12). Cu 6–7 dispeceri și concedii multe, limita de 4 zile
-  consecutive e principala cauză (vezi sensibilitatea din §12) — apar ca avertisment ⚠️ sub tabel (`coverageGaps`) și
+  consecutive e principala cauză — apar ca avertisment ⚠️ sub tabel (`coverageGaps`) și
   se corectează manual din dropdown.
-- Norma lunară nu scade pentru sărbători (24/7 — 24h / lungimea ciclului pe zi): cine are zi liberă
-  într-o sărbătoare poate apărea sub normă în luna respectivă (§13).
-- Norma CO/CM: ore medii pe zi (`avgHoursPerDay`, ex. 3,4h la 7 dispeceri), rotunjit la 0,1h.
+- **Cu 4 dispeceri sau mai puțin nu se pot avea amândouă**: 24h/zi acoperite *și* o zi liberă întreagă după T4
+  (ciclul `T3, T2, T1+T4, dimineața de 6h, liber` are 5 zile). Acoperirea rămâne prioritară: `assignDispecerShifts`
+  acceptă și cine a lucrat dimineața de 6h, deci seriile depășesc 4 zile — la 4 dispeceri fiecare lucrează practic
+  toate zilele anului (274 ture + 91 dimineți, 0–1 zile complet libere), iar la 3 dispeceri se acoperă ~18h/zi.
+  Sub tabel apare o notă `ℹ️` care numește cine a depășit 4 zile la rând — se detectează din grafic, deci prinde
+  și cazul „7 dispeceri, dar 3 în concediu" (acolo e cel mai probabil).
+- Norma se calculează **doar pe zile lucrătoare** (L–V fără sărbători), deci turele din weekend și din sărbători
+  apar ca ore peste norma de bază — corect pentru munca în ture, dar cine prinde multe weekenduri poate trece
+  peste 100% fără să fi lucrat mai mult decât colegii (echitatea se citește din coloana „±", nu din procent).
+- Norma CO/CM: 6h pe zi lucrătoare (`MODE.leaveHoursPerDay`), rotunjit la 0,1h.
 
 ## 12. Redistribuire automată (`rebalanceCoverage`)
 
@@ -144,26 +176,28 @@ variante) și alege, în ordine: (1) cât mai multe ture acoperite; (2) suma pă
 Un dispecer poate prelua o tură t doar dacă: nu e în CO/CM; are ≥ 11h odihnă față de tura de IERI (reală)
 și (ziua următoare e continuarea blocului, care respectă mereu odihna) — `ctx.restOk`; iar seria de zile consecutive
 (zile lucrate înainte + restul blocului din tura preluată, `BLOCK_REMAINING`) ≤ 4 — `ctx.consecOk(e, t)`.
+Seriile socotesc și **dimineața de 6h de după T4** (`runBefore`), ca regula de 4 zile să fie reală, nu doar pe hârtie.
 
 Efecte: fără CO/CM rezultatul e identic cu ciclul pur (no-op, ore egale). „T1 urmat de T4" poate fi
 încălcată — acoperirea 24h are prioritate. Lanțurile (A preia golul, B preia tura lui A) apar des:
 de ex. T4 poate fi preluat doar de cine are T1 azi (mâine tot T4), iar T1 rămas gol e preluat de altul.
 
-Testat (2026, ore efective = ture + credit CO/CM; fără dubluri: 0 zile cu 2 pe aceeași tură în toate scenariile):
+Testat headless (2026-10-30, an întreg 2026 generat lună cu lună; ore efective = ture + credit CO/CM;
+0 zile cu 2 pe aceeași tură în toate scenariile):
 
-| n | fără concedii | 30 zile CO/dispecer, eșalonat | idem, aleator |
-|---|---|---|---|
-| 5 | 0 goluri, 0h spread | 133 zile cu goluri* | 114* |
-| 6 | 0 goluri, 8h | 130 | 103 |
-| **7** | **0 goluri, 8h (~1250h/an)** | **0 goluri, 35h** | **23 zile, 18h** |
-| 8 | 0 goluri, 18h | 0 goluri, 35h | 3 zile, 39h |
-| 10 | 0 goluri, 24h | – | – |
+| n | fără concedii | 30 zile CO/dispecer, eșalonat |
+|---|---|---|
+| 5 | 0 goluri, 6h diferență/an | – (un concediu lasă o tură fără înlocuitor legal) |
+| 6 | 0 goluri, 36h/an | 4 zile cu T1+T4 neacoperit, 36h/an |
+| **7** | **0 goluri, 48h/an (~1250h)** | **0 goluri, 36h/an** |
+| 8 | 0 goluri, 42h/an | 0 goluri, 30h/an |
 
-\* cu 5 dispeceri un singur concediu lasă o tură fără înlocuitor legal.
+Numerele de dinainte de V2026.10.12 (8h spread la n=7, 130 zile cu goluri la n=6 cu concedii) fuseseră măsurate cu
+dimineața de 6h socotită „zi liberă" — nu mai sunt valabile.
 
-Sensibilitate la „max zile consecutive" (`MAX_CONSEC_DAYS`, azi 4) când cineva e chemat din zi liberă,
-zile cu goluri pe an (eșalonat / aleator): n=6: 130/103 (max 4) → 1/26 (max 5) → 0/21 (max 6);
-n=7: 0/23 → 0/9 → 0/2; n=8: 0/3 → 0/1 → 0/1. Decizie de business (regulamentul intern).
+Sensibilitatea la `MAX_CONSEC_DAYS` (azi 4) fusese măsurată tot atunci (max 4 → 5/6 reducea golurile). Acum regula se
+aplică real la n ≥ 5, deci compromisul „max 5/6" nu mai e necesar; dacă se schimbă limita, re-măsoară cu
+`node tools/harness/audit-disp.mjs`.
 
 Zero încălcări de odihnă (11h); CO/CM păstrate 100%; ~170 ms pentru un an întreg. Golurile rămase apar când
 nu există variantă legală în ziua respectivă (se corectează manual).

@@ -71,7 +71,7 @@ MANUALS.disp = {
         </div>
         <div class="help-section">
           <div class="help-section-title">👤 Dispeceri</div>
-          <p>Apasă <em>+ Dispecer</em> și completează doar <strong>numele</strong>. Numărul de dispeceri determină ciclul și norma (vezi tabul <em>Reguli</em>).</p>
+          <p>Apasă <em>+ Dispecer</em> și completează doar <strong>numele</strong>. Numărul de dispeceri determină ciclul de rotație (norma depinde doar de zilele lucrătoare — vezi tabul <em>Reguli</em>).</p>
           <p><strong>Editare / ștergere:</strong> click pe numele dispecerului din tabel. Ștergerea cere confirmare în doi pași. Din același loc poți seta CO/CM pe interval.</p>
         </div>
         <div class="help-section">
@@ -105,12 +105,12 @@ MANUALS.disp = {
         <div class="help-section">
           <div class="help-section-title">🔄 Cum se alocă turele</div>
           <ul class="help-list">
-            <li>Un <strong>bloc</strong> înseamnă <strong>T3 → T2 → T1+T4</strong> (3 zile la rând), urmat de cel puțin o zi liberă (ziua de după T1+T4 e liberă oricum: tura se termină la 06:00).</li>
+            <li>Un <strong>bloc</strong> înseamnă <strong>T3 → T2 → T1+T4</strong> (3 zile la rând), plus dimineața de 6h în care se termină T4 (00:00–06:00), iar apoi o <strong>zi liberă întreagă</strong>. Un bloc nou începe abia după ziua liberă — altfel s-ar lucra 5 sau mai multe zile la rând.</li>
             <li>În <strong>fiecare zi începe exact un bloc nou</strong> (tura T3). Așa, fiecare tură are un singur dispecer în fiecare zi, iar ceilalți sunt liberi.</li>
             <li><strong>Cine începe</strong> blocul se alege din cei odihniți, echitabil: cu cele mai puține ore în an (cu report între luni), apoi cu cele mai puține weekenduri/sărbători lucrate. De aceea nu lucrezi „mereu aceleași zile ale săptămânii”.</li>
             <li>Nu începe un bloc cine are CO/CM în următoarele 2 zile (l-ar rupe).</li>
           </ul>
-          <p>Exemplu: cu 7 dispeceri lucrează 4 pe zi, iar 3 sunt liberi; fiecare face un bloc la aproximativ 7 zile.</p>
+          <p>Exemplu: cu 7 dispeceri lucrează 3 pe zi (T1+T4, T2, T3), iar 4 sunt liberi; fiecare face un bloc la aproximativ 7 zile. Cu 5 dispeceri ciclul e de 5 zile: T3, T2, T1+T4, dimineața de 6h, liber.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">✕ Curăță</div>
@@ -141,7 +141,7 @@ MANUALS.disp = {
           <div class="help-section-title">📏 Reguli respectate la generarea automată</div>
           <ul class="help-list">
             <li><strong>Cel mult un dispecer pe tură</strong> într-o zi; restul sunt liberi.</li>
-            <li><strong>Bloc T3→T2→T1+T4</strong>; T1 și T4 sunt la aceeași persoană, în aceeași zi de start, iar după T1+T4 urmează cel puțin o zi liberă.</li>
+            <li><strong>Bloc T3→T2→T1+T4</strong>; T1 și T4 sunt la aceeași persoană, în aceeași zi de start. După T1+T4 urmează dimineața de 6h (00:00–06:00) și apoi o zi liberă întreagă.</li>
             <li><strong>Odihnă minimă 11h</strong> între două ture consecutive și maximum <strong>4 zile lucrate la rând</strong>.</li>
             <li><strong>Acoperire 24h</strong> — în fiecare zi există câte un dispecer pe T1+T4, T2 și T3 (cu cel puțin 4 dispeceri și fără concedii suprapuse).</li>
             <li><strong>Echitate</strong> — cine începe un bloc se alege după orele din an, apoi după weekenduri și sărbători lucrate; nu apar dispeceri „blocați” pe aceleași zile ale săptămânii.</li>
@@ -154,8 +154,8 @@ MANUALS.disp = {
         <div class="help-section">
           <div class="help-section-title">🧮 Norma și CO/CM în calcule</div>
           <ul class="help-list">
-            <li><strong>Norma lunară</strong> = zilele lunii × 24h împărțite la numărul de dispeceri (minim 4). Cu 5 dispeceri ≈ 4,8h/zi (144h/lună), cu 7 ≈ 3,4h/zi (≈103h/lună).</li>
-            <li><strong>CO/CM reduc norma</strong> cu aceleași ore pe zi (doar zile lucrătoare), ca să nu apară „sub normă” pentru zilele de concediu.</li>
+            <li><strong>Norma lunară</strong> = zilele lucrătoare (luni–vineri, fără sărbătorile legale) × <strong>6h</strong> — tura standard. Octombrie 2026 (22 zile) = 132h, ianuarie 2026 (18 zile, 5 sărbători) = 108h, anul 2026 = 1500h. T1+T4 (12h) contează două ture.</li>
+            <li><strong>CO/CM reduc norma</strong> cu 6h pe zi lucrătoare, ca să nu apară „sub normă” pentru zilele de concediu.</li>
             <li><strong>CO/CM nu se contorizează în weekend</strong> — se afișează ca L, dar valoarea rămâne memorată.</li>
           </ul>
         </div>
@@ -163,6 +163,7 @@ MANUALS.disp = {
           <div class="help-section-title">⚠️ Limitări și avertismente</div>
           <ul class="help-list">
             <li>Cu mai puțin de 4 dispeceri nu toate turele pot fi acoperite.</li>
+            <li>Cu 4 dispeceri sau mai puțin nu se poate acoperi 24h/zi <em>și</em> păstra o zi liberă întreagă după T4 (ar fi nevoie de 5): acoperirea are prioritate, deci unele serii de zile lucrate depășesc 4. Sub tabel apare o notă care explică asta.</li>
             <li>Când nu se poate acoperi o tură fără să se încalce odihna minimă sau seria de maximum 4 zile (de ex. concedii suprapuse), ziua rămâne cu tura goală — apare un avertisment ⚠️ sub tabel și o corectezi manual din dropdown.</li>
             <li>Dacă introduci manual doi dispeceri pe aceeași tură, apare avertismentul „Ture cu mai mulți dispeceri”.</li>
             <li>Sărbătorile legale nu influențează alocarea; pe carduri și în Statistici vezi câte ture de sărbătoare a lucrat fiecare (în lună și în an), ca să poți decide manual.</li>
@@ -206,14 +207,15 @@ MANUALS.disp = {
           <ul class="help-list">
             <li><strong>Lucrate</strong> — suma orelor reale pe ture (T1=4h, T2=6h, T3=6h, T4=8h).</li>
             <li><strong>CO/CM</strong> — orele de concediu (doar zile lucrătoare).</li>
-            <li><strong>Normă</strong> — zilele lunii × 24h împărțite la numărul de dispeceri (minim 5).</li>
+            <li><strong>Normă</strong> — zilele lucrătoare (luni–vineri, fără sărbătorile legale) × 6h, minus 6h pentru fiecare zi de CO/CM.</li>
+            <li><strong>An</strong> — pe fiecare card apare și situația pe an: ore de la 1 ianuarie până la luna afișată, față de norma acelorași luni minus CO/CM luat, plus câte zile de concediu are în an. Cu 20 de zile de CO legal (120h), norma anului scade de la 1500h la 1380h.</li>
           </ul>
           <p><strong>Culorile orelor:</strong> verde = exact norma, galben = sub normă cu cel mult 16h, roșu = peste normă sau cu mai mult de 16h sub normă. Pentru un dispecer cu blocuri care încep/se termină în altă lună, diferențele se echilibrează de-a lungul anului.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">🗂️ Carduri și statistici (sub tabel)</div>
           <ul class="help-list">
-            <li><strong>Carduri dispeceri</strong> — ore lucrate față de normă (procent), câte ture de fiecare tip (T1–T4, CO, CM, IL, EMP, Z, A) și „🎉 Sărb.” (în lună · în an).</li>
+            <li><strong>Carduri dispeceri</strong> — ore lucrate față de normă (procent), situația pe an (ore / normă an, cu CO scăzut), câte ture de fiecare tip (T1–T4, CO, CM, IL, EMP, Z, A) și „🎉 Sărb.” (în lună · în an).</li>
             <li><strong>Statistici ture</strong> — tabel detaliat cu ture pe tip, sărbători (lună și an), ore, normă și diferența (±).</li>
           </ul>
           <p>Ambele secțiuni se pot plia/desface cu butonul ▼/▶ din antetul lor.</p>

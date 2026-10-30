@@ -67,6 +67,10 @@ node matrix.mjs              # Exploatare: 6 moduri x 3/4/5 echipaje x Sept+Oct 
 node matrix.mjs --dispecer   # Dispecer: 5/6/7/8 persoane x Oct+Nov 2026
 node year.mjs --dispecer 7   # 12 luni generate în secvență, pe aceeași stare
 node year.mjs --exploatare 5
+node audit-disp.mjs          # Dispecer: an întreg, verificări independente (acoperire, odihnă, serii, ore)
+node trace-disp.mjs 4        # Dispecer: primele 14 zile + câte zile libere are fiecare pe an
+node norma.mjs               # norma pe ambele module (Dispecer 6h/zi, Exploatare 8h/zi) + % acoperit
+node check-7.mjs             # Dispecer 7 oameni: scenarii cu/fără concedii suprapuse
 node probe.mjs               # sanity: ce globals/elemente există în pagină
 ```
 
@@ -80,10 +84,16 @@ acoperirea sloturilor (Dispecer: lipsă/dublură pe T1–T4, cu `SLOT_VALUES`), 
 echipaje (limita documentată: ciclul fix nu poate acoperi capacitatea cerută). Dispecer —
 0 lipsuri, 0 dubluri, 0 încălcări de consecutive, la 5–8 persoane pe tot anul.
 
-**Atenție la cifrele din `DISPECER.md` §4/§12** — sunt măsurate ÎNAINTE de V2026.10.10, când
-T1 și T4 erau persoane diferite. Acum `valoarea 1 = T1+T4` la aceeași persoană, deci **3 oameni
-lucrează pe zi, nu 4**, iar turele de weekend per persoană ies ~38–56 la 7 dispeceri (nu 59–60)
-și ~59–64 la 5 (nu ~83). Totalul anual rămâne ~1250h la 7 dispeceri, cum zice documentul.
+**Dispecer: `report()` numără acum și dimineața de 6h de după T4** ca zi lucrată (ca
+`isWorkedDay`), altfel regula „max 4 zile la rând" părea respectată când de fapt oamenii lucrau
+până la 24 de zile la rând — vezi `audit-disp.mjs` și V2026.10.12. Verifică ambele:
+`node matrix.mjs --dispecer` (rapid) și `node audit-disp.mjs` (an întreg, recalculează
+independent acoperirea, odihna 11h, seriile, contabilitatea orelor și spread-ul).
+
+**Atenție la cifrele din `DISPECER.md` §4/§12** — cele vechi erau măsurate ÎNAINTE de V2026.10.10,
+când T1 și T4 erau persoane diferite. Acum `valoarea 1 = T1+T4` la aceeași persoană, deci **3 oameni
+lucrează pe zi, nu 4**. Numerele au fost re-măsurate headless pe 2026-10-30, după V2026.10.12
+(ture de weekend 42–48 la 7 dispeceri, 62–63 la 5; ore/an 1224–1272 la 7, 1746–1752 la 5).
 Nu „repara" codul ca să iasă cifrele vechi — sunt stale, nu bug.
 
 ## Moduri: Exploatare (`index.html`) și Dispecer (`dispecer.html`)
@@ -103,7 +113,11 @@ la 5 dispeceri e imposibil, la 6 parțial, la 7+ ok. Buton „▶▶ 6 luni” =
 
 **Cum generează**
 - Regulă dură: într-o tură (T1–T4) cel mult UN dispecer pe zi; ceilalți sunt liberi. Se lucrează în BLOCURI
-  T3→T2→T1+T4 (3 zile; T1 și T4 la aceeași persoană, aceeași zi de start — valoarea 1 = 12h), apoi ≥1 zi liberă (ziua de după T1+T4 e liberă din cauza odihnei <11h); în fiecare zi începe exact un bloc nou. Continuarea blocului e funcție de
+  T3→T2→T1+T4 (3 zile; T1 și T4 la aceeași persoană, aceeași zi de start — valoarea 1 = 12h) + dimineața de 6h
+  a zilei următoare, apoi o zi liberă ÎNTREAGĂ: un bloc nou nu începe în ziua de după T4 (odihnă 10h) **nici în
+  ziua de după dimineața de 6h** — altfel seriile ajungeau la 5–24 de zile lucrate la rând (V2026.10.12).
+  Dacă nu rămâne nimeni odihnit (sub 5 dispeceri, concedii), acoperirea are prioritate (fallback). În fiecare zi
+  începe exact un bloc nou. Continuarea blocului e funcție de
   tura REALĂ de ieri (`BLOCK_NEXT`), iar cine începe T3 se alege echitabil: ore în an la nivel de bloc (toleranță
   `BLOCK_HOURS`=24h), apoi cele mai puține weekenduri+sărbători (`assignDispecerShifts`). NU reveni la un ciclu fix pe poziții:
   la 7 dispeceri ciclul = o săptămână și fiecare lucrează mereu aceleași zile (weekend 0–104/an). Nu reintroduce dubluri.
@@ -113,8 +127,10 @@ la 5 dispeceri e imposibil, la 6 parțial, la 7+ ok. Buton „▶▶ 6 luni” =
   (`MAX_CONSEC_DAYS` — decizie de business, vezi sensibilitatea din DISPECER.md §12).
   Ce nu se poate acoperi legal rămâne gol și apare ca ⚠️ sub tabel (`coverageGaps`); dublurile introduse
   manual apar tot ca ⚠️ (`duplicateShifts`).
-- Norma lunară = `round(zile × 24 / max(5, nr. dispeceri))` (`cycleLength`/`avgHoursPerDay`; 7 dispeceri ≈ 103h/lună);
-  CO/CM reduc norma cu aceleași ore/zi; CO/CM în weekend nu se contorizează și se afișează ca L.
+- Norma lunară = **zile lucrătoare × 6h** (V2026.10.13: `workingDays()` din `js/core.js` × `NORM_H_PER_DAY`;
+  oct. 2026 = 132h, anul 2026 = 1500h). Formula veche `zile × 24 / nr. dispeceri` (~103h) **nu** mai e norma —
+  `avgHoursPerDay()` a rămas doar creditul intern de echitate din `yearHours`. CO/CM reduc norma cu 6h pe zi
+  lucrătoare; CO/CM în weekend nu se contorizează și se afișează ca L.
 - Sărbătorile legale sunt DOAR informative: marcaj pe coloane, listă, carduri „🎉 Sărb.: N lună · M an”
   și coloanele din Statistici. Raționalizarea/echilibrarea automată din sărbători a fost implementată
   (V2026.10.3) și SCOASĂ la cerere (V2026.10.4) — utilizatorul vrea să decidă manual. Nu o reintroduce
@@ -238,7 +254,8 @@ lunii, oricâte modificări pe lună).
 - `t12` (**implicit**) — doar T1/T2 automat, T1A/T2A rămân manuale
 - `rotation` — „Rotație 8 zile": ciclu fix T1→T1A→T2→L→T1→T2A→T2→L per echipaj/individ
 - `rotation3` — „Rotație T1-T2-L (3 zile)": ciclu fix T1→T2→L per echipaj/individ
-- `rotation5` — „Rotație T1-T1A-T2A-T2-L (5 zile)": `[1,3,4,2,0]`; `rotation4` — „Rotație T1-T1A-T2-L (4 zile)":
+- `rotation5` — „Rotație T1-T1A-T2-T2A-L (5 zile)": `[1,3,2,4,0]` (V2026.10.6 — înainte era
+  `[1,3,4,2,0]`, cu T2A înaintea T2); `rotation4` — „Rotație T1-T1A-T2-L (4 zile)":
   `[1,3,2,0]` (V2026.10.4). Doar un `case` nou în `assignDay` + opțiuni în select/`ANALYZE_MODES`/`usesTA`
 
 Toate rulează prin `generateDay(day)` → `assignCategoryShifts()` (full/t12) sau

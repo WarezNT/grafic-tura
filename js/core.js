@@ -7,7 +7,7 @@
 // Construiește markup-ul paginii (antet, controale, modale, manual) din șablon + MODE.shell.
 document.body.insertAdjacentHTML('afterbegin', buildShell());
 
-const COMMIT_COUNT = 125;
+const COMMIT_COUNT = 126;
 
 const DB_VERSION = 1;
 
@@ -291,6 +291,26 @@ function getLegalHolidays(y) {
   list.push(mk(addDays(easter, 50), 'A doua zi de Rusalii'));
   list.sort((a, b) => a.date.localeCompare(b.date));
   return list;
+}
+
+// Zile lucrătoare ale lunii = luni–vineri MINUS sărbătorile legale care cad în cursul săptămânii
+// (o sărbătoare în weekend nu mai scade nimic — ziua e oricum nelucrătoare).
+// `null` = an în afara intervalului calculabil (1900–2099) → norma rămâne necunoscută, nu inventată.
+// Stă în nucleu pentru că o folosesc ambele moduri: Exploatare (×8h/zi) și Dispecer (×6h/zi, tura standard).
+function workingDays(y, m) {
+  const dim = daysInMonth(y, m);
+  const prefix = y + '-' + pad(m);
+  const holidays = getLegalHolidays(y);
+  if (holidays.length === 0) return null; // an în afara intervalului calculabil
+  const holidaySet = new Set(holidays.filter(h => h.date.startsWith(prefix)).map(h => h.date));
+  let wd = 0;
+  for (let d = 1; d <= dim; d++) {
+    const dow = new Date(y, m - 1, d).getDay();
+    if (dow === 0 || dow === 6) continue;
+    if (holidaySet.has(dateKey(y, m, d))) continue;
+    wd++;
+  }
+  return wd;
 }
 
 // Un singur loc care decide culoarea/verdictul — folosit ȘI de tabel ȘI de sumar (înainte,
@@ -1106,6 +1126,7 @@ function renderSummary() {
     html += '<div class="' + cardCls + '">'
       + '<div class="emp-card-header">' + MODE.summary.cardHeader(emp) + '</div>'
       + '<div class="emp-card-hours"><strong>' + st.hours + 'h</strong>' + (effExpected !== null ? ' / ' + effExpected + 'h (' + pct + '%)' : ' — normă necunoscută') + '</div>'
+      + (MODE.summary.cardExtra ? MODE.summary.cardExtra(emp, st) : '')
       + '<div class="shift-pills">' + (pills.length ? pills.join('') : '<span style="color:var(--empty);font-size:11px">—</span>') + '</div>'
       + '</div>';
   });

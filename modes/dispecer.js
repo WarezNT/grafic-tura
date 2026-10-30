@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_dispecer_version';
 
 const ORG_KEY = 'graficTura_dispecer_org';
 
-const APP_VERSION = 'V2026.10.11';
+const APP_VERSION = 'V2026.10.13';
 
 const DB_NAME = 'GraficTuraDispecerDB';
 
@@ -26,9 +26,12 @@ const MODE = {
   leaveTypes: { 5: 'CO', 6: 'CM', 7: 'IL', 8: 'EMP', 9: 'Z', 10: 'A' },
   leaveSkipWeekend: [7, 8, 9, 10],       // la „pe interval", IL/EMP/Z/A sar peste sâmbete/duminici
   weekendNoCount: [5, 6],                // doar CO/CM nu se contorizează în weekend; IL/EMP/Z/A da (6h)
-  leaveHoursPerDay() { return avgHoursPerDay(); },
+  leaveHoursPerDay() { return NORM_H_PER_DAY; },
   isWorkShift(v) { return v > 0 && (SHIFT_HOURS[v] || 0) > 0; },
-  expectedHours(y, m) { return Math.round(daysInMonth(y, m) * avgHoursPerDay()); },
+  // Norma lunară a unui dispecer = zile lucrătoare (L–V, fără sărbători legale) × 6h. Tura standard are 6h
+  // (T2/T3); T1+T4 = 12h = două ture. NU se calculează pe zile calendaristice: acoperirea 24h/zi e asigurată
+  // de echipă, nu de fiecare om (vezi nota de la avgHoursPerDay și din DISPECER.md §5).
+  expectedHours(y, m) { const wd = workingDays(y, m); return wd !== null ? wd * NORM_H_PER_DAY : null; },
   readAddForm() { return { category: 'dispecer' }; },
   resetAddForm() {},
   afterAdd() {},
@@ -93,6 +96,18 @@ const MODE = {
       const holYear = holidayShiftsYear(emp.id, state.currentYear, state.currentMonth);
       if (holCount || holYear) pills.push('<span class="shift-pill" style="background:var(--holiday-bg);color:var(--holiday-text)" data-tooltip="Ture lucrate în sărbători legale: în luna afișată și de la 1 ianuarie până la sfârșitul ei">🎉 Sărb.: ' + holCount + ' lună · ' + holYear + ' an</span>');
       return pills;
+    },
+    // Linia „An YYYY: ore / normă” — norma anului până la luna afișată, minus CO/CM luat.
+    // Fără ea, cifra pe lună pare „sub normă” fără motiv: 20 de zile de CO legal = 120h mai puțin pe an.
+    cardExtra(emp) {
+      const t = ytdTotals(emp.id);
+      if (!t.norm) return '';
+      const pct = Math.round((100 * t.hours) / t.norm);
+      return '<div style="font-size:11px;color:var(--text-muted);margin:-3px 0 6px;cursor:help" data-tooltip="'
+        + 'Ore lucrate de la 1 ianuarie până la sfârșitul lunii afișate, față de norma acelorași luni minus CO/CM (6h pe zi lucrătoare). '
+        + 'Anul întreg are ' + ytdNormYear() + 'h de normă; fiecare zi de CO sau CM scade 6h.">'
+        + 'An ' + state.currentYear + ': <strong>' + t.hours + 'h</strong> / ' + t.norm + 'h (' + pct + '%)'
+        + (t.coDays ? ' · CO/CM ' + t.coDays + ' z' : '') + '</div>';
     },
     statsTable(expected) {
       let html = '<table class="stat-table"><thead><tr>'
@@ -201,6 +216,23 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.13': {
+    title: 'Norma = zile lucrătoare × 6h',
+    items: [
+      { icon: '📏', text: 'Norma lunară se calculează acum ca pentru un dispecer în ture: zile lucrătoare (luni–vineri, fără sărbătorile legale) × 6h. Octombrie 2026 (22 zile) = 132h, ianuarie (18 zile, 5 sărbători) = 108h, anul 2026 = 1500h' },
+      { icon: '🧮', text: 'CO/CM reduc norma cu 6h pe zi lucrătoare, iar coloana CO/CM arată aceleași ore — înainte se folosea media de 24h împărțită la numărul de dispeceri' },
+      { icon: '📊', text: 'Se vede acum cât acoperă graficul din normă: cu 7 dispeceri orele programate ajung la ~82–85% (1250h din 1500h), cu 6 la ~100%, cu 5 peste normă' },
+      { icon: '📅', text: 'Pe fiecare card apare și situația pe an: ore de la 1 ianuarie până la luna afișată, față de norma acelorași luni minus CO/CM luat (6h pe zi). Cu 20 de zile de CO legal norma anului scade de la 1500h la 1380h, iar graficul ajunge la ~88–92%' }
+    ]
+  },
+  'V2026.10.12': {
+    title: 'Zi liberă după tura de noapte',
+    items: [
+      { icon: '🛌', text: 'După T1+T4, dimineața 00:00–06:00 a zilei următoare nu mai e tratată ca „zi liberă”: nu se mai începe un bloc nou imediat după ea, așa că nimeni nu mai ajunge să lucreze 5–24 de zile la rând (regula e maximum 4)' },
+      { icon: '⚖️', text: 'Orele se împart mai uniform, ca efect secundar: la 5 dispeceri diferența dintre cel mai încărcat și cel mai puțin încărcat a scăzut de la 48h la 6h pe lună și de la 30h la 6h pe an; la 7 dispeceri, de la 72h la 48h pe an' },
+      { icon: '🚨', text: 'Când nu sunt 5 dispeceri disponibili (efectiv mic sau concedii suprapuse), acoperirea 24h rămâne prioritară — sub tabel apare o notă care spune cine a lucrat mai mult de 4 zile la rând și de ce' }
+    ]
+  },
   'V2026.10.11': {
     title: 'Coloana cu nume nu mai dispare pe ecrane mici',
     items: [
@@ -312,18 +344,65 @@ function t4SplitAdjust(empId, y, m, hours) {
   return hours + adj;
 }
 
+// Norma întregului an afișat (12 luni × zile lucrătoare × 6h) — 1500h pentru 2026.
+// Memorată pe an: se cere pentru fiecare card la fiecare desenare, iar workingDays() nu e gratis.
+let _ytdYear = { y: 0, norm: 0 };
+function ytdNormYear() {
+  if (_ytdYear.y === state.currentYear) return _ytdYear.norm;
+  let t = 0;
+  for (let m = 1; m <= 12; m++) t += MODE.expectedHours(state.currentYear, m) || 0;
+  _ytdYear = { y: state.currentYear, norm: t };
+  return t;
+}
+
+// Situația pe an, de la 1 ianuarie până la sfârșitul lunii afișate: ore lucrate + norma acelorași luni,
+// minus CO/CM luat (6h pe zi lucrătoare). E cifra care răspunde la „cât mai are de lucrat anul ăsta" —
+// cu 20 de zile de CO legal, norma anuală de 1500h scade la 1380h.
+// Orele se însumează ca în getEmployeeStats: T4 de pe ultima zi a perioadei dă doar 2h aici (6h cad în
+// luna următoare), la fel ca t4SplitAdjust.
+function ytdTotals(empId) {
+  const y = state.currentYear, m = state.currentMonth;
+  let hours = 0, coDays = 0, norm = 0;
+  for (const dk in state.schedule) {
+    if (+dk.slice(0, 4) !== y) continue;
+    const mm = +dk.slice(5, 7);
+    if (mm > m) continue;
+    const v = state.schedule[dk][String(empId)] || 0;
+    hours += SHIFT_HOURS[v] || 0;
+    if (v === 5 || v === 6) {
+      const dow = new Date(y, mm - 1, +dk.slice(8, 10)).getDay();
+      if (dow !== 0 && dow !== 6) coDays++;
+    }
+  }
+  if (hasT4((state.schedule[dateKey(y, m, daysInMonth(y, m))] || {})[String(empId)] || 0)) hours -= T4_SPILL_H;
+  for (let i = 1; i <= m; i++) norm += MODE.expectedHours(y, i) || 0;
+  norm -= coDays * NORM_H_PER_DAY;
+  return { hours, norm, coDays };
+}
+
 const WEEKEND_HIDE = [5, 6]; // CO/CM nu se oferă în dropdown pe S/D (se afișează ca L)
 
-// Un bloc = T3 → T2 → T1+T4 (3 zile la rând), apoi cel puțin o zi liberă (ziua de după T1+T4 e oricum liberă:
-// tura se termină la 06:00, iar T3 de la 16:00 ar avea doar 10h odihnă). În fiecare zi începe exact un bloc nou
-// (T3), deci T1, T2, T3 și T4 au CEL MULT UN dispecer pe zi (T1 și T4 la aceeași persoană), iar ceilalți sunt
-// liberi. Cine începe blocul se alege echitabil (ore în an, apoi weekenduri + sărbători), nu un ciclu fix.
-const MIN_CYCLE_LEN = 4; // cel puțin 4 dispeceri pentru acoperire completă (3 lucrează + 1 liber)
+// Un bloc = T3 → T2 → T1+T4 (3 zile la rând) + dimineața de 6h a zilei următoare (00:00–06:00, când se
+// termină T4), apoi o zi liberă ÎNTREAGĂ. Ziua cu 6h NU e zi liberă (vezi isWorkedDay: nu contează ca weekend
+// liber), deci un bloc nou nu începe imediat după ea — altfel seria ajungea la 5–24 de zile lucrate la rând.
+// În fiecare zi începe exact un bloc nou (T3), deci T1, T2, T3 și T4 au CEL MULT UN dispecer pe zi (T1 și T4
+// la aceeași persoană), iar ceilalți sunt liberi. Cine începe blocul se alege echitabil (ore în an, apoi
+// weekenduri + sărbători), nu un ciclu fix.
+const MIN_CYCLE_LEN = 4; // 4 dispeceri = acoperire completă a zilei (3 lucrează + 1 liber)
+// 5 = minimul pentru acoperire completă ȘI zi liberă întreagă după T4 (ciclu: T3, T2, T1+T4, dimineața de 6h, liber).
+// Sub 5 acoperirea rămâne prioritară (fallback în assignDispecerShifts + notă în renderGapList).
+const MIN_DAYOFF_LEN = 5;
 
 function cycleLength() { return Math.max(MIN_CYCLE_LEN, state.employees.length); }
 
-// Ore medii pe zi ale unui dispecer = 24h împărțite la numărul de dispeceri (min. 4); folosit la normă și CO/CM.
+// Ore medii pe zi ale unui dispecer = 24h împărțite la numărul de dispeceri (min. 4). ATENȚIE: nu e norma
+// (norma = zile lucrătoare × 6h, vezi MODE.expectedHours). Se folosește doar ca „credit" de echitate când
+// cineva e în CO/CM: câte ore ar fi lucrat în medie în acea zi dacă nu era în concediu.
 function avgHoursPerDay() { return 24 / cycleLength(); }
+
+// Norma de lucru a dispecerului: 6h pentru fiecare zi lucrătoare (L–V, fără sărbători legale).
+// Tura T1+T4 = 12h se socotește două ture de 6h, deci norma rămâne pe „ture standard".
+const NORM_H_PER_DAY = 6;
 
 function defaultState() {
   const now = new Date();
@@ -412,8 +491,15 @@ function assignDispecerShifts(emps, dk, assigned, year, month, day) {
     const v = (state.schedule[ctx.key(off)] || {})[String(e.id)];
     return v >= 5;                       // CO/CM/IL/EMP/Z/A — zi în care nu poate lucra într-un bloc
   });
-  // cine a făcut T1+T4/T4 ieri termină azi la 06:00 și nu poate începe T3 (16:00 = doar 10h odihnă)
-  let pool = emps.filter(e => !assigned.includes(e.id) && !hasT4(yesterday(e)));
+  // Cine a terminat azi la 06:00 un T1+T4/T4 (ieri T4) NU poate începe T3 (16:00 = doar 10h odihnă).
+  // Cine a lucrat 00:00–06:00 azi (dimineața de după T4) ar trebui să aibă ziua liberă: aceea NU e zi
+  // liberă (vezi isWorkedDay), deci un bloc nou azi ar însemna 5+ zile lucrate la rând, nu 4.
+  // Se preferă cineva cu ziua de ieri complet liberă; dacă nu există (sub 5 dispeceri, concedii),
+  // acoperirea turei rămâne prioritară și se acceptă și continuarea imediată.
+  const notT4Today = e => !hasT4(yesterday(e));
+  const realRest = e => notT4Today(e) && !prevDayIsT4(e.id, ctx.prevKey);
+  let pool = emps.filter(e => !assigned.includes(e.id) && realRest(e));
+  if (!pool.length) pool = emps.filter(e => !assigned.includes(e.id) && notT4Today(e));
   const rested = pool.filter(e => !leaveSoon(e));
   if (rested.length) pool = rested;
   if (!pool.length) return;
@@ -525,8 +611,10 @@ function dayContext(year, month, day) {
     runBefore(e) {
       let r = 0;
       for (let off = -1; off >= -MAX_CONSEC_DAYS; off--) {
-        const v = (state.schedule[key(off)] || {})[String(e.id)] || 0;
-        if (v >= 1 && v <= 4) r++; else break;
+        const k = key(off);
+        const v = (state.schedule[k] || {})[String(e.id)] || 0;
+        // zi lucrată = tură T1–T4 SAU dimineața de 6h de după un T4 (00:00–06:00 din aceeași zi)
+        if ((v >= 1 && v <= 4) || prevDayIsT4(e.id, k)) r++; else break;
       }
       return r;
     },
@@ -657,6 +745,28 @@ function renderGapList(y, m) {
   if (complete && state.employees.length > 1) {
     const noWe = state.employees.filter(e => !hasFreeWeekend(e, y, m));
     if (noWe.length) lines.push('⚠️ Fără weekend liber legat (sâmbătă + duminică) în această lună: ' + noWe.map(e => e.name).join(', ') + ' — nu s-a putut din cauza concediilor/acoperirii; corectează manual dacă e nevoie.');
+  }
+  // Sub 5 dispeceri disponibili nu încape și zi liberă întreagă după T4: 24h/zi, cu 11h odihnă, cer 5 oameni
+  // într-un ciclu de 5 zile (T3, T2, T1+T4, dimineața de 6h, liber). Aplicația ține acoperirea, deci seriile
+  // depășesc 4 zile — consecință matematică, nu bug. Se detectează din grafic (nu din numărul de angajați),
+  // ca să prindă și cazul „7 dispeceri, dar 3 în concediu" — acolo e cel mai probabil să apară.
+  if (complete) {
+    let worst = 0;
+    const names = [];
+    state.employees.forEach(e => {
+      let run = 0;
+      for (let d = 1; d <= dim; d++) {
+        const dk = dateKey(y, m, d);
+        const v = (state.schedule[dk] || {})[String(e.id)] || 0;
+        if ((v >= 1 && v <= 4) || prevDayIsT4(e.id, dk)) run++; else run = 0;
+        if (run > worst) { worst = run; names.length = 0; }
+        if (run === worst && run > MAX_CONSEC_DAYS && !names.includes(e.name)) names.push(e.name);
+      }
+    });
+    if (worst > MAX_CONSEC_DAYS) {
+      lines.push('ℹ️ Serii de peste ' + MAX_CONSEC_DAYS + ' zile lucrate la rând (până la ' + worst + '), cu dimineața de 6h socotită: '
+        + names.join(', ') + '. Așa se întâmplă când nu sunt ' + MIN_DAYOFF_LEN + ' dispeceri disponibili (concedii, efectiv mic) — acoperirea 24h are prioritate; corectează manual dacă nu e acceptabil.');
+    }
   }
   el.innerHTML = lines.map(esc).join('<br>');
 }

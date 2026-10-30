@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_version';
 
 const ORG_KEY = 'graficTura_org';
 
-const APP_VERSION = 'V2026.10.5';
+const APP_VERSION = 'V2026.10.6';
 
 const DB_NAME = 'GraficTuraDB';
 
@@ -135,7 +135,7 @@ const MODE = {
     } else if (state.genMode === 'rotation3') {
       assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 2, 0]);
     } else if (state.genMode === 'rotation5') {
-      assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 3, 4, 2, 0]);
+      assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 3, 2, 4, 0]);
     } else if (state.genMode === 'rotation4') {
       assignRotationShifts(emps, dk, assigned, day, weekend, cfgs, [1, 3, 2, 0]);
     } else {
@@ -381,7 +381,7 @@ const MODE = {
           <option value="t12">2) Zilnic T1/T2</option>
           <option value="rotation">3) Rotație 8 zile</option>
           <option value="rotation3">4) Rotație T1-T2-L</option>
-          <option value="rotation5">5) Rotație T1-T1A-T2A-T2-L</option>
+          <option value="rotation5">5) Rotație T1-T1A-T2-T2A-L</option>
           <option value="rotation4">6) Rotație T1-T1A-T2-L</option>
         </select>
       </label>
@@ -497,6 +497,13 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.6': {
+    title: 'Modul 5: T2 înainte de T2A',
+    items: [
+      { icon: '🔄', text: 'Modul 5) Rotație este acum T1-T1A-T2-T2A-L (ciclul de 5 zile); înainte era T1-T1A-T2A-T2-L, adică T2A venea înaintea turei T2' },
+      { icon: '📅', text: 'Ordinea din ciclu devine: T1 → T1A → T2 → T2A → liber, cu aceleași reguli (max 4 zile consecutive, max 5 zile/săptămână, gap T2→T1/T1A, fairness pe ore)' }
+    ]
+  },
   'V2026.10.5': {
     title: 'Coloana cu nume nu mai dispare pe ecrane mici',
     items: [
@@ -1269,20 +1276,7 @@ function catLabel(c) { return { urban: 'Urban', rural: 'Rural' }[c] || c; }
 
 function catShort(c) { return { urban: 'U', rural: 'R' }[c] || '?'; }
 
-function workingDays(y, m) {
-  const dim = daysInMonth(y, m);
-  const prefix = y + '-' + pad(m);
-  const holidaySet = new Set(getLegalHolidays(y).filter(h => h.date.startsWith(prefix)).map(h => h.date));
-  if (holidaySet.size === 0 && getLegalHolidays(y).length === 0) return null; // y în afara 1900-2099
-  let wd = 0;
-  for (let d = 1; d <= dim; d++) {
-    const dow = new Date(y, m - 1, d).getDay();
-    if (dow === 0 || dow === 6) continue;
-    if (holidaySet.has(dateKey(y, m, d))) continue;
-    wd++;
-  }
-  return wd;
-}
+// workingDays(y, m) a fost mutată în js/core.js (o folosește și Dispecerul, cu 6h/zi) — nu o re-defini aici.
 
 // ── Analiză moduri ──────────────────────────────────────────────────────
 // Simulează pe rând toate cele 6 moduri de generare, pentru luna selectată
@@ -1384,7 +1378,7 @@ const ANALYZE_MODES = [
   { key: 't12', label: '2) Zilnic T1/T2' },
   { key: 'rotation', label: '3) Rotație 8 zile' },
   { key: 'rotation3', label: '4) Rotație T1-T2-L' },
-  { key: 'rotation5', label: '5) Rotație T1-T1A-T2A-T2-L' },
+  { key: 'rotation5', label: '5) Rotație T1-T1A-T2-T2A-L' },
   { key: 'rotation4', label: '6) Rotație T1-T1A-T2-L' }
 ];
 
