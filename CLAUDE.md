@@ -46,7 +46,8 @@ Valorile numerice ale turelor sunt LOCALE modului (3/4 înseamnă T3/T4 în Disp
 fiecare mod are `STORAGE_KEY` propriu și garda `looksForeign` la import.
 
 **Testare (obligatorie la orice refactor)**: `python -m http.server`, apoi în Browser pane
-`eval(await (await fetch('/tests/snapshot.js',{cache:'reload'})).text()); JSON.stringify(await compareSnapshot())`.
+`eval(await (await fetch('tests/snapshot.js',{cache:'reload'})).text()); JSON.stringify(await compareSnapshot())`.
+(cale relativă — pe GitHub Pages aplicația stă în `/grafic-tura/`, deci ceva cu `/` la început ar da 404)
 Compară 12 chei (5 scenarii de grafic, tabel, sumar, legendă, modale, Excel, acțiuni interactive, amprenta
 markup-ului) cu `tests/baseline-<mod>.json` — **comis în repo** (excepție în `.gitignore`; fără `_` la început,
 fiindcă GitHub Pages nu publică fișierele cu `_`), deci testul merge pe orice clone **și pe site**.

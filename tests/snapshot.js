@@ -219,10 +219,12 @@ async function compareSnapshot() {
   const s = await runSnapshot();
   s.shell = shell;
   const isD = typeof assignDispecerShifts === 'function';
-  const file = 'baseline-' + (isD ? 'dispecer' : 'exploatare') + '.json';
+  const file = 'tests/baseline-' + (isD ? 'dispecer' : 'exploatare') + '.json';
   let base;
   try {
-    const resp = await fetch('/tests/' + file);
+    // cale RELATIVĂ (fără `/` la început): pe GitHub Pages aplicația stă în /grafic-tura/, deci
+    // `/tests/...` ar căuta la rădăcina domeniului și ar da 404; așa merge și local și pe site.
+    const resp = await fetch(file);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     base = await resp.json();
   } catch (e) {
