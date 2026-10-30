@@ -70,8 +70,8 @@
     "org": "f9fba0dd",
     "add": "c688f93",
     "edit": "5400201d",
-    "changelog": "af304c7e",
-    "help": "ec82e173"
+    "changelog": "dd9eb99b",
+    "help": "9d771e39"
   },
   "e-t12-sep2": {
     "sched": "ed3db309",
@@ -148,7 +148,7 @@
     }
   },
   "shell": {
-    "hash": "d8742dd1",
-    "len": 70969
+    "hash": "d148d8c3",
+    "len": 71687
   }
 }

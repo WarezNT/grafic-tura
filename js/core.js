@@ -24,7 +24,7 @@ document.addEventListener('keydown', e => {
   if (window.getComputedStyle(top).display !== 'none') top.style.display = 'none';  // plasă de siguranță
 });
 
-const COMMIT_COUNT = 139;
+const COMMIT_COUNT = 140;
 
 const DB_VERSION = 1;
 

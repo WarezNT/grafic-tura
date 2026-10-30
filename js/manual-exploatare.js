@@ -69,10 +69,12 @@ MANUALS.exp = {
           <div class="help-section-title">⚙️ Setări organizație</div>
           <p>La prima utilizare apare automat un dialog; îl poți redeschide oricând cu butonul <em>⚙️</em>. Câmpuri: <strong>Formația/Unitatea</strong>, <strong>Șef FOL EM</strong>, <strong>Responsabil Tehnic</strong>, <strong>Județ</strong> (pentru Șef CORE) și <strong>Aprobat Șef CORE</strong>.</p>
           <p>Datele apar în subtitlul paginii, titlul filei de browser, semnăturile de la print și exportul Excel. Sunt salvate separat de grafic și <strong>nu se șterg</strong> la import de fișiere sau la actualizarea aplicației.</p>
+          <p><strong>Setările sunt ținute separat pentru cele două aplicații:</strong> ce completezi aici (Exploatare) nu apare în graficul de dispecer și invers — fiecare are formația, semnăturile și entitatea ei.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">👤 Electricieni</div>
           <p>Apasă <em>+ Electrician</em> și completează:</p>
+          <p>La prima pornire există deja un electrician-exemplu (<em>„Electrician 1"</em>), ca să vezi imediat cum arată tabelul — îl poți redenumi sau șterge.</p>
           <ul class="help-list">
             <li><strong>Nume</strong> — apare în tabel, carduri și exporturi.</li>
             <li><strong>Categorie (Urban / Rural)</strong> — grupul de ture; fiecare grup e alocat separat, conform cerinței proprii.</li>

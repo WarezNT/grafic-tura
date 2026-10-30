@@ -80,8 +80,8 @@
     "org": "c8ec5a6f",
     "add": "fd093843",
     "edit": "ac2070a9",
-    "changelog": "27d84255",
-    "help": "3471cea5"
+    "changelog": "1be187e2",
+    "help": "f219d899"
   },
   "d-n7-nov:xlsx": "eae0529d",
   "d-n7-nov-co:xlsx": "a8db2646",
@@ -148,7 +148,7 @@
     }
   },
   "shell": {
-    "hash": "d95e8daf",
-    "len": 61885
+    "hash": "e1986a39",
+    "len": 62603
   }
 }

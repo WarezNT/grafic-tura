@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_version';
 
 const ORG_KEY = 'graficTura_org';
 
-const APP_VERSION = 'V2026.10.10';
+const APP_VERSION = 'V2026.10.11';
 
 const DB_NAME = 'GraficTuraDB';
 
@@ -536,6 +536,13 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.11': {
+    title: 'Manual mai clar',
+    items: [
+      { icon: '📖', text: 'Manualul spune explicit că setările de organizație sunt ținute separat pentru Exploatare și Dispecer — ce setezi într-una nu apare în cealaltă.' },
+      { icon: '➕', text: 'Manualul arată de la ce pornești: la prima utilizare ai deja un electrician-exemplu, pe care îl poți redenumi sau șterge.' }
+    ]
+  },
   'V2026.10.10': {
     title: 'Pornire mai curată',
     items: [

@@ -68,10 +68,12 @@ MANUALS.disp = {
           <div class="help-section-title">⚙️ Setări organizație</div>
           <p>La prima utilizare apare automat un dialog; îl poți redeschide oricând cu butonul <em>⚙️</em>. Câmpuri: <strong>Entitate</strong> (implicit Delgaz Grid S.A), <strong>Formația/Unitatea</strong>, <strong>Șef FOL EM</strong>, <strong>Responsabil Tehnic</strong>, <strong>Județ</strong> (pentru Șef CORE) și <strong>Aprobat Șef CORE</strong>. <strong>Denumirea fiecărui câmp se poate edita</strong> (ex. „Șef dispecerat” în loc de „Șef FOL EM”), iar <strong>bifa</strong> din stânga lui îl activează / dezactivează — un câmp dezactivat nu mai apare în antet, la print și în Excel.</p>
           <p>Datele apar în subtitlul paginii, titlul filei de browser, semnăturile de la print și exportul Excel. Sunt salvate separat de grafic și <strong>nu se șterg</strong> la import de fișiere sau la actualizarea aplicației.</p>
+          <p><strong>Setările sunt ținute separat pentru cele două aplicații:</strong> ce completezi aici (Dispecer) nu apare în graficul de Exploatare și invers — fiecare are formația, semnăturile și entitatea ei.</p>
         </div>
         <div class="help-section">
           <div class="help-section-title">👤 Dispeceri</div>
           <p>Apasă <em>+ Dispecer</em> și completează doar <strong>numele</strong>. Numărul de dispeceri determină ciclul de rotație (norma depinde doar de zilele lucrătoare — vezi tabul <em>Reguli</em>).</p>
+          <p>La prima pornire există deja un dispecer-exemplu (<em>„Dispecer 1"</em>), ca să vezi imediat cum arată tabelul — îl poți redenumi sau șterge.</p>
           <p><strong>Editare / ștergere:</strong> click pe numele dispecerului din tabel. Ștergerea cere confirmare în doi pași. Din același loc poți seta CO/CM pe interval.</p>
         </div>
         <div class="help-section">

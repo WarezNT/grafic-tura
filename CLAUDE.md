@@ -81,6 +81,7 @@ node norma.mjs               # norma pe ambele module (Dispecer 6h/zi, Exploatar
 node check-7.mjs             # Dispecer 7 oameni: scenarii cu/fără concedii suprapuse
 node make-baseline.mjs       # regenerează tests/baseline-*.json (Chrome real); --verify doar compară
 node verify-state.mjs        # cele 3 căi de pornire a stării: instalare nouă / date corupte / date valide
+node verify-manual.mjs       # manualul vs. cifrele din cod (normă/zi, oct, ian, an, limite, valori de tură)
 node verify-shell-stability.mjs  # amprenta de shell nu depinde de datele din profil
 node probe.mjs               # sanity: ce globals/elemente există în pagină
 ```
@@ -223,7 +224,14 @@ incrementaseră `N` fără să actualizeze luna.)
 
 `COMMIT_COUNT` (în `js/core.js`, afișat în footer lângă versiune) se auto-actualizează la fiecare commit
 via git hook `.githooks/pre-commit` (activat prin `git config core.hooksPath .githooks`
-— setare LOCALĂ, trebuie rulată o dată pe orice clone nou).
+— setare locală, trebuie rulată o dată pe orice clone nou).
+
+**Manualul face parte din schimbare.** Orice cifră vizibilă care se schimbă în cod (normă, ore pe tură,
+limite de odihnă/serii, valori de tură noi) trebuie reflectată și în `js/manual-<mod>.js`, iar ștergerea
+sau adăugarea unei valori cere și intrare în lista din manual. Testul de instantanee prinde doar când
+manualul se SCHIMBĂ (hash pe `help-modal`), nu când rămâne în urmă — de aceea `node verify-manual.mjs`
+compară textul manualului cu ce calculează aplicația (normă/zi, oct/ian/an, `T1+T4`, 11h, 4 zile,
+denumirile de tură din `SHIFT_NAMES`). Rulează-l după orice modificare de cifre.
 
 ## Valorile turelor — Exploatare (`SHIFT_NAMES`, folosite peste tot ca număr, nu string)
 

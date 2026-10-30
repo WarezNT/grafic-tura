@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_dispecer_version';
 
 const ORG_KEY = 'graficTura_dispecer_org';
 
-const APP_VERSION = 'V2026.10.17';
+const APP_VERSION = 'V2026.10.18';
 
 const DB_NAME = 'GraficTuraDispecerDB';
 
@@ -271,6 +271,13 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.18': {
+    title: 'Manual mai clar',
+    items: [
+      { icon: '📖', text: 'Manualul spune explicit că setările de organizație sunt ținute separat pentru Dispecer și Exploatare — ce setezi într-una nu apare în cealaltă.' },
+      { icon: '➕', text: 'Manualul arată de la ce pornești: la prima utilizare ai deja un dispecer-exemplu, pe care îl poți redenumi sau șterge.' }
+    ]
+  },
   'V2026.10.17': {
     title: 'Pornire mai curată',
     items: [
