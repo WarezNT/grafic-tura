@@ -7,7 +7,7 @@
 // Construiește markup-ul paginii (antet, controale, modale, manual) din șablon + MODE.shell.
 document.body.insertAdjacentHTML('afterbegin', buildShell());
 
-const COMMIT_COUNT = 128;
+const COMMIT_COUNT = 129;
 
 const DB_VERSION = 1;
 
@@ -60,7 +60,7 @@ function loadState() {
     if (raw) {
       const s = JSON.parse(raw);
       if (s && s.employees && Array.isArray(s.employees)) {
-        migrateState(s);
+        adoptState(s);          // validează angajații + graficul, apoi migrează (vezi adoptState)
         return s;
       }
       // JSON valid dar formă neașteptată (fără employees[]) — tot corupt din perspectiva
@@ -568,7 +568,7 @@ async function initStateFromDB() {
   try {
     const saved = await dbGet(MODE.dbKey);
     if (saved && saved.employees && Array.isArray(saved.employees)) {
-      migrateState(saved);
+      adoptState(saved);
       state = saved;
       genDay = state.genDay || 0;
       genStats = state.genStats || null;
@@ -1072,7 +1072,7 @@ function renderTable() {
         const tdCls = ['shift-' + displayV, weekend ? 'td-weekend' : '', holidayByDay.get(d) ? 'td-holiday' : ''].filter(Boolean).join(' ');
         // sfat opțional pe celulă (MODE.table.cellTip), afișat la hover — fără text vizibil în celulă
         const cellTip = T.cellTip ? T.cellTip(emp, dk, v) : '';
-        bhtml += '<td class="' + tdCls + '"' + (cellTip ? ' data-tooltip="' + escAttr(cellTip) + '"' : '') + '><select onchange="onShiftChange(\'' + dk + '\',' + emp.id + ',this)">';
+        bhtml += '<td class="' + tdCls + '"' + (cellTip ? ' data-tooltip="' + escAttr(cellTip) + '"' : '') + '><select onchange="onShiftChange(\'' + dk + '\',' + (Number(emp.id) || 0) + ',this)">';
         for (let si = 0; si < labels.length; si++) {
           if (weekend && T.weekendHide.includes(si)) continue;
           bhtml += '<option value="' + si + '"' + (si === displayV ? ' selected' : '') + '>' + labels[si] + '</option>';
@@ -1318,6 +1318,60 @@ function exportExcel() {
   })().catch(e => setStatus('Eroare Excel: ' + e.message, 'err'));
 }
 
+// ── Validarea datelor care intră din afară (fișier importat, backup, restaurare din storage) ──
+// Id-urile ajung în HTML în handlere inline (`onclick="openEditModal(5)"`), deci un id care nu e
+// număr întreg poate închide atributul și poate executa cod (XSS stocat — dovedit cu un fișier de
+// lună care avea id `0" onmouseover="..."`). Se normalizează la număr întreg pozitiv O SINGURĂ DATĂ,
+// la fiecare intrare de date; duplicatele primesc id nou, intrările care nu sunt obiecte se aruncă.
+function sanitizeEmployees(emps) {
+  const list = Array.isArray(emps) ? emps.filter(e => e && typeof e === 'object' && !Array.isArray(e)) : [];
+  const used = new Set();
+  let next = 1;
+  list.forEach(e => { const n = Number(e.id); if (Number.isInteger(n) && n > 0 && n >= next) next = n + 1; });
+  list.forEach(e => {
+    let id = Number(e.id);
+    if (!Number.isInteger(id) || id <= 0 || used.has(id)) id = next++;
+    used.add(id);
+    e.id = id;
+    e.name = (typeof e.name === 'string' ? e.name : e.name == null ? '' : String(e.name)).slice(0, 120);
+  });
+  return list;
+}
+
+// Turele din fișiere ajung direct în grafic și în statistici: se acceptă doar zile „YYYY-MM-DD" și
+// valori de tură existente în modul curent (0..SHIFT_NAMES.length-1). Restul se ignoră și se
+// raportează — înainte, un „abc" sau un 99 ajungea în celulă, se afișa gol și conta 0h, fără nicio urmă.
+function sanitizeSchedule(schedule) {
+  const out = {};
+  let dropped = 0;
+  const maxV = (typeof SHIFT_NAMES !== 'undefined' ? SHIFT_NAMES.length : 11) - 1;
+  if (!schedule || typeof schedule !== 'object' || Array.isArray(schedule)) return { schedule: out, dropped };
+  for (const dk in schedule) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dk)) { dropped++; continue; }
+    const src = schedule[dk];
+    if (!src || typeof src !== 'object' || Array.isArray(src)) { dropped++; continue; }
+    const day = {};
+    for (const eid in src) {
+      const v = src[eid];
+      if (!Number.isInteger(v) || v < 0 || v > maxV) { dropped++; continue; }
+      day[eid] = v;
+    }
+    out[dk] = day;
+  }
+  return { schedule: out, dropped };
+}
+
+// Punctul unic prin care trece orice stare venită din afară: angajați validați ÎNTÂI (migrateState
+// al modului iteră peste ei), apoi migrarea specifică modului, apoi graficul. Întoarce câte valori
+// au fost aruncate, ca apelantul să poată spune ce s-a întâmplat.
+function adoptState(s) {
+  s.employees = sanitizeEmployees(s.employees);
+  migrateState(s);
+  const clean = sanitizeSchedule(s.schedule || {});
+  s.schedule = clean.schedule;
+  return clean.dropped;
+}
+
 function applyJSON(text) {
   try {
     const data = JSON.parse(text);
@@ -1332,28 +1386,35 @@ function applyJSON(text) {
     const looksLikeMonth = data.type === 'month' || (!looksLikeFullBackup && data.schedule && typeof data.schedule === 'object' && Array.isArray(data.employees));
     if (looksLikeMonth) {
       // Suportă și numele vechi de câmpuri (currentYear/currentMonth) din fișierele legacy fără type.
-      const year = data.year ?? data.currentYear;
-      const month = data.month ?? data.currentMonth;
-      if (!year || !month) { setStatus('Fișier invalid — lipsește luna/anul.', 'err'); return; }
+      const year = parseInt(data.year ?? data.currentYear, 10);
+      const month = parseInt(data.month ?? data.currentMonth, 10);
+      if (!(year >= 1900 && year <= 2099) || !(month >= 1 && month <= 12)) { setStatus('Fișier invalid — lipsește luna/anul sau nu sunt valide.', 'err'); return; }
       // Fără schedule valid, ștergerea de mai jos ar goli luna țintă și tot ar raporta succes
       // (bug găsit la audit: for...in undefined nu aruncă eroare, doar nu adaugă nimic).
       if (!data.schedule || typeof data.schedule !== 'object') { setStatus('Fișier invalid — lipsește graficul (schedule).', 'err'); return; }
+      // Valorile trec prin aceeași validare ca la restaurare: „abc", 99 sau -5 se ignoră și se raportează.
+      const clean = sanitizeSchedule(data.schedule);
+      if (!Object.keys(clean.schedule).length) { setStatus('Fișier invalid — nu conține nicio zi de grafic validă.', 'err'); return; }
+      const fileEmps = Array.isArray(data.employees) ? sanitizeEmployees(data.employees) : null;
       // Coliziune de id: dacă fișierul are un angajat cu ACELAȘI id dar NUME diferit față de
       // cineva local, turele din fișier i s-ar aplica silențios persoanei greșite (bug găsit la
       // audit — id-urile pornesc de la 1 în orice instalare nouă, coliziunea e foarte plauzibilă
       // exact în fluxul publicitar al aplicației: "trimite doar luna curentă cuiva").
-      if (Array.isArray(data.employees)) {
+      if (fileEmps) {
         const localById = new Map(state.employees.map(e => [e.id, e.name]));
-        const conflicts = data.employees.filter(e => localById.has(e.id) && localById.get(e.id) !== e.name).map(e => e.name + ' (local: ' + localById.get(e.id) + ')');
+        const conflicts = fileEmps.filter(e => localById.has(e.id) && localById.get(e.id) !== e.name).map(e => e.name + ' (local: ' + localById.get(e.id) + ')');
         if (conflicts.length && !confirm('Fișierul conține ' + MODE.words.employeesPl + ' cu alt nume dar același id ca cei locali:\n' + conflicts.join(', ') + '\nTurele lor din fișier ar putea ajunge pe persoana greșită. Continuați?')) return;
       }
       // Month-save: overwrite only schedule for the specified year+month
       const prefix = year + '-' + pad(month);
+      const existingDays = Object.keys(state.schedule).filter(k => k.startsWith(prefix)).length;
+      // Un import de lună înlocuiește tot ce e în luna aia și nu există undo — cere confirmare.
+      if (existingDays && !confirm('Luna ' + getMonthName(month) + ' ' + year + ' are deja ' + existingDays + ' zile în grafic. Importul le înlocuiește definitiv. Continui?')) return;
       for (const dk in state.schedule) {
         if (dk.startsWith(prefix)) delete state.schedule[dk];
       }
-      for (const dk in data.schedule) {
-        state.schedule[dk] = data.schedule[dk];
+      for (const dk in clean.schedule) {
+        state.schedule[dk] = clean.schedule[dk];
       }
       // Merge COCM for this month
       for (const dk in data.preservedCOCM) {
@@ -1363,9 +1424,9 @@ function applyJSON(text) {
       // altfel un import de lună mai veche ștergea silențios orice angajat adăugat de atunci
       // (electricienii/config-ul sunt setări GLOBALE, nu specifice unei luni — un fișier de lună
       // nu ar trebui să le poată suprascrie complet; bug găsit la audit).
-      if (Array.isArray(data.employees)) {
+      if (fileEmps) {
         const existingIds = new Set(state.employees.map(e => e.id));
-        data.employees.forEach(emp => { if (!existingIds.has(emp.id)) state.employees.push(emp); });
+        fileEmps.forEach(emp => { if (!existingIds.has(emp.id)) state.employees.push(emp); });
       }
       // config NU se atinge la import de lună — e o setare curentă, nu ține de luna importată.
       // org lives in ORG_KEY — only migrate from file if ORG_KEY is empty
@@ -1375,11 +1436,13 @@ function applyJSON(text) {
       document.getElementById('sel-month').value = month;
       document.getElementById('sel-year').value = year;
       genDay = 0; genStats = null; genYear = 0; genMonth = 0; genDim = 0;
-      migrateState(state);
+      adoptState(state);
       saveState();
       render();
       updateButtons();
-      setStatus('Luna ' + getMonthName(month) + ' ' + year + ' încărcată din fișier.', 'success');
+      setStatus('Luna ' + getMonthName(month) + ' ' + year + ' încărcată din fișier.'
+        + (clean.dropped ? ' ' + clean.dropped + ' valori invalide au fost ignorate.' : ''),
+        clean.dropped ? 'warn' : 'success');
       return;
     }
     // Full backup (data.type==='full' sau conține genStats/genDay top-level)
@@ -1390,7 +1453,9 @@ function applyJSON(text) {
     state = data;
     genCOCM = data.preservedCOCM || {};
     genDay = data.genDay || 0; genStats = data.genStats || null; genYear = data.genYear || 0; genMonth = data.genMonth || 0; genDim = data.genDim || 0;
-    migrateState(state);
+    // Validează angajații și graficul din backup înainte de migrare (un backup stricat nu mai
+    // poate lăsa starea pe jumătate: intrările invalide se aruncă, restul se normalizează).
+    const droppedFull = adoptState(state);
     // org lives in ORG_KEY — only migrate from file if ORG_KEY is empty
     if (data.org && data.org.sefFOL && !loadOrg()) saveOrg(data.org);
     if (MODE.beforeRestoreSave) MODE.beforeRestoreSave();
@@ -1400,7 +1465,9 @@ function applyJSON(text) {
     if (MODE.afterRestoreUI) MODE.afterRestoreUI();
     render();
     updateButtons();
-    setStatus('Baza de date restaurată din fișier.', 'success');
+    setStatus('Baza de date restaurată din fișier.'
+      + (droppedFull ? ' ' + droppedFull + ' valori invalide au fost ignorate.' : ''),
+      droppedFull ? 'warn' : 'success');
   } catch (err) {
     setStatus('Eroare la citirea fișierului.', 'err');
   }

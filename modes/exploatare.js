@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_version';
 
 const ORG_KEY = 'graficTura_org';
 
-const APP_VERSION = 'V2026.10.6';
+const APP_VERSION = 'V2026.10.7';
 
 const DB_NAME = 'GraficTuraDB';
 
@@ -206,7 +206,7 @@ const MODE = {
       const fnCls = 'fn-' + (emp.functia || 'emitent');
       let crewLabel = '';
       if (!sec.f8 && emp.crew) crewLabel = '<span style="font-size:11px;font-weight:700;color:#555;display:block;text-align:center">' + esc(emp.crew) + '</span>';
-      return '<td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + ((sec.f8 || emp.forced8) ? ' <span class="forced-badge">F</span>' : '') + '</td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + crewLabel + '</td>';
+      return '<td class="emp-name-cell" onclick="openEditModal(' + (Number(emp.id) || 0) + ')">' + esc(emp.name) + ((sec.f8 || emp.forced8) ? ' <span class="forced-badge">F</span>' : '') + '</td><td class="' + fnCls + '" style="text-align:center;padding:0 2px;font-size:12px;font-weight:600">' + fnLabel + crewLabel + '</td>';
     },
     cellExtra(emp, dk, v, sec) {   // indicator de echipaj când diferă de cel de bază (override pe dată)
       if (sec.f8) return '';
@@ -497,6 +497,14 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.7': {
+    title: 'Fișiere importate: verificate',
+    items: [
+      { icon: '🛡️', text: 'Angajații dintr-un fișier importat sunt validați (id numeric, nume text): un id care nu e număr putea închide atributul din tabel și executa cod la hover/click (XSS stocat)' },
+      { icon: '✅', text: 'Turele din fișier sunt verificate: valorile care nu există se ignoră și mesajul spune câte, în loc să apară celule goale fără explicație' },
+      { icon: '⚠️', text: 'Importul unei luni care are deja zile generate cere confirmare înainte de a le înlocui' }
+    ]
+  },
   'V2026.10.6': {
     title: 'Modul 5: T2 înainte de T2A',
     items: [

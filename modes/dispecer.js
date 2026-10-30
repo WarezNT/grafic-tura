@@ -9,7 +9,7 @@ const VERSION_KEY = 'graficTura_dispecer_version';
 
 const ORG_KEY = 'graficTura_dispecer_org';
 
-const APP_VERSION = 'V2026.10.13';
+const APP_VERSION = 'V2026.10.14';
 
 const DB_NAME = 'GraficTuraDispecerDB';
 
@@ -72,7 +72,7 @@ const MODE = {
     weekendDisplayL: [5, 6],               // și se afișează ca L
     sections(emps) { return [{ emps, cls: '', header: null }]; },
     rowHead(emp) {
-      return '<td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + '</td>';
+      return '<td class="emp-name-cell" onclick="openEditModal(' + (Number(emp.id) || 0) + ')">' + esc(emp.name) + '</td>';
     },
     // ziua de după T4: cele 6h de la 00:00 la 06:00 aparțin acestei zile calendaristice — se vede „T4” sub celulă
     cellExtra(emp, dk) {
@@ -219,6 +219,14 @@ const MODE = {
 };
 
 const CHANGELOG = {
+  'V2026.10.14': {
+    title: 'Fișiere importate: verificate',
+    items: [
+      { icon: '🛡️', text: 'Angajații dintr-un fișier importat sunt validați: un id care nu e număr întreg (sau un nume care nu e text) putea rupe pagina și chiar executa cod la hover/click — acum se normalizează' },
+      { icon: '✅', text: 'Turele din fișier sunt verificate: valorile care nu există („abc", 99, -5) se ignoră, iar mesajul spune câte au fost aruncate — înainte apăreau celule goale și ore 0, fără explicație' },
+      { icon: '⚠️', text: 'Importul unei luni care are deja zile în grafic cere confirmare — înainte înlocuia luna definitiv, fără întrebare și fără posibilitatea de undo' }
+    ]
+  },
   'V2026.10.13': {
     title: 'Norma = zile lucrătoare × 6h',
     items: [

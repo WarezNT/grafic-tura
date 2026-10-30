@@ -69,7 +69,7 @@ const MODE = {
     extraHeader: '', fixedCols: 4,
     weekendHide: [3, 4], weekendDisplayL: [3, 4],
     sections(emps) { return [{ emps, cls: '', header: null }]; },
-    rowHead(emp) { return '<td class="emp-name-cell" onclick="openEditModal(' + emp.id + ')">' + esc(emp.name) + '</td>'; }
+    rowHead(emp) { return '<td class="emp-name-cell" onclick="openEditModal(' + (Number(emp.id) || 0) + ')">' + esc(emp.name) + '</td>'; }
   },
   summary: {
     info(expected, mn) { return ''; },

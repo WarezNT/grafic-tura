@@ -34,14 +34,19 @@ Organizația (formație, șef, responsabil) este **distinctă** între cele dou�
 | Val | Cod | Ore | Interval | Observații |
 |-----|-----|-----|----------|-----------|
 | 0 | L | 0 | — | Liber |
-| 1 | T1 | 4 | 06:00–10:00 | |
+| 1 | T1+T4 | 12 | 06:00–10:00 + 22:00–06:00 | O singură celulă, aceeași persoană; 6h în ziua de start + 6h a doua zi |
 | 2 | T2 | 6 | 10:00–16:00 | |
-| 3 | T3 | 6 | 16:00–22:00 | Prima tură din ciclu |
-| 4 | T4 | 8 | 22:00–06:00 | Trece de miezul nopții; o singură celulă |
+| 3 | T3 | 6 | 16:00–22:00 | Prima tură din ciclu (începe blocul) |
+| 4 | T4 | 8 | 22:00–06:00 | Doar manual; trece de miezul nopții |
 | 5 | CO | 0 | — | Concediu odihnă (manual) |
 | 6 | CM | 0 | — | Concediu medical (manual) |
+| 7 | IL | 6 | — | Instruire lunară (manual; nu acoperă nicio tură) |
+| 8 | EMP | 6 | — | Examinare medicală periodică (manual) |
+| 9 | Z | 6 | 08:00–14:00 | Program de zi (manual) |
+| 10 | A | 6 | — | Autorizare anuală (manual) |
 
-T1+T2+T3+T4 = 24h (acoperire completă a zilei).
+T1+T2+T3+T4 = 24h (acoperire completă a zilei). Valorile 7–10 sunt doar manuale, contează 6h lucrate și
+**nu** acoperă turele T1–T4 (introduse în V2026.10.10).
 
 ## 3. Blocuri de ture (V2026.10.8 — înlocuiește ciclul fix pe poziții)
 
@@ -116,8 +121,8 @@ dimineața de 6h) la n ≥ 5.
 - Antet: logo, titlu „Grafic dispecer", selector Modul, ⚙️ organizație, 🌙 mod întunecat.
 - Bara de sus: navigare lună/an, etichetă informativă „Acoperire 24h automată", butoane
   `▶ Generare` / `✕ Curăță` / `+ Dispecer`.
-- Tabel: un rând pe dispecer, o coloană pe zi, dropdown per celulă (`L, T1, T2, T3, T4, CO, CM`).
-  În weekend CO/CM nu sunt oferite. Coloane finale: Lucrate, CO/CM, Normă.
+- Tabel: un rând pe dispecer, o coloană pe zi, dropdown per celulă (`L, T1+T4, T2, T3, T4, IL, EMP, Z, A`;
+  `CO`/`CM` doar în zilele lucrătoare). Coloane finale: Lucrate, CO/CM, Normă.
 - Sub tabel: legendă, sărbători legale, carduri + tabel statistici (T1–T4, CO, CM, ore).
 - Bara de jos: Fișiere (JSON), Excel, Print/PDF, Manual, versiune.
 
