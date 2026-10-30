@@ -209,7 +209,8 @@ function shellFingerprint() {
   return { hash: hash(html), len: html.length };
 }
 
-/* Compară cu referința locală tests/_baseline-<mod>.json (generată din versiunea de referință).
+/* Compară cu referința versionată tests/baseline-<mod>.json (fără `_` la început: GitHub Pages,
+ * adică Jekyll, nu publică fișierele care încep cu `_`, iar testul trebuie să meargă și pe site).
  * Utilizare: eval(await (await fetch('/tests/snapshot.js')).text()); JSON.stringify(await compareSnapshot())
  * Întoarce lista diferențelor (goală = comportament identic). Rulează de două ori (prima rulare „încălzește”). */
 async function compareSnapshot() {
@@ -218,7 +219,16 @@ async function compareSnapshot() {
   const s = await runSnapshot();
   s.shell = shell;
   const isD = typeof assignDispecerShifts === 'function';
-  const base = await (await fetch('/tests/_baseline-' + (isD ? 'dispecer' : 'exploatare') + '.json')).json();
+  const file = 'baseline-' + (isD ? 'dispecer' : 'exploatare') + '.json';
+  let base;
+  try {
+    const resp = await fetch('/tests/' + file);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    base = await resp.json();
+  } catch (e) {
+    return { page: isD ? 'dispecer' : 'exploatare', keys: Object.keys(s).length,
+             diffs: ['baseline indisponibil (' + e.message + ') — rulează tools/harness/make-baseline.mjs'] };
+  }
   const diffs = [];
   const walk = (x, y, p) => {
     if (x && typeof x === 'object') { for (const k of Object.keys(x)) walk(x[k], y ? y[k] : undefined, p + '.' + k); }

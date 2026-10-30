@@ -12,7 +12,8 @@ delgaz.png
 *.json
 # ...dar baseline-urile testului de instantanee SUNT versionate, ca testul să meargă pe orice clone.
 # (excepția trebuie să vină DUPĂ regula generală, altfel nu are efect)
-!tests/_baseline-*.json
+# Fără `_` la început: GitHub Pages (Jekyll) nu publică fișierele care încep cu `_`.
+!tests/baseline-*.json
 
 # Harness local de teste/audit (Node, nu face parte din aplicație)
 .audit/

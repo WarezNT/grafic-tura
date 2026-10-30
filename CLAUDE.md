@@ -48,10 +48,11 @@ fiecare mod are `STORAGE_KEY` propriu și garda `looksForeign` la import.
 **Testare (obligatorie la orice refactor)**: `python -m http.server`, apoi în Browser pane
 `eval(await (await fetch('/tests/snapshot.js',{cache:'reload'})).text()); JSON.stringify(await compareSnapshot())`.
 Compară 12 chei (5 scenarii de grafic, tabel, sumar, legendă, modale, Excel, acțiuni interactive, amprenta
-markup-ului) cu `tests/_baseline-<mod>.json` — **comis în repo** (excepție în `.gitignore`), deci testul merge
-pe orice clone. `diffs: []` = comportament identic. După o schimbare VOITĂ de comportament sau de markup,
+markup-ului) cu `tests/baseline-<mod>.json` — **comis în repo** (excepție în `.gitignore`; fără `_` la început,
+fiindcă GitHub Pages nu publică fișierele cu `_`), deci testul merge pe orice clone **și pe site**.
+`diffs: []` = comportament identic. După o schimbare VOITĂ de comportament sau de markup,
 regenerează baseline-urile cu `node tools/harness/make-baseline.mjs` (rulează în Chrome real, ca să prindă și
-hash-urile Excel) și verifică imediat cu `--verify`. **Atenție**: testul își înlocuiește starea cu scenarii
+hash-urile Excel) și verifică imediat cu `--verify` (poți da și un URL: `--verify https://wareznt.github.io/grafic-tura/`). **Atenție**: testul își înlocuiește starea cu scenarii
 (`state.employees`/`state.schedule`, `saveOrg`) — rulează-l într-un profil de browser separat, nu pe datele
 reale. Atenție și la cache: JS-urile se cer cu `{cache:'reload'}`.
 
@@ -77,7 +78,7 @@ node audit-disp.mjs          # Dispecer: an întreg, verificări independente (a
 node trace-disp.mjs 4        # Dispecer: primele 14 zile + câte zile libere are fiecare pe an
 node norma.mjs               # norma pe ambele module (Dispecer 6h/zi, Exploatare 8h/zi) + % acoperit
 node check-7.mjs             # Dispecer 7 oameni: scenarii cu/fără concedii suprapuse
-node make-baseline.mjs       # regenerează tests/_baseline-*.json (Chrome real); --verify doar compară
+node make-baseline.mjs       # regenerează tests/baseline-*.json (Chrome real); --verify doar compară
 node probe.mjs               # sanity: ce globals/elemente există în pagină
 ```
 
@@ -620,7 +621,7 @@ Remediu, la momentul respectiv: excepție explicită în `.gitignore`, în ordin
 ```
 
 Sau, mai curat, înlocuirea regulii generale cu una țintită (ex. `/exports/`, `grafic-*.json`).
-În repo există deja o excepție pentru `tests/_baseline-*.json` (baseline-urile testului de instantanee
+În repo există deja o excepție pentru `tests/baseline-*.json` (baseline-urile testului de instantanee
 sunt versionate, ca `compareSnapshot()` să meargă pe orice clone).
 De verificat cu `git check-ignore -v <fișier>` — dar **atenție**: `check-ignore` raportează și
 fișierele urmărite deja (tracked), deci un rezultat pozitiv nu înseamnă neapărat că fișierul
