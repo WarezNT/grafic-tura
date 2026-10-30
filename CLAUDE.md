@@ -1,8 +1,9 @@
 # Grafic de Tură — note tehnice pentru sesiuni viitoare
 
-Aplicație single-file (`index.html`, ~200KB, fără build step). Deploy prin GitHub Pages
-direct din `main`. Editare directă a fișierului, testare în browser (local file:// sau preview),
-apoi commit + push.
+Aplicație **statică, fără build step**, cu două pagini de intrare de ~30 de linii
+(`index.html` = Exploatare, `dispecer.html` = Dispecer) care încarcă scripturi clasice. Deploy prin
+GitHub Pages direct din `main`. Editare directă a fișierelor, testare în browser sau headless
+(vezi „Harness headless" mai jos), apoi commit + push.
 
 ## Arhitectură (modulară, fără build): nucleu comun + câte un fișier pe mod
 
@@ -48,9 +49,46 @@ Compară ~12 chei (grafice, tabel, sumar, legendă, modale, Excel, acțiuni inte
 `tests/_baseline-<mod>.json` (local, ignorat de git — se generează rulând `runSnapshot()` pe versiunea de
 referință). `diffs: []` = comportament identic. Atenție la cache: JS-urile se cer cu `{cache:'reload'}`.
 
+## Harness headless (fără browser) — `PJ\tools\harness`
+
+Testarea din Browser pane cere un browser; harness-ul rulează aceleași funcții ale aplicației
+într-un DOM simulat (jsdom), deci merge și dintr-un terminal. **Stă în afara repo-ului**
+(`C:\Users\OMFG\Documents\PJ\tools\harness`) — `node_modules` nu are ce căuta în proiect, iar
+`package.json` ar fi oricum ignorat de `*.json` din `.gitignore`.
+
+Cum funcționează: `lib/load.mjs` citește **ordinea scripturilor direct din `index.html` /
+`dispecer.html`**, le încarcă pe rând ca `<script>` (deci `const`/`let` de nivel superior se
+leagă exact ca în browser), blochează `confirm()`, apoi `inject.js` expune `window.__h`
+(`setup`, `generate`, `hours`, `report`). Nimic din proiect nu e modificat.
+
+```powershell
+cd C:\Users\OMFG\Documents\PJ\tools\harness
+node matrix.mjs              # Exploatare: 6 moduri x 3/4/5 echipaje x Sept+Oct 2026
+node matrix.mjs --dispecer   # Dispecer: 5/6/7/8 persoane x Oct+Nov 2026
+node year.mjs --dispecer 7   # 12 luni generate în secvență, pe aceeași stare
+node year.mjs --exploatare 5
+node probe.mjs               # sanity: ce globals/elemente există în pagină
+```
+
+`report()` verifică exact regulile de mai sus: max 4 zile consecutive, max 5 zile/săptămână
+(**doar** Exploatare — regula asta nu există în Dispecer), gap `T2→T1/T1A` (doar Exploatare),
+acoperirea sloturilor (Dispecer: lipsă/dublură pe T1–T4, cu `SLOT_VALUES`), plus spread-ul de ore.
+
+**Rezultate de referință (2026-10-30, cod la commit `7d6eb9c`)**: Exploatare — 36 de scenarii,
+**0 violări** de consecutive/săptămânal/gap; spread 0–16h (coincide cu cifrele din secțiunea
+`rotation` de mai sus); goluri de acoperire doar la `rotation`/`rotation5`/`rotation4` cu 3
+echipaje (limita documentată: ciclul fix nu poate acoperi capacitatea cerută). Dispecer —
+0 lipsuri, 0 dubluri, 0 încălcări de consecutive, la 5–8 persoane pe tot anul.
+
+**Atenție la cifrele din `DISPECER.md` §4/§12** — sunt măsurate ÎNAINTE de V2026.10.10, când
+T1 și T4 erau persoane diferite. Acum `valoarea 1 = T1+T4` la aceeași persoană, deci **3 oameni
+lucrează pe zi, nu 4**, iar turele de weekend per persoană ies ~38–56 la 7 dispeceri (nu 59–60)
+și ~59–64 la 5 (nu ~83). Totalul anual rămâne ~1250h la 7 dispeceri, cum zice documentul.
+Nu „repara" codul ca să iasă cifrele vechi — sunt stale, nu bug.
+
 ## Moduri: Exploatare (`index.html`) și Dispecer (`dispecer.html`)
 
-`dispecer.html` e o aplicație SEPARATĂ, single-file, pentru graficul dispecerilor. Detalii complete
+`dispecer.html` e o aplicație SEPARATĂ (pagină proprie + `modes/dispecer.js`), pentru graficul dispecerilor. Detalii complete
 (algoritmi, teste, rezultate) în `DISPECER.md` — citește-l înainte de orice modificare acolo.
 
 **Ture (valori numerice în `state.schedule`)**: 0 L · 1 T1 (06–10, 4h) · 2 T2 (10–16, 6h) · 3 T3

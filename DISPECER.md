@@ -71,6 +71,13 @@ Schimbarea numărului de dispeceri la mijloc de an nu cere nicio recalculare (st
 Testat (2026, fără concedii, ture lucrate în weekend per dispecer / spread; goluri 0, dubluri 0, încălcări 0):
 n=5: 84/83/83/83/83 (1) · n=6: 67–73 (6) · **n=7: 59–60 (1)** · n=8: 42–57 (15) · n=10: 40–44 (4).
 
+> ⚠️ **Cifrele de mai sus sunt dinainte de V2026.10.10**, când T1 și T4 erau persoane diferite
+> (4 oameni/zi). Acum valoarea 1 = „T1+T4" la aceeași persoană, deci **3 oameni lucrează pe zi**
+> și turele de weekend per persoană ies altfel. Remăsurat headless (2026-10-30, an întreg 2026,
+> fără concedii): n=5 → 59–64 (spread 5); n=7 → 38–56 (spread 18); total anual ~1212–1284h la
+> n=7 (media ~1250h, ca în document). Acoperirea și regulile rămân respectate: 0 goluri,
+> 0 dubluri, 0 serii peste 4 zile. Nu modifica algoritmul ca să iasă cifrele vechi.
+
 ## 5. Norma (Dispecer)
 
 - Ore medii pe zi = `24 / max(5, nr. dispeceri)` (`cycleLength()`, `avgHoursPerDay()`); norma lunară = `round(zile × ore_medii)`.
