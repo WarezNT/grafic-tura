@@ -7,7 +7,7 @@
 // Construiește markup-ul paginii (antet, controale, modale, manual) din șablon + MODE.shell.
 document.body.insertAdjacentHTML('afterbegin', buildShell());
 
-const COMMIT_COUNT = 127;
+const COMMIT_COUNT = 128;
 
 const DB_VERSION = 1;
 
